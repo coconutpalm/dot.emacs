@@ -1,0 +1,134 @@
+;;;; General settings
+(setq inhibit-splash-screen t)
+
+;; Scala-mode from the Git repo
+(add-to-list 'load-path "~/.emacs.d/elisp/scala-mode2")
+(require 'scala-mode2)
+
+;; Scala-mode from the package manager
+;(require 'package)
+;(add-to-list 'package-archives
+;             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+;(package-initialize)
+;(unless (package-installed-p 'scala-mode2)
+;  (package-refresh-contents) (package-install 'scala-mode2))
+
+;; auto-complete
+(add-to-list 'load-path "~/.emacs.d/")
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+(ac-config-default)
+(setq-default ac-sources (add-to-list 'ac-sources 'ac-source-dictionary))
+(global-auto-complete-mode t)
+; Start auto-completion after 2 characters of a word
+(setq ac-auto-start 2)
+; case sensitivity is important when finding matches
+(setq ac-ignore-case nil)
+
+;; yasnippet
+(add-to-list 'load-path
+	     "/Users/djo/.emacs.d/elpa/yasnippet")
+(require 'yasnippet)
+;;(yas/load-directory "~/snippets")
+(yas-global-mode 1)
+(add-to-list 'ac-sources 'ac-source-yasnippet)
+
+;; flymake-jslint
+(add-to-list 'load-path "~/.emacs.d/elisp/lintnode")
+(require 'flymake-jslint)
+;; Make sure we can find the lintnode executable
+(setq lintnode-location "~/.emacs.d/elisp/lintnode")
+;; JSLint can be... opinionated
+(setq lintnode-jslint-excludes (list 'nomen 'undef 'plusplus 'onevar 'white))
+;; Start the server when we first open a js file and start checking
+(add-hook 'js-mode-hook
+          (lambda ()
+            (lintnode-hook)))
+;; Put messages in the mini-buffer
+(custom-set-variables
+     '(help-at-pt-timer-delay 0.9)
+     '(help-at-pt-display-when-idle '(flymake-overlay)))
+
+;; General Javascript
+(add-hook 'js-mode-hook
+          (lambda ()
+            ;; Scan the file for nested code blocks
+            (imenu-add-menubar-index)
+            ;; Activate the folding mode
+            (hs-minor-mode t)))
+
+;; Javascript REPL
+(add-to-list 'load-path "~/.emacs.d/elisp")
+(require 'js-comint)
+;; Use node as our repl
+(setq inferior-js-program-command "/usr/local/bin/node")
+ 
+(setq inferior-js-mode-hook
+      (lambda ()
+        ;; We like nice colors
+        (ansi-color-for-comint-mode-on)
+        ;; Deal with some prompt nonsense
+        (add-to-list 'comint-preoutput-filter-functions
+                     (lambda (output)
+                     (replace-regexp-in-string ".*1G.*3G" "> " output)))))
+
+;; Load the ensime lisp code...
+(setq exec-path (append exec-path (list "~/liftweb" )))
+(add-to-list 'load-path "~/.emacs.d/elisp/ensime/elisp/")
+(require 'ensime)
+(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+
+;; This step causes the ensime-mode to be started whenever
+;; scala-mode is started for a buffer. You may have to customize this step
+;; if you're not using the standard scala mode.
+(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+
+;; Scala-mode settings
+(add-hook 'scala-mode-hook '(lambda ()
+
+  ;; Bind the 'newline-and-indent' command to RET (aka 'enter'). This
+  ;; is normally also available as C-j. The 'newline-and-indent'
+  ;; command has the following functionality: 1) it removes trailing
+  ;; whitespace from the current line, 2) it create a new line, and 3)
+  ;; indents it.  An alternative is the
+  ;; 'reindent-then-newline-and-indent' command.
+  (local-set-key (kbd "RET") 'newline-and-indent)
+
+  ;; Alternatively, bind the 'newline-and-indent' command and
+  ;; 'scala-indent:insert-asterisk-on-multiline-comment' to RET in
+  ;; order to get indentation and asterisk-insertion within multi-line
+  ;; comments.
+  ;; (local-set-key (kbd "RET") '(lambda ()
+  ;;   (interactive)
+  ;;   (newline-and-indent)
+  ;;   (scala-indent:insert-asterisk-on-multiline-comment)))
+
+  ;; Bind the 'join-line' command to C-M-j. This command is normally
+  ;; bound to M-^ which is hard to access, especially on some European
+  ;; keyboards. The 'join-line' command has the effect or joining the
+  ;; current line with the previous while fixing whitespace at the
+  ;; joint.
+  (local-set-key (kbd "C-M-j") 'join-line)
+
+  ;; Bind the backtab (shift tab) to
+  ;; 'scala-indent:indent-with-reluctant-strategy command. This is usefull
+  ;; when using the 'eager' mode by default and you want to "outdent" a
+  ;; code line as a new statement.
+  (local-set-key (kbd "<backtab>") 'scala-indent:indent-with-reluctant-strategy)
+
+  ;; and other bindings here
+))
+
+(setq ensime-sem-high-faces
+  '(
+   (var . (:foreground "#ff2222"))
+   (val . (:foreground "#dddddd"))
+   (varField . (:foreground "#ff3333"))
+   (valField . (:foreground "#dddddd"))
+   (functionCall . (:foreground "#84BEE3"))
+   (param . (:foreground "#ffffff"))
+   (class . font-lock-type-face)
+   (trait . (:foreground "#084EA8"))
+   (object . (:foreground "#026DF7"))
+   (package . font-lock-preprocessor-face)
+   ))
