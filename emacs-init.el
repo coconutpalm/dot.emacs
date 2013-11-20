@@ -1,9 +1,22 @@
 ;;;; General settings
 (setq inhibit-splash-screen t)
 
+;; Web-mode
+(add-to-list 'load-path "~/.emacs.d/elisp/web-mode")
+(require 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+
 ;; Scala-mode from the Git repo
-(add-to-list 'load-path "~/.emacs.d/elisp/scala-mode2")
-(require 'scala-mode2)
+(when (>= emacs-major-version 24) 
+  (add-to-list 'load-path "~/.emacs.d/elisp/scala-mode2")
+  (require 'scala-mode2) )
 
 ;; Scala-mode from the package manager
 ;(require 'package)
@@ -18,12 +31,28 @@
 (require 'auto-complete-config)
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
 (ac-config-default)
+(setq ac-show-menu-immediately-on-auto-complete t)
 (setq-default ac-sources (add-to-list 'ac-sources 'ac-source-dictionary))
 (global-auto-complete-mode t)
 ; Start auto-completion after 2 characters of a word
-(setq ac-auto-start 2)
+;(setq ac-auto-start 2)
 ; case sensitivity is important when finding matches
 (setq ac-ignore-case nil)
+
+(defun my-semicolon ()
+  (interactive)
+  (insert ";"))
+
+(add-hook 'css-mode-hook       
+  (lambda ()
+     (make-local-variable 'ac-ignores)
+     (add-to-list 'ac-ignores ";")
+     (define-key 'css-mode-map ";" 'my-semicolon) ))
+
+(add-hook 'ruby-mode-hook
+          (lambda ()
+            (make-local-variable 'ac-ignores)
+            (add-to-list 'ac-ignores "end")))
 
 ;; yasnippet
 (add-to-list 'load-path
