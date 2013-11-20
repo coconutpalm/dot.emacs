@@ -1,6 +1,22 @@
 ;;;; General settings
 (setq inhibit-splash-screen t)
 
+(defun comment-or-uncomment-region-or-line ()
+    "Comments or uncomments the region or the current line if there's no active region."
+    (interactive)
+    (let (beg end)
+        (if (region-active-p)
+            (setq beg (region-beginning) end (region-end))
+            (setq beg (line-beginning-position) end (line-end-position)))
+        (comment-or-uncomment-region beg end)
+        (next-line)))
+
+(global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
+(global-set-key [home] 'beginning-of-line)
+(global-set-key [end] 'end-of-line)
+(global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
+(global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
+
 ;; Web-mode
 (add-to-list 'load-path "~/.emacs.d/elisp/web-mode")
 (require 'web-mode)
@@ -35,7 +51,7 @@
 (setq-default ac-sources (add-to-list 'ac-sources 'ac-source-dictionary))
 (global-auto-complete-mode t)
 ; Start auto-completion after 2 characters of a word
-;(setq ac-auto-start 2)
+(setq ac-auto-start t)
 ; case sensitivity is important when finding matches
 (setq ac-ignore-case nil)
 
