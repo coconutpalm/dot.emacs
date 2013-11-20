@@ -1,6 +1,8 @@
 ;;;; General settings
 (setq inhibit-splash-screen t)
 
+(when window-system (global-unset-key "\C-z"))
+
 (defun comment-or-uncomment-region-or-line ()
     "Comments or uncomments the region or the current line if there's no active region."
     (interactive)
