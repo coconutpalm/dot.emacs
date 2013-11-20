@@ -18,6 +18,7 @@
 (global-set-key [end] 'end-of-line)
 (global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
 (global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
+(global-set-key (kbd "\C-c g") 'goto-line)
 
 ;; Web-mode
 (add-to-list 'load-path "~/.emacs.d/elisp/web-mode")
