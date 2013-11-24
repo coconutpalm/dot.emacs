@@ -60,13 +60,34 @@
 
 (defun my-semicolon ()
   (interactive)
-  (insert ";"))
+  (insert ";")
+  (newline-and-indent))
 
-(add-hook 'css-mode-hook       
+(defun my-colon ()
+  (interactive)
+  (insert ":"))
+
+(defun my-brace ()
+  (interactive)
+  (insert "{")
+  (newline-and-indent))
+
+(defun my-closebrace ()
+  (interactive)
+  (insert "}")
+  (indent-according-to-mode)
+  (newline-and-indent))
+
+(add-hook 'css-mode-hook
   (lambda ()
      (make-local-variable 'ac-ignores)
      (add-to-list 'ac-ignores ";")
-     (define-key 'css-mode-map ";" 'my-semicolon) ))
+     (add-to-list 'ac-ignores ":")
+     (add-to-list 'ac-ignores "{")
+     (define-key (current-local-map) (kbd ";") 'my-semicolon)
+     (define-key (current-local-map) (kbd ":") 'my-colon)
+     (define-key (current-local-map) (kbd "}") 'my-closebrace)
+     (define-key (current-local-map) (kbd "{") 'my-brace) ))
 
 (add-hook 'ruby-mode-hook
           (lambda ()
