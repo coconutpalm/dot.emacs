@@ -132,7 +132,7 @@
 (add-to-list 'load-path "~/.emacs.d/elisp")
 (require 'js-comint)
 ;; Use node as our repl
-(setq inferior-js-program-command "/usr/local/bin/node")
+(setq inferior-js-program-command "/usr/bin/nodejs")
  
 (setq inferior-js-mode-hook
       (lambda ()
