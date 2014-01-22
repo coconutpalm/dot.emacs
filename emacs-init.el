@@ -96,7 +96,9 @@
 
 ;; yasnippet
 (add-to-list 'load-path
-	     "/Users/djo/.emacs.d/elpa/yasnippet")
+	     "~/.emacs.d/elisp")
+(add-to-list 'load-path
+	     "~/.emacs.d/elisp/yasnippet")
 (require 'yasnippet)
 ;;(yas/load-directory "~/snippets")
 (yas-global-mode 1)

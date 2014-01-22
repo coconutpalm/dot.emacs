@@ -1,0 +1,15 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = https://github.com/capitaomorte/yasnippet
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+[submodule "snippets"]
+	url = https://github.com/AndreaCrotti/yasnippet-snippets.git
+[submodule "yasmate"]
+	url = https://github.com/capitaomorte/yasmate.git

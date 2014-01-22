@@ -1,0 +1,20 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	worktree = ../../../yasmate
+[remote "origin"]
+	url = https://github.com/capitaomorte/yasmate.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+[submodule "bundles/html-tmbundle"]
+	url = https://github.com/textmate/html.tmbundle.git
+[submodule "bundles/objc-tmbundle"]
+	url = https://github.com/textmate/objective-c.tmbundle.git
+[submodule "bundles/rails-tmbundle"]
+	url = https://github.com/textmate/ruby-on-rails-tmbundle.git
+[submodule "bundles/ruby-tmbundle"]
+	url = https://github.com/textmate/ruby.tmbundle.git
