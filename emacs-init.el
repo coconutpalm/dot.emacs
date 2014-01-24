@@ -1,7 +1,7 @@
 ;;;; General settings
 (setq inhibit-splash-screen t)
-
 (when window-system (global-unset-key "\C-z"))
+(set-face-attribute 'default nil :height 90) ; 9 point fonts by default
 
 (defun comment-or-uncomment-region-or-line ()
     "Comments or uncomments the region or the current line if there's no active region."
@@ -19,6 +19,7 @@
 (global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
 (global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
 (global-set-key (kbd "\C-c g") 'goto-line)
+(global-set-key (kbd "\C-c c") 'compile)
 
 ;; Web-mode
 (add-to-list 'load-path "~/.emacs.d/elisp/web-mode")
@@ -33,17 +34,9 @@
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 
 ;; Scala-mode from the Git repo
-(when (>= emacs-major-version 24) 
-  (add-to-list 'load-path "~/.emacs.d/elisp/scala-mode2")
-  (require 'scala-mode2) )
-
-;; Scala-mode from the package manager
-;(require 'package)
-;(add-to-list 'package-archives
-;             '("melpa" . "http://melpa.milkbox.net/packages/") t)
-;(package-initialize)
-;(unless (package-installed-p 'scala-mode2)
-;  (package-refresh-contents) (package-install 'scala-mode2))
+;(when (>= emacs-major-version 24) 
+;  (add-to-list 'load-path "~/.emacs.d/elisp/scala-mode2")
+;  (require 'scala-mode2) )
 
 ;; auto-complete
 (add-to-list 'load-path "~/.emacs.d/")
@@ -203,3 +196,67 @@
    (object . (:foreground "#026DF7"))
    (package . font-lock-preprocessor-face)
    ))
+
+; Java configuration
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Package manager-managed
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Initialize the package manager with the MELPA archive
+(require 'package)
+(package-initialize)
+(add-to-list 'package-archives
+             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(when (< emacs-major-version 24)
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+(package-refresh-contents) 
+
+;; Scala-mode from the package manager
+(unless (package-installed-p 'scala-mode2)
+  (package-install 'scala-mode2))
+
+; Malabar Mode (for Java)
+(unless (package-installed-p 'malabar-mode)
+  (package-install 'malabar-mode))
+
+; Java / Malabar mode
+(require 'cedet)
+(require 'semantic)
+(load "semantic/loaddefs.el")
+(semantic-mode 1);;
+(require 'malabar-mode)
+(add-to-list 'auto-mode-alist '("\\.java\\'" . malabar-mode))
+
+
+(defun my-java-malabar-mode-hook ()
+  ;; IDEA default for jump to source
+  (define-key c-mode-base-map "\C-\M-g" 'malabar-jump-to-thing)
+  (global-set-key "\M-n" 'semantic-ia-complete-symbol)
+  )
+(add-hook 'c-mode-common-hook 'my-java-malabar-mode-hook)
+
+
+;; Compiling the file on save makes malabar display the errors in the
+;; Java source code.
+(add-hook 'malabar-mode-hook
+          (lambda () 
+            (add-hook 'after-save-hook 'malabar-compile-file-silently
+                      nil t)))
+
+(require 'compile)
+(setq compilation-error-regexp-alist
+  (append (list
+           ;; works for jikes
+           '("^\\s-*\\[[^]]*\\]\\s-*\\(.+\\):\\([0-9]+\\):\\([0-9]+\\):[0-9]+:[0-9]+:" 1 2 3)
+           ;; works for javac
+           '("^\\s-*\\[[^]]*\\]\\s-*\\(.+\\):\\([0-9]+\\):" 1 2)
+           ;; works for maven 2.x
+           '("^\\(.*\\):\\[\\([0-9]*\\),\\([0-9]*\\)\\]" 1 2 3)
+           ;; works for maven 3.x
+           '("^\\(\\[ERROR\\] \\)?\\(/[^:]+\\):\\[\\([0-9]+\\),\\([0-9]+\\)\\]" 2 3 4)
+           '("^\\(\\[WARNING\\] \\)?\\(/[^:]+\\):\\[\\([0-9]+\\),\\([0-9]+\\)\\]" 2 3 4)
+           )
+          compilation-error-regexp-alist))
+
