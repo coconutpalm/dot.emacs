@@ -217,6 +217,19 @@
 (unless (package-installed-p 'scala-mode2)
   (package-install 'scala-mode2))
 
+; Flycheck
+(unless (package-installed-p 'flycheck)
+  (package-install 'flycheck))
+
+(add-hook 'after-init-hook #'global-flycheck-mode)
+
+; Flycheck-tip
+(unless (package-installed-p 'flycheck-tip)
+  (package-install 'flycheck-tip))
+
+(require 'flycheck-tip)
+(define-key c-mode (kbd "C-c C-n") 'flycheck-tip-cycle)
+
 ; Malabar Mode (for Java)
 (unless (package-installed-p 'malabar-mode)
   (package-install 'malabar-mode))
