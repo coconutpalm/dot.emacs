@@ -1,4 +1,12 @@
-;;;; General settings
+;;; LocalEmacs --- Local emacs configuration
+;;;
+;;; Commentary:
+;;;  None.
+
+;;; Code:
+
+;;; General settings
+
 (setq inhibit-splash-screen t)
 (when window-system (global-unset-key "\C-z"))
 (set-face-attribute 'default nil :height 90) ; 9 point fonts by default
@@ -205,6 +213,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Initialize the package manager with the MELPA archive
+(require 'pkg-info)
+(require 'dash)
+(require 'f)
+(require 's)
+
 (require 'package)
 (package-initialize)
 (add-to-list 'package-archives
@@ -228,7 +241,10 @@
   (package-install 'flycheck-tip))
 
 (require 'flycheck-tip)
-(define-key c-mode (kbd "C-c C-n") 'flycheck-tip-cycle)
+(define-key 'c-mode (kbd "C-c C-n") 'flycheck-tip-cycle)
+(define-key 'c++-mode (kbd "C-c C-n") 'flycheck-tip-cycle)
+(define-key 'java-mode (kbd "C-c C-n") 'flycheck-tip-cycle)
+(define-key 'malabar-mode (kbd "C-c C-n") 'flycheck-tip-cycle)
 
 ; Malabar Mode (for Java)
 (unless (package-installed-p 'malabar-mode)
