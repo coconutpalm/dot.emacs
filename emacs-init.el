@@ -213,11 +213,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Initialize the package manager with the MELPA archive
-(require 'pkg-info)
-(require 'dash)
-(require 'f)
-(require 's)
-
 (require 'package)
 (package-initialize)
 (add-to-list 'package-archives
@@ -225,6 +220,19 @@
 (when (< emacs-major-version 24)
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
 (package-refresh-contents) 
+
+; Dependencies
+(unless (package-installed-p 'dash)
+  (package-install 'dash))
+(require 'dash)
+
+(unless (package-installed-p 'f)
+  (package-install 'f))
+(require 'f)
+
+(unless (package-installed-p 's)
+  (package-install 's))
+(require 's)
 
 ;; Scala-mode from the package manager
 (unless (package-installed-p 'scala-mode2)
@@ -241,10 +249,7 @@
   (package-install 'flycheck-tip))
 
 (require 'flycheck-tip)
-(define-key 'c-mode (kbd "C-c C-n") 'flycheck-tip-cycle)
-(define-key 'c++-mode (kbd "C-c C-n") 'flycheck-tip-cycle)
-(define-key 'java-mode (kbd "C-c C-n") 'flycheck-tip-cycle)
-(define-key 'malabar-mode (kbd "C-c C-n") 'flycheck-tip-cycle)
+;(define-key (kbd "C-c C-n") 'flycheck-tip-cycle)
 
 ; Malabar Mode (for Java)
 (unless (package-installed-p 'malabar-mode)
