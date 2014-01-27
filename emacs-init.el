@@ -249,7 +249,7 @@
   (package-install 'flycheck-tip))
 
 (require 'flycheck-tip)
-;(define-key (kbd "C-c C-n") 'flycheck-tip-cycle)
+(global-set-key (kbd "C-c C-n") 'flycheck-tip-cycle)
 
 ; Malabar Mode (for Java)
 (unless (package-installed-p 'malabar-mode)
