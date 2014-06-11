@@ -10,7 +10,7 @@
 (setq inhibit-splash-screen t)
 (when window-system (global-unset-key "\C-z"))
 (global-linum-mode t)
-;;(set-face-attribute 'default nil :height 90) ; 9 point fonts by default
+;;(set-face-attribute 'default nil :height 200) ; 9 point fonts by default
 
 (defun comment-or-uncomment-region-or-line ()
     "Comments or uncomments the region or the current line if there's no active region."
