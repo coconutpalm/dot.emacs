@@ -181,11 +181,6 @@
                      (lambda (output)
                      (replace-regexp-in-string ".*1G.*3G" "> " output)))))
 
-;; Load the ensime lisp code...
-;(setq exec-path (append exec-path (list "~/liftweb" )))
-;(add-to-list 'load-path "~/.emacs.d/elisp/ensime/elisp/")
-
-
 
 ;; Scala-mode settings
 (add-hook 'scala-mode-hook '(lambda ()
@@ -223,19 +218,6 @@
   ;; and other bindings here
 ))
 
-(setq ensime-sem-high-faces
-  '(
-   (var . (:foreground "#ff2222"))
-   (val . (:foreground "#dddddd"))
-   (varField . (:foreground "#ff3333"))
-   (valField . (:foreground "#dddddd"))
-   (functionCall . (:foreground "#84BEE3"))
-   (param . (:foreground "#ffffff"))
-   (class . font-lock-type-face)
-   (trait . (:foreground "#084EA8"))
-   (object . (:foreground "#026DF7"))
-   (package . font-lock-preprocessor-face)
-   ))
 
 ; Java/Groovy configuration
 
@@ -284,10 +266,27 @@
 (unless (package-installed-p 'ensime)
   (package-install 'ensime))
 
+(setq ensime-sbt-command "/usr/local/java/activator/sbt")
 (require 'ensime)
 ;; Start ensime-mode whenever scala-mode is started for a buffer. You may
 ;; have to customize this step if you're not using the standard scala mode.
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+
+(setq exec-path (append exec-path (list "~/liftweb" )))
+
+(setq ensime-sem-high-faces
+  '(
+   (var . (:foreground "#ff2222"))
+   (val . (:foreground "#dddddd"))
+   (varField . (:foreground "#ff3333"))
+   (valField . (:foreground "#dddddd"))
+   (functionCall . (:foreground "#84BEE3"))
+   (param . (:foreground "#111111"))
+   (class . font-lock-type-face)
+   (trait . (:foreground "#084EA8"))
+   (object . (:foreground "#026DF7"))
+   (package . font-lock-preprocessor-face)
+   ))
 
 (unless (package-installed-p 'yasnippet)
   (package-install 'yasnippet))
@@ -788,7 +787,6 @@ That is, a string used to represent it on the tab bar."
 (global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
 (global-set-key (kbd "\C-c g") 'goto-line)
 (global-set-key (kbd "\C-c c") 'compile)
-
 
 
 ;;; (provide 'emacs-init)
