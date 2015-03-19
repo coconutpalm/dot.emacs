@@ -6,110 +6,47 @@
 ;;; Code:
 
 ;;; General settings
-
-
-;;; I initialize my *scratch* buffer with a random Emacs haiku drawn
-;;; from among these:
-
-(defvar ted-emacs-haiku
-  '("Oort is so awesome
-     deuglifies Outlook crap
-     `W k' rocks"
-    "Great clouds overhead
-     Tiny black birds rise and fall
-     Snow covers Emacs
-         -- Alex Schroeder"
-    "hacking on Smyrno
-     `error in process filter'
-     something is b0rken"
-    "Swiftly typing. Oh!
-     Where would we be without you,
-     `self-insert-command'?"
-    "treeless quiet field
-     sudden bud: EmacsWiki
-     now he{ar,re} the birds sing
-         -- ttn"
-    "an emacs user's
-     fingers dance on the keyboard;
-     a nerd pianist
-         -- Erik Bourget"
-    "The file was open.
-     flying in a sparrow stole
-     a parenthesis
-         -- Oliver Scholz"
-    "The day went away.
-     The file still puts its weight on
-     the tired mode-line.
-         -- Oliver Scholz"
-    "On a cloudy day
-     you hear the cons cells whisper:
-     'We are lost and gone.'
-         -- Oliver Scholz"
-    "A message, a string
-     remind me of my sweet love.
-     Good bye, my buffers.
-         -- Oliver Scholz"
-    "Hot night in summer:
-     Hush, you quibbling characters!
-     Do not wake her up!
-         -- Oliver Scholz"
-    "A bright, busy day.
-     The windows watch a thousand
-     wild cursors dancing.
-         -- Oliver Scholz"
-    "Oh, why don't you are
-     a lake, a stream, a meadow
-     this morning, Emacs?
-         -- Oliver Scholz" ;%
-    "The friends chat gaily,
-     I stand up to join their talk.
-     My `save-excursion'.
-         -- Oliver Scholz")
-  "Haiku taken from the Emacs Wiki's EmacsHaiku page.")
-
-(defun ted-random-emacs-haiku (&optional prefix)
-  "Select and format a random haiku from `ted-emacs-haiku'."
-  (random t)
-  (let* ((prefix (or prefix ";; "))
-xc         (n (random (length ted-emacs-haiku)))
-         (haiku (nth n ted-emacs-haiku)))
-    (with-temp-buffer
-      (insert haiku)
-      (goto-char (point-min))
-      (while (< (point) (point-max))
-        (goto-char (point-at-bol))
-        (delete-horizontal-space)
-        (insert prefix)
-        (when (looking-at "--")
-          (insert "    "))
-        (forward-line 1))
-      (concat (buffer-substring-no-properties (point-min) (point-max))
-              "\n\n"))))
-
-(setq initial-scratch-message (ted-random-emacs-haiku))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; Misc display settings
 
 (setq inhibit-splash-screen t)
 (when window-system (global-unset-key "\C-z"))
-(when window-system (set-frame-size (selected-frame) 120 80))
+(when window-system (set-frame-size (selected-frame) 120 79))
 (setq x-select-enable-clipboard t) ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
 (setq-default standard-indent 3) ; set standard indent to 3 rather that 4
 (setq-default tab-width 3)
+(setq scroll-step 1)             ; control screen "leaping"
 (setq-default indent-tabs-mode nil) ; spaces instead of tabs by default
+(global-linum-mode t)
+(global-hl-line-mode 1) ; highlight current line, turn it on for all modes by default
+(set-face-background 'hl-line "lightgray")
+(setq column-number-mode t)
+
+(setq display-time-day-and-date t
+      display-time-24hr-format nil)
+(display-time)
+(setq frame-title-format (concat  "%b - emacs@" (system-name))) ;; default to better frame titles
+
+(set-face-background 'fringe "white") ; Hide the fringe mark on the left
+(setq-default indicate-empty-lines t)
+(setq-default highlight-changes-mode 1)
+(setq-default indicate-buffer-boundaries 'right)
+
+(delete-selection-mode 1) ; typing with the mark active will overwrite the marked region
+(transient-mark-mode 1) ; enable visual feedback on selections, default since v23
 
 (when (eq system-type 'darwin)
-
   ;; default Latin font (e.g. Consolas)
-  (set-face-attribute 'default nil :family "Courier")
+  (set-face-attribute 'default nil :family "PT Mono")
 
   ;; default font size (point * 10)
   ;;
   ;; WARNING!  Depending on the default font,
   ;; if the size is not supported very well, the frame will be clipped
   ;; so that the beginning of the buffer may not be visible correctly.
-  (set-face-attribute 'default nil :height 140)
+  (set-face-attribute 'default nil :height 160 :weight 'normal)
 
   ;; use specific font for Korean charset.
   ;; if you want to use different font size for specific charset,
@@ -118,29 +55,6 @@ xc         (n (random (length ted-emacs-haiku)))
 
   ;; you may want to add different for other charset in this way.
   )
-
-(setq initial-major-mode 'text-mode)
-(setq-default major-mode 'text-mode)
-
-(global-linum-mode t)
-(global-hl-line-mode 1) ; highlight current line, turn it on for all modes by default
-(setq column-number-mode t)
-;;(set-face-attribute 'default nil :height 200) ; 9 point fonts by default
-
-(setq display-time-day-and-date t
-      display-time-24hr-format nil)
-(display-time)
-(setq frame-title-format (concat  "%b - emacs@" (system-name))) ;; default to better frame titles
-
-;; These are two nice themes, leuven and professional
-(set-face-background 'fringe "white") ; Hide the fringe mark on the left
-(setq-default indicate-empty-lines t)
-(setq-default highlight-changes-mode 1)
-(setq-default indicate-buffer-boundaries 'right)
-
-
-(delete-selection-mode 1) ; typing with the mark active will overwrite the marked region
-(transient-mark-mode 1) ; enable visual feedback on selections, default since v23
 
 
 ;; backup
@@ -151,7 +65,7 @@ xc         (n (random (length ted-emacs-haiku)))
 (global-auto-revert-mode 1) ; auto-refresh all buffers, does not work for remote files
 (setq-default auto-revert-interval 10) ; default is 5 s
 ;(auto-revert-tail-mode t) ; auto-revert if file grows at the end, also works for remote files
-(setq-default auto-revert-verbose nil) 
+(setq-default auto-revert-verbose nil)
 
 
 (defun comment-or-uncomment-region-or-line ()
@@ -164,13 +78,6 @@ xc         (n (random (length ted-emacs-haiku)))
         (comment-or-uncomment-region beg end)
         (next-line)))
 
-(global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
-(global-set-key [home] 'beginning-of-line)
-(global-set-key [end] 'end-of-line)
-(global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
-(global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
-(global-set-key (kbd "\C-c g") 'goto-line)
-(global-set-key (kbd "\C-c c") 'compile)
 
 ;; Web-mode
 (add-to-list 'load-path "~/.emacs.d/elisp/web-mode")
@@ -184,10 +91,6 @@ xc         (n (random (length ted-emacs-haiku)))
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 
-;; Scala-mode from the Git repo
-;(when (>= emacs-major-version 24) 
-;  (add-to-list 'load-path "~/.emacs.d/elisp/scala-mode2")
-;  (require 'scala-mode2) )
 
 ;; auto-complete
 (add-to-list 'load-path "~/.emacs.d/elisp-root")
@@ -201,9 +104,6 @@ xc         (n (random (length ted-emacs-haiku)))
 (setq ac-auto-start t)
 ; case sensitivity is important when finding matches
 (setq ac-ignore-case nil)
-
-;; Temporararily remove yasnippet from ac-sources until auto-complete gets fixed
-(delq 'ac-source-yasnippet ac-sources)
 
 (defun my-semicolon ()
   (interactive)
@@ -241,15 +141,6 @@ xc         (n (random (length ted-emacs-haiku)))
             (make-local-variable 'ac-ignores)
             (add-to-list 'ac-ignores "end")))
 
-;; yasnippet
-(add-to-list 'load-path
-	     "~/.emacs.d/elisp")
-(add-to-list 'load-path
-	     "~/.emacs.d/elisp/yasnippet")
-(require 'yasnippet)
-;;(yas/load-directory "~/snippets")
-(yas-global-mode 1)
-(add-to-list 'ac-sources 'ac-source-yasnippet)
 
 ;; flymake-jslint
 (add-to-list 'load-path "~/.emacs.d/elisp/lintnode")
@@ -291,15 +182,10 @@ xc         (n (random (length ted-emacs-haiku)))
                      (replace-regexp-in-string ".*1G.*3G" "> " output)))))
 
 ;; Load the ensime lisp code...
-(setq exec-path (append exec-path (list "~/liftweb" )))
-(add-to-list 'load-path "~/.emacs.d/elisp/ensime/elisp/")
-(require 'ensime)
-(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+;(setq exec-path (append exec-path (list "~/liftweb" )))
+;(add-to-list 'load-path "~/.emacs.d/elisp/ensime/elisp/")
 
-;; This step causes the ensime-mode to be started whenever
-;; scala-mode is started for a buffer. You may have to customize this step
-;; if you're not using the standard scala mode.
-(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+
 
 ;; Scala-mode settings
 (add-hook 'scala-mode-hook '(lambda ()
@@ -372,10 +258,10 @@ xc         (n (random (length ted-emacs-haiku)))
 ; Initialize the package manager with the MELPA archive
 (require 'package)
 (add-to-list 'package-archives
-             '("melpa-stable" . "http://melpa-stable.milkbox.net/packages/") t)
+             '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+             '("melpa-stable" . "http://melpa-stable.milkbox.net/packages/") t)
 
 (add-to-list 'package-archives
              '("marmalade" . "http://marmalade-repo.org/packages/") t)
@@ -388,6 +274,29 @@ xc         (n (random (length ted-emacs-haiku)))
 (package-refresh-contents) 
 
 (package-initialize)
+
+;; yasnippet
+;;(add-to-list 'load-path
+;;	     "~/.emacs.d/elisp")
+;;(add-to-list 'load-path
+;;	     "~/.emacs.d/elisp/yasnippet")
+
+(unless (package-installed-p 'ensime)
+  (package-install 'ensime))
+
+(require 'ensime)
+;; Start ensime-mode whenever scala-mode is started for a buffer. You may
+;; have to customize this step if you're not using the standard scala mode.
+(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+
+(unless (package-installed-p 'yasnippet)
+  (package-install 'yasnippet))
+(require 'yasnippet)
+;;(yas/load-directory "~/snippets")
+(yas-global-mode 1)
+(add-to-list 'ac-sources 'ac-source-yasnippet)
+;; Temporararily remove yasnippet from ac-sources until auto-complete gets fixed
+(delq 'ac-source-yasnippet ac-sources)
 
 
 ;; smart tabs (indent with tabs, align with spaces)
@@ -408,6 +317,7 @@ xc         (n (random (length ted-emacs-haiku)))
 (unless (package-installed-p 'cider)
   (package-install 'cider))
 (require 'cider)
+(setq cider-lein-command "~/bin/lein")
 (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
 
 (unless (package-installed-p 'ac-cider)
@@ -575,6 +485,7 @@ That is, a string used to represent it on the tab bar."
 (setq tabbar-buffer-groups-function 'my-tabbar-buffer-groups)
 
 ;;w3m
+(setq w3m-command "/usr/local/bin/w3m")
 (unless (package-installed-p 'w3m)
   (package-install 'w3m))
 (require 'w3m)
@@ -761,7 +672,7 @@ That is, a string used to represent it on the tab bar."
               term-mode-hook Info-mode-hook comint-mode-hook
               buffer-menu-mode-hook apropos-mode-hook
               tooltip-show-hook gnus-article-mode-hook mail-mode-hook
-              gnus-summary-mode-hook message-mode-hook
+              gnus-summary-mode-hook message-mode-hook scala-mode-hook
               gnus-group-mode-hook eshell-mode-hook w3-mode-hook
               initial-calendar-window-hook))
 
@@ -772,18 +683,113 @@ That is, a string used to represent it on the tab bar."
             '(latex-mode-hook LaTeX-mode-hook html-mode-hook)))
   (defalias 'ted-hide-trailing-whitespace 'ignore))
 
+
+;;; I initialize my *scratch* buffer with a random Emacs haiku drawn
+;;; from among these:
+
+(defvar ted-emacs-haiku
+  '("Oort is so awesome
+     deuglifies Outlook crap
+     `W k' rocks"
+    "Great clouds overhead
+     Tiny black birds rise and fall
+     Snow covers Emacs
+         -- Alex Schroeder"
+    "hacking on Smyrno
+     `error in process filter'
+     something is b0rken"
+    "Swiftly typing. Oh!
+     Where would we be without you,
+     `self-insert-command'?"
+    "treeless quiet field
+     sudden bud: EmacsWiki
+     now he{ar,re} the birds sing
+         -- ttn"
+    "an emacs user's
+     fingers dance on the keyboard;
+     a nerd pianist
+         -- Erik Bourget"
+    "The file was open.
+     flying in a sparrow stole
+     a parenthesis
+         -- Oliver Scholz"
+    "The day went away.
+     The file still puts its weight on
+     the tired mode-line.
+         -- Oliver Scholz"
+    "On a cloudy day
+     you hear the cons cells whisper:
+     'We are lost and gone.'
+         -- Oliver Scholz"
+    "A message, a string
+     remind me of my sweet love.
+     Good bye, my buffers.
+         -- Oliver Scholz"
+    "Hot night in summer:
+     Hush, you quibbling characters!
+     Do not wake her up!
+         -- Oliver Scholz"
+    "A bright, busy day.
+     The windows watch a thousand
+     wild cursors dancing.
+         -- Oliver Scholz"
+    "Oh, why don't you are
+     a lake, a stream, a meadow
+     this morning, Emacs?
+         -- Oliver Scholz" ;%
+    "The friends chat gaily,
+     I stand up to join their talk.
+     My `save-excursion'.
+         -- Oliver Scholz")
+  "Haiku taken from the Emacs Wiki's EmacsHaiku page.")
+
+(defun ted-random-emacs-haiku (&optional prefix)
+  "Select and format a random haiku from `ted-emacs-haiku'."
+  (random t)
+  (let* ((prefix (or prefix ";; "))
+         (n (random (length ted-emacs-haiku)))
+         (haiku (nth n ted-emacs-haiku)))
+    (with-temp-buffer
+      (insert haiku)
+      (goto-char (point-min))
+      (while (< (point) (point-max))
+        (goto-char (point-at-bol))
+        (delete-horizontal-space)
+        (insert prefix)
+        (when (looking-at "--")
+          (insert "    "))
+        (forward-line 1))
+      (concat (buffer-substring-no-properties (point-min) (point-max))
+              "\n\n"))))
+
+(setq initial-scratch-message (ted-random-emacs-haiku))
+;(setq initial-major-mode 'text-mode)
+;(setq-default major-mode 'text-mode)
+(setq-default word-wrap t)
+
+
 ;;; Misc key bindings
 
 (global-set-key [f1] 'shell)
 (global-set-key [f2] 'split-window-vertically)
 (global-set-key [f3] 'split-window-horizontally)
 (global-set-key [f4] 'delete-other-windows)
+(global-set-key [f5] 'other-window)
+(global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
 ;(global-set-key [f6] 'list-buffers)
 (global-set-key [f6] 'ibuffer)
-(global-set-key [\C-f6] 'other-window) ; switch to the other buffer
 (global-set-key "\C-c z" 'repeat)
 (global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "C-z") 'undo)
+(global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
+(global-set-key [home] 'beginning-of-line)
+(global-set-key [end] 'end-of-line)
+(global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
+(global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
+(global-set-key (kbd "\C-c g") 'goto-line)
+(global-set-key (kbd "\C-c c") 'compile)
+
+
 
 ;;; (provide 'emacs-init)
 ;;; emacs-init.el ends here
