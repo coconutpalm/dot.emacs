@@ -182,43 +182,6 @@
                      (replace-regexp-in-string ".*1G.*3G" "> " output)))))
 
 
-;; Scala-mode settings
-(add-hook 'scala-mode-hook '(lambda ()
-
-  ;; Bind the 'newline-and-indent' command to RET (aka 'enter'). This
-  ;; is normally also available as C-j. The 'newline-and-indent'
-  ;; command has the following functionality: 1) it removes trailing
-  ;; whitespace from the current line, 2) it create a new line, and 3)
-  ;; indents it.  An alternative is the
-  ;; 'reindent-then-newline-and-indent' command.
-  (local-set-key (kbd "RET") 'newline-and-indent)
-
-  ;; Alternatively, bind the 'newline-and-indent' command and
-  ;; 'scala-indent:insert-asterisk-on-multiline-comment' to RET in
-  ;; order to get indentation and asterisk-insertion within multi-line
-  ;; comments.
-  ;; (local-set-key (kbd "RET") '(lambda ()
-  ;;   (interactive)
-  ;;   (newline-and-indent)
-  ;;   (scala-indent:insert-asterisk-on-multiline-comment)))
-
-  ;; Bind the 'join-line' command to C-M-j. This command is normally
-  ;; bound to M-^ which is hard to access, especially on some European
-  ;; keyboards. The 'join-line' command has the effect or joining the
-  ;; current line with the previous while fixing whitespace at the
-  ;; joint.
-  (local-set-key (kbd "C-M-j") 'join-line)
-
-  ;; Bind the backtab (shift tab) to
-  ;; 'scala-indent:indent-with-reluctant-strategy command. This is usefull
-  ;; when using the 'eager' mode by default and you want to "outdent" a
-  ;; code line as a new statement.
-  (local-set-key (kbd "<backtab>") 'scala-indent:indent-with-reluctant-strategy)
-
-  ;; and other bindings here
-))
-
-
 ; Java/Groovy configuration
 
 (add-to-list 'load-path "~/.emacs.d/groovy")
@@ -263,23 +226,40 @@
 ;;(add-to-list 'load-path
 ;;	     "~/.emacs.d/elisp/yasnippet")
 
+;; Macs need this explicitly
+(unless (package-installed-p 'exec-path-from-shell)
+  (package-install 'exec-path-from-shell))
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize))
+
+;; Scala/ensime
 (unless (package-installed-p 'ensime)
   (package-install 'ensime))
 
-(setq ensime-sbt-command "/usr/local/java/activator/sbt")
+;(setq ensime-sbt-command "/usr/local/java/activator/sbt")
 (require 'ensime)
 ;; Start ensime-mode whenever scala-mode is started for a buffer. You may
 ;; have to customize this step if you're not using the standard scala mode.
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+(add-hook 'scala-mode-hook
+          (lambda ()
+            ;; see http://ergoemacs.org/emacs/keyboard_shortcuts_examples.html
+            (local-set-key [f1] 'ensime-sbt)
+            (local-set-key (kbd "M-R") 'ensime-refactor-rename)
+            (local-set-key (kbd "M-M") 'ensime-refactor-extract-method)
+            (local-set-key (kbd "M-L") 'ensime-refactor-extract-local)
+            (local-set-key (kbd "M-I") 'ensime-refactor-inline-local)
+            (local-set-key (kbd "C-O") 'ensime-refactor-organize-imports)
+            ))
 
 (setq exec-path (append exec-path (list "~/liftweb" )))
 
 (setq ensime-sem-high-faces
   '(
    (var . (:foreground "#ff2222"))
-   (val . (:foreground "#dddddd"))
+   (val . (:foreground "#1111ff"))
    (varField . (:foreground "#ff3333"))
-   (valField . (:foreground "#dddddd"))
+   (valField . (:foreground "#dd11ff"))
    (functionCall . (:foreground "#84BEE3"))
    (param . (:foreground "#111111"))
    (class . font-lock-type-face)
@@ -287,6 +267,47 @@
    (object . (:foreground "#026DF7"))
    (package . font-lock-preprocessor-face)
    ))
+
+;; Scala-mode settings
+(add-hook 'scala-mode-hook '(lambda ()
+
+  ;; Bind the 'newline-and-indent' command to RET (aka 'enter'). This
+  ;; is normally also available as C-j. The 'newline-and-indent'
+  ;; command has the following functionality: 1) it removes trailing
+  ;; whitespace from the current line, 2) it create a new line, and 3)
+  ;; indents it.  An alternative is the
+  ;; 'reindent-then-newline-and-indent' command.
+  (local-set-key (kbd "RET") 'newline-and-indent)
+
+  ;; Alternatively, bind the 'newline-and-indent' command and
+  ;; 'scala-indent:insert-asterisk-on-multiline-comment' to RET in
+  ;; order to get indentation and asterisk-insertion within multi-line
+  ;; comments.
+  ;; (local-set-key (kbd "RET") '(lambda ()
+  ;;   (interactive)
+  ;;   (newline-and-indent)
+  ;;   (scala-indent:insert-asterisk-on-multiline-comment)))
+
+  ;; Bind the 'join-line' command to C-M-j. This command is normally
+  ;; bound to M-^ which is hard to access, especially on some European
+  ;; keyboards. The 'join-line' command has the effect or joining the
+  ;; current line with the previous while fixing whitespace at the
+  ;; joint.
+  (local-set-key (kbd "C-M-j") 'join-line)
+
+  ;; Bind the backtab (shift tab) to
+  ;; 'scala-indent:indent-with-reluctant-strategy command. This is usefull
+  ;; when using the 'eager' mode by default and you want to "outdent" a
+  ;; code line as a new statement.
+  (local-set-key (kbd "<backtab>") 'scala-indent:indent-with-reluctant-strategy)
+
+  ;; and other bindings here
+))
+
+(unless (package-installed-p 'projectile)
+  (package-install 'projectile))
+
+(projectile-global-mode)
 
 (unless (package-installed-p 'yasnippet)
   (package-install 'yasnippet))
@@ -417,8 +438,7 @@
  '(tabbar-separator (quote (0.5))))
 ;; adding spaces
 (defun tabbar-buffer-tab-label (tab)
-  "Return a label for TAB.
-That is, a string used to represent it on the tab bar."
+  "Return a label for TAB.  That is, a string used to represent it on the tab bar."
   (let ((label  (if tabbar--buffer-show-groups
                     (format "[%s]  " (tabbar-tab-tabset tab))
                   (format "%s  " (tabbar-tab-value tab)))))
