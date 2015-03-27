@@ -90,6 +90,7 @@
 (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode))
 
 
 ;; auto-complete
@@ -140,7 +141,6 @@
           (lambda ()
             (make-local-variable 'ac-ignores)
             (add-to-list 'ac-ignores "end")))
-
 
 ;; flymake-jslint
 (add-to-list 'load-path "~/.emacs.d/elisp/lintnode")
@@ -216,15 +216,109 @@
 
 (when (< emacs-major-version 24)
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
-(package-refresh-contents) 
+(package-refresh-contents)
 
 (package-initialize)
 
-;; yasnippet
-;;(add-to-list 'load-path
-;;	     "~/.emacs.d/elisp")
-;;(add-to-list 'load-path
-;;	     "~/.emacs.d/elisp/yasnippet")
+;;
+;; Ruby
+;;
+(unless (package-installed-p 'enh-ruby-mode)
+  (package-install 'enh-ruby-mode))
+
+(autoload 'enh-ruby-mode "enh-ruby-mode" "Major mode for ruby files" t)
+(add-to-list 'auto-mode-alist '("\\.rb$" . enh-ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.rake$" . enh-ruby-mode))
+(add-to-list 'auto-mode-alist '("Rakefile$" . enh-ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.gemspec$" . enh-ruby-mode))
+(add-to-list 'auto-mode-alist '("\\.ru$" . enh-ruby-mode))
+(add-to-list 'auto-mode-alist '("Gemfile$" . enh-ruby-mode))
+
+(add-to-list 'interpreter-mode-alist '("ruby" . enh-ruby-mode))
+;; (setq enh-ruby-program "(path-to-ruby1.9)/bin/ruby") ; so that still works if ruby points to ruby1.8
+
+(setq enh-ruby-bounce-deep-indent t)
+(setq enh-ruby-hanging-brace-indent-level 2)
+
+(require 'cl) ; If you don't have it already
+
+(defun* get-closest-gemfile-root (&optional (file "Gemfile"))
+  "Determine the pathname of the first instance of FILE starting from the current directory towards root.
+This may not do the correct thing in presence of links. If it does not find FILE, then it shall return the name
+of FILE in the current directory, suitable for creation"
+  (let ((root (expand-file-name "/"))) ; the win32 builds should translate this correctly
+    (loop
+     for d = default-directory then (expand-file-name ".." d)
+     if (file-exists-p (expand-file-name file d))
+     return d
+     if (equal d root)
+     return nil)))
+
+(require 'compile)
+
+(defun rspec-compile-file ()
+  (interactive)
+  (compile (format "cd %s;bundle exec rspec %s"
+                   (get-closest-gemfile-root)
+                   (file-relative-name (buffer-file-name) (get-closest-gemfile-root))
+                   ) t))
+
+(defun rspec-compile-on-line ()
+  (interactive)
+  (compile (format "cd %s;bundle exec rspec %s -l %s"
+                   (get-closest-gemfile-root)
+                   (file-relative-name (buffer-file-name) (get-closest-gemfile-root))
+                   (line-number-at-pos)
+                   ) t))
+
+(add-hook 'enh-ruby-mode-hook
+          (lambda ()
+            (local-set-key (kbd "C-c l") 'rspec-compile-on-line)
+            (local-set-key (kbd "C-c c") 'rspec-compile-file)
+            ))
+
+(add-hook 'enh-ruby-mode-hook
+          (lambda ()
+            (make-local-variable 'ac-ignores)
+            (add-to-list 'ac-ignores "end"))) ; auto-complete should ignore 'end'
+
+;; Robe mode makes Emacs into a Ruby IDE
+(unless (package-installed-p 'robe)
+  (package-install 'robe))
+
+(add-hook 'robe-mode-hook 'ac-robe-setup)
+
+(add-hook 'ruby-mode-hook 'robe-mode)
+(add-hook 'enh-ruby-mode-hook 'robe-mode)
+
+;; Yard mode fontifies ruby doc comments
+(unless (package-installed-p 'yard-mode)
+  (package-install 'yard-mode))
+
+(add-hook 'ruby-mode-hook 'yard-mode)
+(add-hook 'enh-ruby-mode-hook 'yard-mode)
+
+;; Dash-at-point searches docs for the word at the point
+(unless (package-installed-p 'dash-at-point)
+  (package-install 'dash-at-point))
+(global-set-key "\C-cd" 'dash-at-point)
+(global-set-key "\C-ce" 'dash-at-point-with-docset)
+
+;; Textmate emulation
+(unless (package-installed-p 'textmate)
+  (package-install 'textmate))
+
+;;
+;; Smart parenthesis matching everywhere, please
+;;
+(unless (package-installed-p 'smartparens)
+  (package-install 'smartparens))
+(require 'smartparens-config)
+(smartparens-global-mode)
+(show-smartparens-global-mode t)
+(sp-with-modes '(rhtml-mode)
+               (sp-local-pair "<" ">")
+               (sp-local-pair "<%" "%>"))
 
 ;; Macs need this explicitly
 (unless (package-installed-p 'exec-path-from-shell)
@@ -232,7 +326,28 @@
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
 
+;;
+;; Projectile / Grizzl
+;;
+(unless (package-installed-p 'projectile)
+  (package-install 'projectile))
+
+(unless (package-installed-p 'grizzl)
+  (package-install 'grizzl))
+
+(require 'grizzl)
+(projectile-global-mode)
+(setq projectile-enable-caching t)
+(setq projectile-completion-system 'grizzl)
+;; Press Command-p for fuzzy find in project
+(global-set-key (kbd "s-f") 'projectile-find-file)
+;; Press Command-b for fuzzy switch buffer
+(global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
+
+
+;;
 ;; Scala/ensime
+;;
 (unless (package-installed-p 'ensime)
   (package-install 'ensime))
 
@@ -304,10 +419,6 @@
   ;; and other bindings here
 ))
 
-(unless (package-installed-p 'projectile)
-  (package-install 'projectile))
-
-(projectile-global-mode)
 
 (unless (package-installed-p 'yasnippet)
   (package-install 'yasnippet))
@@ -411,17 +522,6 @@
 (global-set-key [M-left] 'tabbar-backward-tab)
 (global-set-key [M-right] 'tabbar-forward-tab)
 
-(defun my-tabbar-buffer-groups () ;; customize to show all normal files in one group
-  "Return the name of the tab group names the current buffer belongs to.
-There are two groups: Emacs buffers (those whose name starts with '*', plus
-dired buffers), and the rest.  This works at least with Emacs v24.2 using
-tabbar.el v1.7."
-  (list (cond ((string-equal "*sbt*" (substring (buffer-name) 0 5)) "user")
-              ((string-equal "*shell*" (buffer-name)) "user")
-              ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
-              ((eq major-mode 'dired-mode) "emacs")
-              (t "user"))))
-(setq tabbar-buffer-groups-function 'my-tabbar-buffer-groups)
 
 ;; tabbar coloring code...
 (set-face-attribute
@@ -505,15 +605,17 @@ tabbar.el v1.7."
 (add-hook 'first-change-hook 'ztl-on-buffer-modification)
 
 (setq tabbar-cycle-scope 'tabs)
-(defun my-tabbar-buffer-groups () ;; customize to show all normal files in one group
-   "Return the name of the tab group names the current buffer belongs to.
- There are two groups: Emacs buffers (those whose name starts with '*', plus
- dired buffers), and the rest.  This works at least with Emacs v24.2 using
- tabbar.el v1.7."
-   (list (cond ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
-               ((eq major-mode 'dired-mode) "emacs")
-               (t "user"))))
-(setq tabbar-buffer-groups-function 'my-tabbar-buffer-groups)
+(setq tabbar-buffer-groups-function
+      (lambda ()
+  "Return the name of the tab group names the current buffer belongs to.
+There are two groups: Emacs buffers (those whose name starts with '*', plus
+dired buffers), and the rest.  This works at least with Emacs v24.2 using
+tabbar.el v1.7."
+  (list (cond ((string-equal "*sbt*" (substring (buffer-name) 0 5)) "user")
+              ((string-equal "*shell*" (buffer-name)) "user")
+              ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
+              ((eq major-mode 'dired-mode) "emacs")
+              (t "user")))))
 
 ;;w3m
 (setq w3m-command "/usr/local/bin/w3m")
