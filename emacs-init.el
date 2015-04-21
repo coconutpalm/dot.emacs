@@ -459,6 +459,12 @@ of FILE in the current directory, suitable for creation"
   (package-install 'clojure-mode))
 (require 'clojure-mode)
 
+(add-hook 'clojure-mode-hook
+          (lambda ()
+            ;; see http://ergoemacs.org/emacs/keyboard_shortcuts_examples.html
+            (local-set-key [f1] 'cider-jack-in)
+            ))
+
 (unless (package-installed-p 'clojure-mode-extra-font-locking)
   (package-install 'clojure-mode-extra-font-locking))
 (require 'clojure-mode-extra-font-locking)
@@ -483,6 +489,32 @@ of FILE in the current directory, suitable for creation"
   (package-install 'rainbow-mode))
 (require 'rainbow-mode)
 
+(unless (package-installed-p 'rainbow-mode)
+  (package-install 'rainbow-mode))
+(require 'rainbow-mode)
+
+
+;; Go lang
+(unless (package-installed-p 'go-mode)
+  (package-install 'go-mode))
+(require 'go-mode)
+(require 'go-mode-autoloads)
+
+(unless (package-installed-p 'go-autocomplete)
+  (package-install 'go-autocomplete))
+(require 'go-autocomplete)
+
+(defun my-go-mode-hook ()
+  ; Call Gofmt before saving
+  (add-hook 'before-save-hook 'gofmt-before-save)
+  ; Customize compile command to run go build
+  (if (not (string-match "go" compile-command))
+      (set (make-local-variable 'compile-command)
+           "go build -v && go test -v && go vet"))
+  ; Godef jump key binding
+  (local-set-key (kbd "M-.") 'godef-jump))
+(add-hook 'go-mode-hook 'my-go-mode-hook)
+
 
 ; Dependencies / misc
 
@@ -500,6 +532,18 @@ of FILE in the current directory, suitable for creation"
 
 (unless (package-installed-p 'tabbar)
   (package-install 'tabbar))
+
+(unless (package-installed-p 'smart-mode-line)
+  (package-install 'smart-mode-line))
+(require 'smart-mode-line)
+(setq sml/no-confirm-load-theme t)
+(setq sml/theme 'light)
+(sml/setup)
+
+;; Only works well with dark themes
+;(unless (package-installed-p 'smart-mode-line-powerline-theme)
+;  (package-install 'smart-mode-line-powerline-theme))
+;(require 'smart-mode-line-powerline-theme)
 
 (unless (package-installed-p 'tree-mode)
   (package-install 'tree-mode))
@@ -605,6 +649,7 @@ of FILE in the current directory, suitable for creation"
 (add-hook 'first-change-hook 'ztl-on-buffer-modification)
 
 (setq tabbar-cycle-scope 'tabs)
+
 (setq tabbar-buffer-groups-function
       (lambda ()
   "Return the name of the tab group names the current buffer belongs to.
@@ -612,16 +657,17 @@ There are two groups: Emacs buffers (those whose name starts with '*', plus
 dired buffers), and the rest.  This works at least with Emacs v24.2 using
 tabbar.el v1.7."
   (list (cond ((string-equal "*sbt*" (substring (buffer-name) 0 5)) "user")
+              ((string-equal "*cide" (substring (buffer-name) 0 5)) "user")
               ((string-equal "*shell*" (buffer-name)) "user")
               ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
               ((eq major-mode 'dired-mode) "emacs")
               (t "user")))))
 
 ;;w3m
-(setq w3m-command "/usr/local/bin/w3m")
+;(setq w3m-command "/usr/local/bin/w3m")
 (unless (package-installed-p 'w3m)
   (package-install 'w3m))
-(require 'w3m)
+;(require 'w3m)
 
 (when (locate-library "w3m")
   (autoload 'w3m "w3m" nil t)
@@ -917,6 +963,8 @@ tabbar.el v1.7."
 (global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
 (global-set-key [home] 'beginning-of-line)
 (global-set-key [end] 'end-of-line)
+(global-set-key (kbd "C-<left>") 'backward-word)
+(global-set-key (kbd "C-<right>") 'forward-word)
 (global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
 (global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
 (global-set-key (kbd "\C-c g") 'goto-line)
