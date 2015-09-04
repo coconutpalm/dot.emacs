@@ -417,6 +417,8 @@ of FILE in the current directory, suitable for creation"
   (local-set-key (kbd "<backtab>") 'scala-indent:indent-with-reluctant-strategy)
 
   ;; and other bindings here
+  (auto-complete-mode)  ;; Turn off auto-complete since Ensime does that already
+  (subword-mode)        ;; Turn on subword-mode so we respect camelCaseWords
 ))
 
 
@@ -476,6 +478,10 @@ of FILE in the current directory, suitable for creation"
 (unless (package-installed-p 'paredit)
   (package-install 'paredit))
 (require 'paredit)
+
+(global-set-key (kbd "C-{") 'paredit-forward-slurp-sexp)
+(global-set-key (kbd "C-}") 'paredit-forward-barf-sexp)
+(global-set-key (kbd "M-q") 'paredit-reindent-defun)
 
 (unless (package-installed-p 'popup)
   (package-install 'popup))
@@ -662,6 +668,13 @@ tabbar.el v1.7."
               ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
               ((eq major-mode 'dired-mode) "emacs")
               (t "user")))))
+
+;;SQL
+
+;; From https://raw.githubusercontent.com/bsvingen/sql-indent/master/sql-indent.el
+(eval-after-load "sql"
+  '(load-library "sql-indent"))
+
 
 ;;w3m
 ;(setq w3m-command "/usr/local/bin/w3m")
