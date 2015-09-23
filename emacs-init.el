@@ -46,7 +46,7 @@
   ;; WARNING!  Depending on the default font,
   ;; if the size is not supported very well, the frame will be clipped
   ;; so that the beginning of the buffer may not be visible correctly.
-  (set-face-attribute 'default nil :height 160 :weight 'normal)
+  (set-face-attribute 'default nil :height 120 :weight 'normal)
 
   ;; use specific font for Korean charset.
   ;; if you want to use different font size for specific charset,
@@ -171,7 +171,7 @@
 (require 'js-comint)
 ;; Use node as our repl
 (setq inferior-js-program-command "/usr/bin/nodejs")
- 
+
 (setq inferior-js-mode-hook
       (lambda ()
         ;; We like nice colors
@@ -327,23 +327,81 @@ of FILE in the current directory, suitable for creation"
   (exec-path-from-shell-initialize))
 
 ;;
-;; Projectile / Grizzl
+;; Projectile / Grizzl / Helm
 ;;
+;; @see: http://tuhdo.github.io/helm-intro.html
+
+(unless (package-installed-p 'helm)
+  (package-install 'helm))
+(require 'helm-config)
+
+(unless (package-installed-p 'helm-ls-git)
+  (package-install 'helm-ls-git))
+(require 'helm-ls-git)
+(global-set-key (kbd "C-c pg") 'helm-ls-git-ls)
+
+(unless (package-installed-p 'helm-descbinds)
+  (package-install 'helm-descbinds))
+(require 'helm-descbinds)
+(helm-descbinds-mode)
+(global-set-key (kbd "C-h h") 'describe-bindings)
+
+(unless (package-installed-p 'project-explorer)
+  (package-install 'project-explorer))
+(global-set-key "\C-\\" 'project-explorer-toggle)
+(global-set-key "\C-\M-\\" 'project-explorer-helm)
+(setq projectile-switch-project-action 'project-explorer-open)
+(setq pe/omit-gitignore t)
+(setq pe/width 50)
+
+(defun refresh-project-explorer ())
+  ;; (unless pe/reverting
+  ;;   (pe/revert-buffer)))
+(add-hook 'buffer-list-update-hook 'refresh-project-explorer)
+
+(helm-mode 1)
+(global-set-key (kbd "M-x") 'helm-M-x)
+(global-set-key (kbd "C-c C-b") 'helm-buffers-list)
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
+
+(global-set-key (kbd "C-c h") 'helm-command-prefix) ;; Better Helm activation sequence
+(global-unset-key (kbd "C-x c"))
+
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+(define-key helm-map (kbd "C-c a")  'helm-select-action)
+(define-key helm-map (kbd "C-<backspace>")'helm-find-files-up-one-level)
+
+(when (executable-find "curl")
+  (setq helm-google-suggest-use-curl-p t))
+
+(setq helm-semantic-fuzzy-match t
+      helm-imenu-fuzzy-match    t)
+
 (unless (package-installed-p 'projectile)
   (package-install 'projectile))
 
-(unless (package-installed-p 'grizzl)
-  (package-install 'grizzl))
+(unless (package-installed-p 'helm-projectile)
+  (package-install 'helm-projectile))
 
-(require 'grizzl)
+(unless (package-installed-p 'perspective)
+  (package-install 'perspective))
+(persp-mode)
+
+(require 'helm-projectile)
+
 (projectile-global-mode)
 (setq projectile-enable-caching t)
-(setq projectile-completion-system 'grizzl)
-;; Press Command-p for fuzzy find in project
-(global-set-key (kbd "s-f") 'projectile-find-file)
-;; Press Command-b for fuzzy switch buffer
+(setq projectile-completion-system 'helm)
+(setq projectile-indexing-method 'native)
+;; Press Command-f for fuzzy find in project
+(global-set-key (kbd "C-x M-f") 'projectile-find-file)
 (global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
+(global-set-key (kbd "C-x C-b") 'helm-buffers-list)
+(global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
+(setq projectile-switch-project-action 'helm-projectile-find-file)
 
+(helm-projectile-on)
 
 ;;
 ;; Scala/ensime
@@ -422,14 +480,20 @@ of FILE in the current directory, suitable for creation"
 ))
 
 
+(unless (package-installed-p 'package-utils)
+  (package-install 'package-utils))
+(require 'package-utils)
+(package-utils-upgrade-all)
+
 (unless (package-installed-p 'yasnippet)
   (package-install 'yasnippet))
 (require 'yasnippet)
 ;;(yas/load-directory "~/snippets")
 (yas-global-mode 1)
 (add-to-list 'ac-sources 'ac-source-yasnippet)
-;; Temporararily remove yasnippet from ac-sources until auto-complete gets fixed
-(delq 'ac-source-yasnippet ac-sources)
+;; Fix yasnippet / auto-complete incompatibility
+(defalias 'yas/get-snippet-tables 'yas--get-snippet-tables)
+(defalias 'yas/table-hash 'yas--table-hash)
 
 
 ;; smart tabs (indent with tabs, align with spaces)
@@ -451,11 +515,102 @@ of FILE in the current directory, suitable for creation"
   (package-install 'cider))
 (require 'cider)
 (setq cider-lein-command "~/bin/lein")
-(add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
+;(add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
+
+(add-hook 'cider-mode-hook #'eldoc-mode)
 
 (unless (package-installed-p 'ac-cider)
   (package-install 'ac-cider))
 (require 'ac-cider)
+
+(add-hook 'cider-repl-mode-hook #'company-mode)
+(add-hook 'cider-mode-hook #'company-mode)
+
+(require 'cider-repl)
+(setq cider-repl-use-clojure-font-lock t)
+(setq cider-repl-pop-to-buffer-on-connect nil)
+
+(setq cider-repl-prompt-function
+      '(lambda (namespace)
+        (if (> (length namespace) 20)
+            (cider-repl-prompt-abbreviated namespace)
+            (cider-repl-prompt-default namespace))))
+
+
+;; From: https://raw.githubusercontent.com/vspinu/cider/79f828b60963747d87f898487912aa0b5fb802d2/nrepl-client.el
+;;  and: https://github.com/clojure-emacs/cider/pull/818
+;;  merged with master: https://github.com/clojure-emacs/cider/blob/master/nrepl-client.el
+;; Enable the nrepl-server buffer to scroll automatically
+(defun nrepl-server-filter (process string)
+  "Process server PROCESS output contained in STRING."
+  (with-current-buffer (process-buffer process)
+    (let ((moving (= (point) (process-mark process))))
+      (save-excursion
+        (goto-char (process-mark process))
+        (insert string)
+        (set-marker (process-mark process) (point)))
+      (when moving
+        (goto-char (process-mark process))
+        (-when-let (win (get-buffer-window))
+          (set-window-point win (point))))))
+  (when (string-match "nREPL server started on port \\([0-9]+\\)" string)
+    (let ((port (string-to-number (match-string 1 string))))
+      (message (format "nREPL server started on %s" port))
+      (with-current-buffer (process-buffer process)
+        (let* ((client-proc (nrepl-start-client-process nil port process))
+               (client-buffer (process-buffer client-proc)))
+          (setq nrepl-client-buffers
+                (cons client-buffer
+                      (delete client-buffer nrepl-client-buffers)))
+
+          (when (functionp nrepl-post-client-callback)
+            (funcall nrepl-post-client-callback client-buffer)))))))
+
+
+(defun init-ns ()
+  (interactive)
+  (cider-interactive-eval
+   "(clojure.core/require
+     '[clojure.pprint :refer [pprint]]
+     '[clojure.repl :refer :all]
+     '[clojure.core :refer :all])
+     (require '[bradsdeals.nav :refer :all])"))
+
+(define-key clojure-mode-map (kbd "s-<return>") 'init-ns)
+
+;(defun starts-with? (s begins)
+;  "Return non-nil if string S starts with BEGINS."
+;      (cond ((>= (length s) (length begins))
+;             (string-equal (substring s 0 (length begins)) begins))
+;            (t nil)))
+;
+;(defun pretty-print-if-possible ()
+;  (interactive)
+;  (if (starts-with? (cider-repl--current-input) "(def")
+;      (setq cider-repl-use-pretty-printing nil)
+;    (setq cider-repl-use-pretty-printing t))
+;  (cider-repl-return))
+;
+;(add-hook 'cider-repl-mode-hook '(lambda ()
+;  (local-set-key (kbd "RET") 'pretty-print-if-possible)))
+
+
+(defun cider-namespace-refresh ()
+  (let* ((filename (file-name-nondirectory (buffer-file-name))))
+    (if (not (or (string= filename "profiles.clj")
+                 (string= filename "project.clj")
+                 (string= filename "repl.clj")))
+        (cider-load-buffer))))
+
+(add-hook 'cider-mode-hook
+   '(lambda () (add-hook 'after-save-hook
+    '(lambda ()
+       (if (and (boundp 'cider-mode) cider-mode)
+           (cider-namespace-refresh)
+         )))))
+
+
+(setq cider-prompt-for-symbol nil)
 
 (unless (package-installed-p 'clojure-mode)
   (package-install 'clojure-mode))
@@ -559,12 +714,12 @@ of FILE in the current directory, suitable for creation"
   (package-install 'windata))
 (require 'windata)
 
-(unless (package-installed-p 'dirtree)
-  (package-install 'dirtree))
-(require 'dirtree)
+;; (unless (package-installed-p 'dirtree)
+  ;; (package-install 'dirtree))
+;; (require 'dirtree)
 
-(autoload 'dirtree "dirtree" "Add directory to tree view" t)
-(global-set-key "\C-\\" 'dirtree-show)
+;; (autoload 'dirtree "dirtree" "Add directory to tree view" t)
+;; (global-set-key "\C-\\" 'dirtree-show)
 
 ;; enable tabbar minor mode
 ;(setq tabbar-use-images nil) ; speed up by not using images
@@ -656,15 +811,27 @@ of FILE in the current directory, suitable for creation"
 
 (setq tabbar-cycle-scope 'tabs)
 
+
+(defun starts-with (begins s)
+      "Return non-nil if string S starts with BEGINS."
+      (cond ((>= (length s) (length begins))
+             (string-equal (substring s 0 (length begins)) begins))
+            (t nil)))
+
+
 (setq tabbar-buffer-groups-function
       (lambda ()
   "Return the name of the tab group names the current buffer belongs to.
 There are two groups: Emacs buffers (those whose name starts with '*', plus
 dired buffers), and the rest.  This works at least with Emacs v24.2 using
 tabbar.el v1.7."
-  (list (cond ((string-equal "*sbt*" (substring (buffer-name) 0 5)) "user")
-              ((string-equal "*cide" (substring (buffer-name) 0 5)) "user")
+  (list (cond ((starts-with "*sbt*" (buffer-name)) "user")
+              ((starts-with "*cider" (buffer-name)) "user")
+              ((starts-with "*nrepl-server" (buffer-name)) "user")
               ((string-equal "*shell*" (buffer-name)) "user")
+              ((string-equal "*scratch*" (buffer-name)) "lisp")
+              ((eq major-mode 'emacs-lisp-mode) "lisp")
+              ((string-equal "*dirtree*" (buffer-name)) "dirtree")
               ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
               ((eq major-mode 'dired-mode) "emacs")
               (t "user")))))
@@ -750,6 +917,7 @@ tabbar.el v1.7."
                   (w3m-browse-url url t)))
                )))
     ad-do-it))
+
 
 
 (unless (package-installed-p 'org)
@@ -866,7 +1034,7 @@ tabbar.el v1.7."
               tooltip-show-hook gnus-article-mode-hook mail-mode-hook
               gnus-summary-mode-hook message-mode-hook scala-mode-hook
               gnus-group-mode-hook eshell-mode-hook w3-mode-hook
-              initial-calendar-window-hook))
+              initial-calendar-window-hook cider-repl-mode-hook))
 
       (mapc (lambda (mode-hook)
               (add-hook mode-hook
@@ -960,15 +1128,30 @@ tabbar.el v1.7."
 (setq-default word-wrap t)
 
 
+;; The default for ctrl-backspace is to delete words backward into the
+;; clipboard, thus destroying whatever was in the clipboard.  This
+;; (plus the keybinding below) fixes that.
+(defun delete-word (arg)
+  "Delete characters forward until encountering the end of a word.
+With ARG, do this that many times."
+  (interactive "p")
+  (delete-region (point) (progn (forward-word arg) (point))))
+
+(defun backward-delete-word (arg)
+  "Delete characters backward until encountering the end of a word.
+With ARG, do this that many times."
+  (interactive "p")
+  (delete-word (- arg)))
+
+
 ;;; Misc key bindings
 
 (global-set-key [f1] 'shell)
 (global-set-key [f2] 'split-window-vertically)
 (global-set-key [f3] 'split-window-horizontally)
 (global-set-key [f4] 'delete-other-windows)
-(global-set-key [f5] 'other-window)
+(global-set-key [f5] 'delete-window)
 (global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
-;(global-set-key [f6] 'list-buffers)
 (global-set-key [f6] 'ibuffer)
 (global-set-key "\C-c z" 'repeat)
 (global-set-key (kbd "M-/") 'hippie-expand)
@@ -978,6 +1161,7 @@ tabbar.el v1.7."
 (global-set-key [end] 'end-of-line)
 (global-set-key (kbd "C-<left>") 'backward-word)
 (global-set-key (kbd "C-<right>") 'forward-word)
+(global-set-key (kbd "C-<backspace>") 'backward-delete-word)
 (global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
 (global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
 (global-set-key (kbd "\C-c g") 'goto-line)
