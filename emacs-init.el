@@ -8,6 +8,23 @@
 ;;; General settings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;; Generic utilities
+
+
+(defun ends-with? (s ending)
+      "Return non-nil if string S ends with ENDING."
+      (cond ((>= (length s) (length ending))
+             (let ((elength (length ending)))
+               (string= (substring s (- 0 elength)) ending)))
+            (t nil)))
+
+(defun starts-with? (s begins)
+ "Return non-nil if string S starts with BEGINS."
+     (cond ((>= (length s) (length begins))
+            (string-equal (substring s 0 (length begins)) begins))
+           (t nil)))
+
+
 ;;; Misc display settings
 
 (setq inhibit-splash-screen t)
@@ -308,18 +325,6 @@ of FILE in the current directory, suitable for creation"
 (unless (package-installed-p 'textmate)
   (package-install 'textmate))
 
-;;
-;; Smart parenthesis matching everywhere, please
-;;
-(unless (package-installed-p 'smartparens)
-  (package-install 'smartparens))
-(require 'smartparens-config)
-(smartparens-global-mode)
-(show-smartparens-global-mode t)
-(sp-with-modes '(rhtml-mode)
-               (sp-local-pair "<" ">")
-               (sp-local-pair "<%" "%>"))
-
 ;; Macs need this explicitly
 (unless (package-installed-p 'exec-path-from-shell)
   (package-install 'exec-path-from-shell))
@@ -332,6 +337,7 @@ of FILE in the current directory, suitable for creation"
 
 (unless (package-installed-p 'magit)
   (package-install 'magit))
+(require 'magit)
 
 (setq magit-revert-buffers 0.5)
 (setq magit-push-always-verify nil)
@@ -565,9 +571,34 @@ of FILE in the current directory, suitable for creation"
 
 
 ; Clojure
+
+;;
+;; Smart parenthesis matching everywhere, please
+;;
+(unless (package-installed-p 'smartparens)
+  (package-install 'smartparens))
+(require 'smartparens-config)
+(smartparens-global-mode)
+(show-smartparens-global-mode t)
+(sp-with-modes '(rhtml-mode)
+               (sp-local-pair "<" ">")
+               (sp-local-pair "<%" "%>"))
+
+
+(unless (package-installed-p 'paredit)
+  (package-install 'paredit))
+(require 'paredit)
+
+(global-set-key (kbd "C-{") 'paredit-forward-slurp-sexp)
+(global-set-key (kbd "C-}") 'paredit-forward-barf-sexp)
+(global-set-key (kbd "M-q") 'paredit-reindent-defun)
+
+
 (unless (package-installed-p 'cider)
   (package-install 'cider))
 (require 'cider)
+(require 'cider-repl)
+
 (setq cider-lein-command "~/bin/lein")
 ;(add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
 
@@ -630,39 +661,57 @@ of FILE in the current directory, suitable for creation"
      '[clojure.core :refer :all])
      (require '[bradsdeals.nav :refer :all])"))
 
-(define-key clojure-mode-map (kbd "s-<return>") 'init-ns)
 
-;(defun starts-with? (s begins)
-;  "Return non-nil if string S starts with BEGINS."
-;      (cond ((>= (length s) (length begins))
-;             (string-equal (substring s 0 (length begins)) begins))
-;            (t nil)))
-;
-;(defun pretty-print-if-possible ()
-;  (interactive)
-;  (if (starts-with? (cider-repl--current-input) "(def")
-;      (setq cider-repl-use-pretty-printing nil)
-;    (setq cider-repl-use-pretty-printing t))
-;  (cider-repl-return))
-;
-;(add-hook 'cider-repl-mode-hook '(lambda ()
-;  (local-set-key (kbd "RET") 'pretty-print-if-possible)))
+(defun cider-eval-expression-at-point-in-repl ()
+  (interactive)
+  (let ((form (cider-sexp-at-point)))
+    ;; Strip excess whitespace
+    (while (string-match "\\`\s+\\|\n+\\'" form)
+      (setq form (replace-match "" t t form)))
+    (cider-switch-to-relevant-repl-buffer t)
+    (goto-char (point-max))
+    (insert form)))
+
+(defun cider-eval-defun-at-point-in-repl ()
+  (interactive)
+  (let ((form (cider-defun-at-point)))
+    ;; Strip excess whitespace
+    (while (string-match "\\`\s+\\|\n+\\'" form)
+      (setq form (replace-match "" t t form)))
+    (setq form (concat "\n" form))
+    (cider-switch-to-relevant-repl-buffer t)
+    (goto-char (point-max))
+    (insert form)))
+
+(define-key clojure-mode-map (kbd "s-<return>") 'init-ns)
+(define-key clojure-mode-map (kbd "C-<return>") 'cider-eval-expression-at-point-in-repl)
+(define-key clojure-mode-map (kbd "S-C-<return>") 'cider-eval-defun-at-point-in-repl)
+
+
+(defun pretty-print-if-possible ()
+ (interactive)
+ (if (starts-with? (cider-repl--current-input) "(def")
+     (setq cider-repl-use-pretty-printing nil)
+   (setq cider-repl-use-pretty-printing t))
+ (cider-repl-return))
+
+(add-hook 'cider-repl-mode-hook '(lambda ()
+ (local-set-key (kbd "RET") 'pretty-print-if-possible)))
 
 
 (defun cider-namespace-refresh ()
   (let* ((filename (file-name-nondirectory (buffer-file-name))))
     (if (not (or (string= filename "profiles.clj")
                  (string= filename "project.clj")
-                 (string= filename "repl.clj")))
+                 (string= filename "repl.clj")
+                 (ends-with? filename ".edn")))
         (cider-load-buffer))))
 
 (add-hook 'cider-mode-hook
    '(lambda () (add-hook 'after-save-hook
     '(lambda ()
        (if (and (boundp 'cider-mode) cider-mode)
-           (cider-namespace-refresh)
-         )))))
-
+           (cider-namespace-refresh))))))
 
 (setq cider-prompt-for-symbol nil)
 
@@ -673,8 +722,7 @@ of FILE in the current directory, suitable for creation"
 (add-hook 'clojure-mode-hook
           (lambda ()
             ;; see http://ergoemacs.org/emacs/keyboard_shortcuts_examples.html
-            (local-set-key [f1] 'cider-jack-in)
-            ))
+            (local-set-key [f1] 'cider-jack-in)))
 
 (unless (package-installed-p 'clojure-mode-extra-font-locking)
   (package-install 'clojure-mode-extra-font-locking))
@@ -683,14 +731,6 @@ of FILE in the current directory, suitable for creation"
 (unless (package-installed-p 'auto-complete)
   (package-install 'auto-complete))
 (require 'auto-complete)
-
-(unless (package-installed-p 'paredit)
-  (package-install 'paredit))
-(require 'paredit)
-
-(global-set-key (kbd "C-{") 'paredit-forward-slurp-sexp)
-(global-set-key (kbd "C-}") 'paredit-forward-barf-sexp)
-(global-set-key (kbd "M-q") 'paredit-reindent-defun)
 
 (unless (package-installed-p 'popup)
   (package-install 'popup))
