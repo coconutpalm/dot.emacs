@@ -334,8 +334,13 @@ of FILE in the current directory, suitable for creation"
   (package-install 'magit))
 
 (setq magit-revert-buffers 0.5)
+(setq magit-push-always-verify nil)
 (global-set-key (kbd "C-x g") 'magit-status)
+(global-set-key (kbd "C-x C-g") 'magit-status)
+(global-set-key (kbd "C-c C-g") 'magit-status)
 (global-set-key (kbd "C-x G") 'magit-diff-unstaged)
+(global-set-key (kbd "C-x C-G") 'magit-diff-unstaged)
+(add-hook 'after-save-hook 'magit-refresh-all)
 
 ;;
 ;; Projectile / Helm
