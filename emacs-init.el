@@ -928,6 +928,7 @@ There are two groups: Emacs buffers (those whose name starts with '*', plus
 dired buffers), and the rest.  This works at least with Emacs v24.2 using
 tabbar.el v1.7."
   (list (cond ((starts-with "*sbt*" (buffer-name)) "user")
+              ((starts-with "*cider-error" (buffer-name)) "emacs")
               ((starts-with "*cider" (buffer-name)) "user")
               ((starts-with "*nrepl-server" (buffer-name)) "user")
               ((string-equal "*eshell*" (buffer-name)) "user")
