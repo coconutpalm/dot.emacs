@@ -401,6 +401,17 @@ of FILE in the current directory, suitable for creation"
                                       helm-source-recentf
                                       helm-source-files-in-current-dir)))))
 
+(require 'cl-lib)
+
+;; Sort Helm's switch buffer list
+(add-hook 'ido-make-buffer-list-hook
+          (lambda ()
+            (setq
+             ido-temp-list
+             (cl-sort ido-temp-list #'string<
+                      :key (lambda (b) (with-current-buffer b
+                                         (prin1-to-string major-mode)))))))
+
 (global-set-key (kbd "M-x") 'helm-M-x)
 ;; (global-set-key (kbd "C-c C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
