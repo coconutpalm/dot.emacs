@@ -324,7 +324,7 @@ of FILE in the current directory, suitable for creation"
 (unless (package-installed-p 'exec-path-from-shell)
   (package-install 'exec-path-from-shell))
 (when (memq window-system '(mac ns))
-  (exec-path-from-shell-copy-envs '("AWS_ACCESS_KEY" "AWS_SECRET_ACCESS_KEY" "PATH"))
+  (exec-path-from-shell-copy-envs '("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "PATH"))
   (exec-path-from-shell-initialize))
 
 
@@ -866,6 +866,7 @@ tabbar.el v1.7."
   (list (cond ((starts-with "*sbt*" (buffer-name)) "user")
               ((starts-with "*cider" (buffer-name)) "user")
               ((starts-with "*nrepl-server" (buffer-name)) "user")
+              ((string-equal "*eshell*" (buffer-name)) "user")
               ((string-equal "*shell*" (buffer-name)) "user")
               ((string-equal "*scratch*" (buffer-name)) "lisp")
               ((eq major-mode 'emacs-lisp-mode) "lisp")
