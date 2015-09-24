@@ -326,14 +326,29 @@ of FILE in the current directory, suitable for creation"
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
 
+
+;; Magit - Git support
+
+(unless (package-installed-p 'magit)
+  (package-install 'magit))
+
+(setq magit-revert-buffers 0.5)
+(global-set-key (kbd "C-x g") 'magit-status)
+
 ;;
-;; Projectile / Grizzl / Helm
+;; Projectile xs/ Helm
 ;;
 ;; @see: http://tuhdo.github.io/helm-intro.html
 
 (unless (package-installed-p 'helm)
   (package-install 'helm))
 (require 'helm-config)
+(require 'helm-buffers)
+(require 'helm-locate)
+(require 'helm-bookmark)
+(require 'helm-files)
+
+(helm-mode 1)
 
 (unless (package-installed-p 'helm-ls-git)
   (package-install 'helm-ls-git))
@@ -350,18 +365,37 @@ of FILE in the current directory, suitable for creation"
   (package-install 'project-explorer))
 (global-set-key "\C-\\" 'project-explorer-toggle)
 (global-set-key "\C-\M-\\" 'project-explorer-helm)
-(setq projectile-switch-project-action 'project-explorer-open)
 (setq pe/omit-gitignore t)
 (setq pe/width 50)
+(setq
+    helm-boring-buffer-regexp-list '("^diary$")
+    helm-boring-file-regexp-list
+    '("\\.git$" "\\.hg$" "\\.svn$"  "^\\."  "\\.$"
+       "\\.\\.$" "\\.Plo$" "\\.lo$"  "_source.*"
+       "_8h.*"  "\\.CVS$" "\\._darcs$"  "\\.la$"
+       "\\.o$" "~$"  "^#.*")
+    helm-ff-skip-boring-files t
+    helm-buffer-max-length 80
+    helm-idle-delay 2.0
+    helm-find-files-show-icons t
+    helm-quick-update t
+    helm-candidate-number-limit 20
+    helm-use-standard-keys nil
+    helm-locate-case-fold-search t
+    helm-locate-command "locate -e -b %s -r %s")
 
-(defun refresh-project-explorer ())
-  ;; (unless pe/reverting
-  ;;   (pe/revert-buffer)))
-(add-hook 'buffer-list-update-hook 'refresh-project-explorer)
+(global-set-key (kbd "C-x b")
+                (lambda () (interactive)
+                  (ignore-errors
+                    (helm :prompt "Location:"
+                          :sources '( helm-source-buffers-list
+                                      helm-source-locate
+                                      helm-source-bookmarks
+                                      helm-source-recentf
+                                      helm-source-files-in-current-dir)))))
 
-(helm-mode 1)
 (global-set-key (kbd "M-x") 'helm-M-x)
-(global-set-key (kbd "C-c C-b") 'helm-buffers-list)
+;; (global-set-key (kbd "C-c C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
 
 (global-set-key (kbd "C-c h") 'helm-command-prefix) ;; Better Helm activation sequence
@@ -370,7 +404,8 @@ of FILE in the current directory, suitable for creation"
 (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
 (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
 (define-key helm-map (kbd "C-c a")  'helm-select-action)
-(define-key helm-map (kbd "C-<backspace>")'helm-find-files-up-one-level)
+(define-key helm-find-files-map [(control backspace)] #'helm-find-files-up-one-level)
+(define-key helm-read-file-map [(control backspace)] #'helm-find-files-up-one-level)
 
 (when (executable-find "curl")
   (setq helm-google-suggest-use-curl-p t))
@@ -391,6 +426,9 @@ of FILE in the current directory, suitable for creation"
 (require 'helm-projectile)
 
 (projectile-global-mode)
+(helm-projectile-on)
+
+(setq projectile-switch-project-action 'project-explorer-open)
 (setq projectile-enable-caching t)
 (setq projectile-completion-system 'helm)
 (setq projectile-indexing-method 'native)
@@ -399,9 +437,6 @@ of FILE in the current directory, suitable for creation"
 (global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
-(setq projectile-switch-project-action 'helm-projectile-find-file)
-
-(helm-projectile-on)
 
 ;;
 ;; Scala/ensime
@@ -831,6 +866,9 @@ tabbar.el v1.7."
               ((string-equal "*shell*" (buffer-name)) "user")
               ((string-equal "*scratch*" (buffer-name)) "lisp")
               ((eq major-mode 'emacs-lisp-mode) "lisp")
+              ((starts-with "*magit" (buffer-name)) "magit")
+              ((starts-with "*helm" (buffer-name)) "helm")
+              ((starts-with "*Helm" (buffer-name)) "helm")
               ((string-equal "*dirtree*" (buffer-name)) "dirtree")
               ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
               ((eq major-mode 'dired-mode) "emacs")
