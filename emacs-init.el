@@ -11,6 +11,14 @@
 ;;; Generic utilities
 
 
+(defun chomp (str)
+  "Chomp leading and tailing whitespace from STR."
+  (while (string-match "\\`\n+\\|^\\s-+\\|\\s-+$\\|\n+\\'"
+                       str)
+    (setq str (replace-match "" t t str)))
+  str)
+
+
 (defun ends-with? (s ending)
       "Return non-nil if string S ends with ENDING."
       (cond ((>= (length s) (length ending))
@@ -690,7 +698,7 @@ of FILE in the current directory, suitable for creation"
 
 (defun pretty-print-if-possible ()
  (interactive)
- (if (starts-with? (cider-repl--current-input) "(def")
+ (if (starts-with? (chomp (cider-repl--current-input)) "(def")
      (setq cider-repl-use-pretty-printing nil)
    (setq cider-repl-use-pretty-printing t))
  (cider-repl-return))
