@@ -1234,6 +1234,10 @@ With ARG, do this that many times."
 (global-set-key (kbd "\C-c c") 'compile)
 (global-set-key (kbd "C-x C-c") 'exit-message) ;; It's waaaay too easy to accidentally Ctrl-x Ctrl-c
 (global-set-key (kbd "C-x C-q") 'save-buffers-kill-terminal)
+(global-set-key [s-left] 'windmove-left)          ; move to left window
+(global-set-key [s-right] 'windmove-right)        ; move to right window
+(global-set-key [s-up] 'windmove-up)              ; move to upper window
+(global-set-key [s-down] 'windmove-down)          ; move to lower window
 
 ;;; (provide 'emacs-init)
 ;;; emacs-init.el ends here
