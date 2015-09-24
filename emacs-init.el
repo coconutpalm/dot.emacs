@@ -1175,6 +1175,11 @@ tabbar.el v1.7."
 (setq-default word-wrap t)
 
 
+
+;;; Misc key bindings
+
+
+
 ;; The default for ctrl-backspace is to delete words backward into the
 ;; clipboard, thus destroying whatever was in the clipboard.  This
 ;; (plus the keybinding below) fixes that.
@@ -1189,9 +1194,6 @@ With ARG, do this that many times."
 With ARG, do this that many times."
   (interactive "p")
   (delete-word (- arg)))
-
-
-;;; Misc key bindings
 
 (defun exit-message ()
   "Define a friendly message to display for the re-bound C-x C-c."
