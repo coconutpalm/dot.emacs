@@ -1207,7 +1207,7 @@ With ARG, do this that many times."
 (global-set-key [f4] 'delete-other-windows)
 (global-set-key [f5] 'delete-window)
 (global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
-(global-set-key [f6] 'ibuffer)
+(global-set-key [f6] 'helm-buffers-list)
 (global-set-key "\C-c z" 'repeat)
 (global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "C-z") 'undo)
