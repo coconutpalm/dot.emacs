@@ -1193,6 +1193,12 @@ With ARG, do this that many times."
 
 ;;; Misc key bindings
 
+(defun exit-message ()
+  "Define a friendly message to display for the re-bound C-x C-c."
+  (interactive)
+  (message "Type C-x C-q to exit Emacs.  It's waaaay too easy to accidentally hit C-x C-c")
+  (ding))
+
 (global-set-key [f1] 'shell)
 (global-set-key [f2] 'split-window-vertically)
 (global-set-key [f3] 'split-window-horizontally)
@@ -1213,7 +1219,8 @@ With ARG, do this that many times."
 (global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
 (global-set-key (kbd "\C-c g") 'goto-line)
 (global-set-key (kbd "\C-c c") 'compile)
-
+(global-set-key (kbd "C-x C-c") 'exit-message) ;; It's waaaay too easy to accidentally Ctrl-x Ctrl-c
+(global-set-key (kbd "C-x C-q") 'save-buffers-kill-terminal)
 
 ;;; (provide 'emacs-init)
 ;;; emacs-init.el ends here
