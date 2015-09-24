@@ -336,7 +336,7 @@ of FILE in the current directory, suitable for creation"
 (global-set-key (kbd "C-x g") 'magit-status)
 
 ;;
-;; Projectile xs/ Helm
+;; Projectile / Helm
 ;;
 ;; @see: http://tuhdo.github.io/helm-intro.html
 
