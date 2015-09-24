@@ -324,6 +324,7 @@ of FILE in the current directory, suitable for creation"
 (unless (package-installed-p 'exec-path-from-shell)
   (package-install 'exec-path-from-shell))
 (when (memq window-system '(mac ns))
+  (exec-path-from-shell-copy-envs '("AWS_ACCESS_KEY" "AWS_SECRET_ACCESS_KEY" "PATH"))
   (exec-path-from-shell-initialize))
 
 
@@ -334,6 +335,7 @@ of FILE in the current directory, suitable for creation"
 
 (setq magit-revert-buffers 0.5)
 (global-set-key (kbd "C-x g") 'magit-status)
+(global-set-key (kbd "C-x G") 'magit-diff-unstaged)
 
 ;;
 ;; Projectile / Helm
@@ -433,6 +435,7 @@ of FILE in the current directory, suitable for creation"
 (setq projectile-completion-system 'helm)
 (setq projectile-indexing-method 'native)
 ;; Press Command-f for fuzzy find in project
+(global-set-key (kbd "C-x p p") 'projectile-switch-project)
 (global-set-key (kbd "C-x M-f") 'projectile-find-file)
 (global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
