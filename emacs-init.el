@@ -16,6 +16,8 @@
 ;; Cmd-enter inserts the contents of this file into the current repl
 (setq repl-init-file "~/.repl.clj")
 
+
+
 ;;; Generic utilities
 
 (defun chomp (str)
@@ -641,6 +643,7 @@ of FILE in the current directory, suitable for creation"
 ;; From: https://raw.githubusercontent.com/vspinu/cider/79f828b60963747d87f898487912aa0b5fb802d2/nrepl-client.el
 ;;  and: https://github.com/clojure-emacs/cider/pull/818
 ;;  merged with master: https://github.com/clojure-emacs/cider/blob/master/nrepl-client.el
+;;
 ;; Enable the nrepl-server buffer to scroll automatically
 (defun nrepl-server-filter (process string)
   "Process server PROCESS output contained in STRING."
