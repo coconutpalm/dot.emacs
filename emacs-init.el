@@ -670,7 +670,7 @@ of FILE in the current directory, suitable for creation"
 
 (defun init-ns ()
   "Insert the contents of repl-init-file into the current repl.
-If in a Clojure buffer, change the repl namespace  to match the
+If in a Clojure buffer, change the repl namespace to match the
 buffer's."
   (interactive)
   (if (eq major-mode 'clojure-mode)
