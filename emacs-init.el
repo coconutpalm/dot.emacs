@@ -9,16 +9,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+;;;
 ;;; Configuration settings
+;;;
 
+(setq nodejs-path "/usr/bin/nodejs")
 (setq lein-path "~/bin/lein")
 
-;; Cmd-enter inserts the contents of this file into the current repl
-(setq repl-init-file "~/.repl.clj")
+;; In Clojure, Cmd-enter inserts the contents of this file into the current repl
+(setq clojure-repl-init-file "~/.repl.clj")
+
+;; On MacOS, make sure we have these environment variables:
+(setq macos-copy-from-env-list '("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "PATH"))
 
 
-
+;;;
 ;;; Generic utilities
+;;;
 
 (defun chomp (str)
   "Chomp leading and tailing whitespace from STR."
@@ -34,6 +41,7 @@
              (let ((elength (length ending)))
                (string= (substring s (- 0 elength)) ending)))
             (t nil)))
+
 
 (defun starts-with? (s begins)
  "Return non-nil if string S starts with BEGINS."
@@ -206,7 +214,7 @@
 (add-to-list 'load-path "~/.emacs.d/elisp")
 (require 'js-comint)
 ;; Use node as our repl
-(setq inferior-js-program-command "/usr/bin/nodejs")
+(setq inferior-js-program-command nodejs-path)
 
 (setq inferior-js-mode-hook
       (lambda ()
@@ -255,6 +263,26 @@
 (package-refresh-contents)
 
 (package-initialize)
+
+;;
+;; Upgrade packages automatically on startup
+;;  If you don't want this, comment out package-utils-upgrade-all
+;;
+(unless (package-installed-p 'package-utils)
+  (package-install 'package-utils))
+(require 'package-utils)
+(package-utils-upgrade-all)
+
+
+;;
+;; Fix macos environment variable handling
+;;
+(unless (package-installed-p 'exec-path-from-shell)
+  (package-install 'exec-path-from-shell))
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-copy-envs macos-copy-from-env-list)
+  (exec-path-from-shell-initialize))
+
 
 ;;
 ;; Ruby
@@ -343,13 +371,6 @@ of FILE in the current directory, suitable for creation"
 ;; Textmate emulation
 (unless (package-installed-p 'textmate)
   (package-install 'textmate))
-
-;; Macs need this explicitly
-(unless (package-installed-p 'exec-path-from-shell)
-  (package-install 'exec-path-from-shell))
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-copy-envs '("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "PATH"))
-  (exec-path-from-shell-initialize))
 
 
 ;; Magit - Git support
@@ -444,7 +465,7 @@ of FILE in the current directory, suitable for creation"
 (global-set-key (kbd "C-c h") 'helm-command-prefix) ;; Better Helm activation sequence
 (global-unset-key (kbd "C-x c"))
 
-(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to autocomplete
 (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
 (define-key helm-map (kbd "C-c a")  'helm-select-action)
 (define-key helm-find-files-map [(control backspace)] #'helm-find-files-up-one-level)
@@ -485,6 +506,12 @@ of FILE in the current directory, suitable for creation"
 ;;
 ;; Scala/ensime
 ;;
+
+;; Scala-mode from the package manager
+(unless (package-installed-p 'scala-mode2)
+  (package-install 'scala-mode2))
+
+;; Extend Scala-mode with IDE features
 (unless (package-installed-p 'ensime)
   (package-install 'ensime))
 
@@ -559,11 +586,6 @@ of FILE in the current directory, suitable for creation"
 ))
 
 
-(unless (package-installed-p 'package-utils)
-  (package-install 'package-utils))
-(require 'package-utils)
-(package-utils-upgrade-all)
-
 (unless (package-installed-p 'yasnippet)
   (package-install 'yasnippet))
 (require 'yasnippet)
@@ -608,8 +630,10 @@ of FILE in the current directory, suitable for creation"
   (package-install 'paredit))
 (require 'paredit)
 
-(global-set-key (kbd "C-{") 'paredit-forward-slurp-sexp)
-(global-set-key (kbd "C-}") 'paredit-forward-barf-sexp)
+;; Paredit normally takes over key bindings like ctrl-left/right
+;; which in sane editors means to move a word left/right.  Fix that.
+(global-set-key (kbd "C-}") 'paredit-forward-slurp-sexp)
+(global-set-key (kbd "C-{") 'paredit-forward-barf-sexp)
 (global-set-key (kbd "M-q") 'paredit-reindent-defun)
 
 
@@ -619,8 +643,6 @@ of FILE in the current directory, suitable for creation"
 (require 'cider-repl)
 
 (setq cider-lein-command lein-path)
-;(add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
-
 (add-hook 'cider-mode-hook #'eldoc-mode)
 
 (unless (package-installed-p 'ac-cider)
@@ -633,6 +655,7 @@ of FILE in the current directory, suitable for creation"
 (add-hook 'cider-repl-mode-hook #'company-mode)
 (add-hook 'cider-mode-hook #'company-mode)
 
+;; Abbreviate the REPL prompt if it gets long
 (setq cider-repl-prompt-function
       '(lambda (namespace)
         (if (> (length namespace) 20)
@@ -644,7 +667,7 @@ of FILE in the current directory, suitable for creation"
 ;;  and: https://github.com/clojure-emacs/cider/pull/818
 ;;  merged with master: https://github.com/clojure-emacs/cider/blob/master/nrepl-client.el
 ;;
-;; Enable the nrepl-server buffer to scroll automatically
+;; Enable the nrepl-server buffer to scroll automatically for log following
 (defun nrepl-server-filter (process string)
   "Process server PROCESS output contained in STRING."
   (with-current-buffer (process-buffer process)
@@ -672,7 +695,7 @@ of FILE in the current directory, suitable for creation"
 
 
 (defun init-ns ()
-  "Insert the contents of repl-init-file into the current repl.
+  "Insert the contents of clojure-repl-init-file into the current repl.
 If in a Clojure buffer, change the repl namespace to match the
 buffer's."
   (interactive)
@@ -680,7 +703,7 @@ buffer's."
       (cider-repl-set-ns (cider-current-ns)))
   (cider-switch-to-relevant-repl-buffer)
   (goto-char (point-max))
-  (insert-file-contents repl-init-file)
+  (insert-file-contents clojure-repl-init-file)
   (goto-char (point-max)))
 
 
@@ -762,8 +785,11 @@ buffer's."
   (package-install 'rainbow-mode))
 (require 'rainbow-mode)
 
+; Not turned on by default, but available.  See Google for details.
 
+;;
 ;; Go lang
+;;
 (unless (package-installed-p 'go-mode)
   (package-install 'go-mode))
 (require 'go-mode)
@@ -810,6 +836,7 @@ buffer's."
 (sml/setup)
 
 ;; Only works well with dark themes
+;; Like VIM's modeline hack
 ;(unless (package-installed-p 'smart-mode-line-powerline-theme)
 ;  (package-install 'smart-mode-line-powerline-theme))
 ;(require 'smart-mode-line-powerline-theme)
@@ -822,12 +849,6 @@ buffer's."
   (package-install 'windata))
 (require 'windata)
 
-;; (unless (package-installed-p 'dirtree)
-  ;; (package-install 'dirtree))
-;; (require 'dirtree)
-
-;; (autoload 'dirtree "dirtree" "Add directory to tree view" t)
-;; (global-set-key "\C-\\" 'dirtree-show)
 
 ;; enable tabbar minor mode
 ;(setq tabbar-use-images nil) ; speed up by not using images
@@ -861,6 +882,7 @@ buffer's."
 ;; we also need to set separator to avoid overlapping tabs by highlighted tabs
 (custom-set-variables
  '(tabbar-separator (quote (0.5))))
+
 ;; adding spaces
 (defun tabbar-buffer-tab-label (tab)
   "Return a label for TAB.  That is, a string used to represent it on the tab bar."
@@ -944,7 +966,6 @@ tabbar.el v1.7."
               ((starts-with "*magit" (buffer-name)) "magit")
               ((starts-with "*helm" (buffer-name)) "helm")
               ((starts-with "*Helm" (buffer-name)) "helm")
-              ((string-equal "*dirtree*" (buffer-name)) "dirtree")
               ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
               ((eq major-mode 'dired-mode) "emacs")
               (t "user")))))
@@ -955,12 +976,13 @@ tabbar.el v1.7."
 (eval-after-load "sql"
   '(load-library "sql-indent"))
 
-
-;;w3m
-;(setq w3m-command "/usr/local/bin/w3m")
+;;
+;; w3m - Web browser in Emacs; I don't use it right now.
+;;
+;(setq w3m-command "/usr/local/bin/w3m") -- Add this back to use
 (unless (package-installed-p 'w3m)
   (package-install 'w3m))
-;(require 'w3m)
+;(require 'w3m)   ;; -- and add this back to use
 
 (when (locate-library "w3m")
   (autoload 'w3m "w3m" nil t)
@@ -1050,10 +1072,6 @@ tabbar.el v1.7."
           (lambda ()
             (org-indent-mode t)) t)
 
-;; Scala-mode from the package manager
-(unless (package-installed-p 'scala-mode2)
-  (package-install 'scala-mode2))
-
 ; Flycheck
 (unless (package-installed-p 'flycheck)
   (package-install 'flycheck))
@@ -1099,7 +1117,7 @@ tabbar.el v1.7."
 ;; Compiling the file on save makes malabar display the errors in the
 ;; Java source code.
 (add-hook 'malabar-mode-hook
-          (lambda () 
+          (lambda ()
             (add-hook 'after-save-hook 'malabar-compile-file-silently
                       nil t)))
 
