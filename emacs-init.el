@@ -8,8 +8,15 @@
 ;;; General settings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; Generic utilities
 
+;;; Configuration settings
+
+(setq lein-path "~/bin/lein")
+
+;; Cmd-enter inserts the contents of this file into the current repl
+(setq repl-init-file "~/.repl.clj")
+
+;;; Generic utilities
 
 (defun chomp (str)
   "Chomp leading and tailing whitespace from STR."
@@ -122,7 +129,6 @@
 (add-to-list 'load-path "~/.emacs.d/elisp-root")
 (require 'auto-complete-config)
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(ac-config-default)
 (setq ac-show-menu-immediately-on-auto-complete t)
 (setq-default ac-sources (add-to-list 'ac-sources 'ac-source-dictionary))
 (global-auto-complete-mode t)
@@ -130,6 +136,9 @@
 (setq ac-auto-start t)
 ; case sensitivity is important when finding matches
 (setq ac-ignore-case nil)
+(setq ac-delay 0.0)
+(setq ac-quick-help-delay 0.5)
+(ac-config-default)
 
 (defun my-semicolon ()
   (interactive)
@@ -607,7 +616,7 @@ of FILE in the current directory, suitable for creation"
 (require 'cider)
 (require 'cider-repl)
 
-(setq cider-lein-command "~/bin/lein")
+(setq cider-lein-command lein-path)
 ;(add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
 
 (add-hook 'cider-mode-hook #'eldoc-mode)
@@ -616,12 +625,11 @@ of FILE in the current directory, suitable for creation"
   (package-install 'ac-cider))
 (require 'ac-cider)
 
-(add-hook 'cider-repl-mode-hook #'company-mode)
-(add-hook 'cider-mode-hook #'company-mode)
-
 (require 'cider-repl)
 (setq cider-repl-use-clojure-font-lock t)
 (setq cider-repl-pop-to-buffer-on-connect nil)
+(add-hook 'cider-repl-mode-hook #'company-mode)
+(add-hook 'cider-mode-hook #'company-mode)
 
 (setq cider-repl-prompt-function
       '(lambda (namespace)
@@ -661,13 +669,16 @@ of FILE in the current directory, suitable for creation"
 
 
 (defun init-ns ()
+  "Insert the contents of repl-init-file into the current repl.
+If in a Clojure buffer, change the repl namespace  to match the
+buffer's."
   (interactive)
-  (cider-interactive-eval
-   "(clojure.core/require
-     '[clojure.pprint :refer [pprint]]
-     '[clojure.repl :refer :all]
-     '[clojure.core :refer :all])
-     (require '[bradsdeals.nav :refer :all])"))
+  (if (eq major-mode 'clojure-mode)
+      (cider-repl-set-ns (cider-current-ns)))
+  (cider-switch-to-relevant-repl-buffer)
+  (goto-char (point-max))
+  (insert-file-contents repl-init-file)
+  (goto-char (point-max)))
 
 
 (defun cider-eval-expression-at-point-in-repl ()
@@ -711,7 +722,7 @@ of FILE in the current directory, suitable for creation"
   (let* ((filename (file-name-nondirectory (buffer-file-name))))
     (if (not (or (string= filename "profiles.clj")
                  (string= filename "project.clj")
-                 (string= filename "repl.clj")
+                 (ends-with? filename "repl.clj")
                  (ends-with? filename ".edn")))
         (cider-load-buffer))))
 
@@ -743,14 +754,6 @@ of FILE in the current directory, suitable for creation"
 (unless (package-installed-p 'popup)
   (package-install 'popup))
 (require 'popup)
-
-(unless (package-installed-p 'rainbow-delimiters)
-  (package-install 'rainbow-delimiters))
-(require 'rainbow-delimiters)
-
-(unless (package-installed-p 'rainbow-mode)
-  (package-install 'rainbow-mode))
-(require 'rainbow-mode)
 
 (unless (package-installed-p 'rainbow-mode)
   (package-install 'rainbow-mode))
