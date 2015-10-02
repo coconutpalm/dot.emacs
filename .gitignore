@@ -4,4 +4,9 @@ auto-save-list
 package.el.old
 srecode-map.el
 elpa
+ensime/
+eshell/
+project-explorer-cache/
+projectile-bookmarks.eld
+projectile.cache
 ^#.*#$

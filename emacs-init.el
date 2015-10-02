@@ -750,7 +750,7 @@ buffer's."
   (let* ((filename (file-name-nondirectory (buffer-file-name))))
     (if (not (or (string= filename "profiles.clj")
                  (string= filename "project.clj")
-                 (ends-with? filename "repl.clj")
+                 (ends-with? filename "scratchpad.clj")
                  (ends-with? filename ".edn")))
         (cider-load-buffer))))
 
