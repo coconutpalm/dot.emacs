@@ -50,6 +50,33 @@
            (t nil)))
 
 
+
+;;
+;; Unbind key bindings
+;;
+;; Use it interactively
+;; Or like it's used below
+;;
+
+(defun get-key-combo (key)
+  "Just return the key combo entered by the user"
+  (interactive "kKey combo: ")
+  key)
+
+
+(defun keymap-unset-key (key keymap)
+    "Remove binding of KEY in a keymap
+    KEY is a string or vector representing a sequence of keystrokes."
+    (interactive
+     (list (call-interactively #'get-key-combo)
+           (completing-read "Which map: " minor-mode-map-alist nil t)))
+    (let ((map (rest (assoc (intern keymap) minor-mode-map-alist))))
+      (when map
+        (define-key map key nil)
+        (message  "%s unbound for %s" key keymap))))
+
+
+
 ;;; Misc display settings
 
 (setq inhibit-splash-screen t)
@@ -108,6 +135,80 @@
 (setq-default auto-revert-interval 10) ; default is 5 s
 ;(auto-revert-tail-mode t) ; auto-revert if file grows at the end, also works for remote files
 (setq-default auto-revert-verbose nil)
+
+
+;; ansi-term / multi-term
+(add-to-list 'load-path "~/.emacs.d/elisp")
+(require 'multi-term)
+(setq multi-term-program "/bin/bash")
+
+(defcustom term-unbind-key-list
+  '("C-z" "C-x" "C-c" "C-h" "C-y" "<ESC>" "<TAB>")
+  "The key list that will need to be unbind."
+  :type 'list
+  :group 'multi-term)
+
+(defcustom term-bind-key-alist
+  '(
+    ("C-c C-c" . term-interrupt-subjob)
+    ("C-p" . previous-line)
+    ("C-n" . next-line)
+    ("C-s" . isearch-forward)
+    ("C-r" . isearch-backward)
+    ("C-m" . term-send-raw)
+    ("M-f" . term-send-forward-word)
+    ("M-b" . term-send-backward-word)
+    ("M-o" . term-send-backspace)
+    ("M-p" . term-send-up)
+    ("M-n" . term-send-down)
+    ("M-M" . term-send-forward-kill-word)
+    ("M-N" . term-send-backward-kill-word)
+    ("M-r" . term-send-reverse-search-history)
+    ("M-," . term-send-input)
+    ("M-." . comint-dynamic-complete))
+  "The key alist that will need to be bind.
+If you do not like default setup, modify it, with (KEY . COMMAND) format."
+  :type 'alist
+  :group 'multi-term)
+
+(defun remote-term (new-buffer-name cmd &rest switches)
+  "Ansi-terms on remote hosts."
+  (setq term-ansi-buffer-name (concat "*" new-buffer-name "*"))
+  (setq term-ansi-buffer-name (generate-new-buffer-name term-ansi-buffer-name))
+  (setq term-ansi-buffer-name (apply 'make-term term-ansi-buffer-name cmd nil switches))
+  (set-buffer term-ansi-buffer-name)
+  (term-mode)
+  (term-char-mode)
+  (term-set-escape-char ?\C-x)
+  (switch-to-buffer term-ansi-buffer-name))
+
+
+(add-hook 'term-mode-hook
+          (lambda ()
+            (setq term-buffer-maximum-size 10000)
+            (setq show-trailing-whitespace nil)
+            (yas-minor-mode -1)
+            (define-key term-raw-map (kbd "C-y") 'term-paste)))
+
+
+;; shell-mode
+(custom-set-variables
+ '(comint-scroll-to-bottom-on-input t)  ; always insert at the bottom
+ '(comint-scroll-to-bottom-on-output t) ; always add output at the bottom
+ '(comint-scroll-show-maximum-output t) ; scroll to show max possible output
+ '(comint-completion-autolist t)        ; show completion list when ambiguous
+ '(comint-input-ignoredups t)           ; no duplicates in command history
+ '(comint-completion-addsuffix t)       ; insert space/slash after file completion
+ )
+
+; interpret and use ansi color codes in shell output windows
+(ansi-color-for-comint-mode-on)
+
+; make completion buffers disappear after 3 seconds.
+(add-hook 'completion-setup-hook
+  (lambda () (run-at-time 3 nil
+    (lambda () (delete-windows-on "*Completions*")))))
+
 
 
 (defun comment-or-uncomment-region-or-line ()
@@ -247,13 +348,13 @@
 ; Initialize the package manager with the MELPA archive
 (require 'package)
 (add-to-list 'package-archives
+             '("marmalade" . "http://marmalade-repo.org/packages/") t)
+
+(add-to-list 'package-archives
              '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
 (add-to-list 'package-archives
              '("melpa-stable" . "http://melpa-stable.milkbox.net/packages/") t)
-
-(add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/") t)
 
 (add-to-list 'package-archives
              '("tromey" . "http://tromey.com/elpa/") t)
@@ -283,6 +384,17 @@
   (exec-path-from-shell-copy-envs macos-copy-from-env-list)
   (exec-path-from-shell-initialize))
 
+
+;;
+;; Evil mode (for those who truly are...)
+;;
+;; Commented because it messes up key bindings even when it's not on
+;;
+;;(unless (package-installed-p 'evil)
+;;  (package-install 'evil))
+;;(require 'evil)
+;;
+;;(evil-mode 0)
 
 ;;
 ;; Ruby
@@ -419,7 +531,7 @@ of FILE in the current directory, suitable for creation"
 (global-set-key "\C-\\" 'project-explorer-toggle)
 (global-set-key "\C-\M-\\" 'project-explorer-helm)
 (setq pe/omit-gitignore t)
-(setq pe/width 50)
+(setq pe/width 65)
 (setq
     helm-boring-buffer-regexp-list '("^diary$")
     helm-boring-file-regexp-list
@@ -639,6 +751,122 @@ of FILE in the current directory, suitable for creation"
 (global-set-key (kbd "M-q") 'paredit-reindent-defun)
 
 
+;; clojure-semantic (https://github.com/kototama/clojure-semantic)
+;; (Prerequisite for Lispy Clojure support)
+(add-to-list 'load-path "~/.emacs.d/clojure-semantic")
+
+;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
+(unless (package-installed-p 'lispy)
+  (package-install 'lispy))
+
+
+(defun lispy-mode-key-unbindings ()
+  "Disable some Lispy-mode keybindings that conflict with Clojure or other packages."
+  (if lispy-mode
+      (progn
+        (if lispy-mode-map
+            (progn
+              (define-key lispy-mode-map (kbd "[") nil)
+              (define-key lispy-mode-map (kbd "]") nil)
+              (define-key lispy-mode-map (kbd "M-<left>") nil)
+              (define-key lispy-mode-map (kbd "M-<right>") nil)
+              (define-key lispy-mode-map (kbd "s-<return>") nil)
+              (define-key lispy-mode-map (kbd "C-<return>") nil)
+              (define-key lispy-mode-map (kbd "S-C-<return>") nil)))
+
+        (if lispy-mode-map-x
+            (progn
+              (define-key lispy-mode-map-x (kbd "[") nil)
+              (define-key lispy-mode-map-x (kbd "]") nil)
+              (define-key lispy-mode-map-x (kbd "M-<left>") nil)
+              (define-key lispy-mode-map-x (kbd "M-<right>") nil)
+              (define-key lispy-mode-map-x (kbd "s-<return>") nil)
+              (define-key lispy-mode-map-x (kbd "C-<return>") nil)
+              (define-key lispy-mode-map-x (kbd "S-C-<return>") nil)))
+
+        (if lispy-mode-map-c-digits
+            (progn
+              (define-key lispy-mode-map-c-digits (kbd "[") nil)
+              (define-key lispy-mode-map-c-digits (kbd "]") nil)
+              (define-key lispy-mode-map-c-digits (kbd "M-<left>") nil)
+              (define-key lispy-mode-map-c-digits (kbd "M-<right>") nil)
+              (define-key lispy-mode-map-c-digits (kbd "s-<return>") nil)
+              (define-key lispy-mode-map-c-digits (kbd "C-<return>") nil)
+              (define-key lispy-mode-map-c-digits (kbd "S-C-<return>") nil)))
+
+        (if lispy-mode-map-lispy
+            (progn
+              (define-key lispy-mode-map-lispy (kbd "[") nil)
+              (define-key lispy-mode-map-lispy (kbd "]") nil)
+              (define-key lispy-mode-map-lispy (kbd "M-<left>") nil)
+              (define-key lispy-mode-map-lispy (kbd "M-<right>") nil)
+              (define-key lispy-mode-map-lispy (kbd "s-<return>") nil)
+              (define-key lispy-mode-map-lispy (kbd "C-<return>") nil)
+              (define-key lispy-mode-map-lispy (kbd "S-C-<return>") nil)))
+
+        (if lispy-mode-map-base
+            (progn
+              (define-key lispy-mode-map-base (kbd "[") nil)
+              (define-key lispy-mode-map-base (kbd "]") nil)
+              (define-key lispy-mode-map-base (kbd "M-<left>") nil)
+              (define-key lispy-mode-map-base (kbd "M-<right>") nil)
+              (define-key lispy-mode-map-base (kbd "s-<return>") nil)
+              (define-key lispy-mode-map-base (kbd "C-<return>") nil)
+              (define-key lispy-mode-map-base (kbd "S-C-<return>") nil)))
+
+        (if lispy-mode-map-oleh
+            (progn
+              (define-key lispy-mode-map-oleh (kbd "[") nil)
+              (define-key lispy-mode-map-oleh (kbd "]") nil)
+              (define-key lispy-mode-map-oleh (kbd "M-<left>") nil)
+              (define-key lispy-mode-map-oleh (kbd "M-<right>") nil)
+              (define-key lispy-mode-map-oleh (kbd "s-<return>") nil)
+              (define-key lispy-mode-map-oleh (kbd "C-<return>") nil)
+              (define-key lispy-mode-map-oleh (kbd "S-C-<return>") nil)))
+
+        (if lispy-mode-map-special
+            (progn
+              (define-key lispy-mode-map-special (kbd "[") nil)
+              (define-key lispy-mode-map-special (kbd "]") nil)
+              (define-key lispy-mode-map-special (kbd "M-<left>") nil)
+              (define-key lispy-mode-map-special (kbd "M-<right>") nil)
+              (define-key lispy-mode-map-special (kbd "s-<return>") nil)
+              (define-key lispy-mode-map-special (kbd "C-<return>") nil)
+              (define-key lispy-mode-map-special (kbd "S-C-<return>") nil)))
+
+        (if lispy-mode-map-paredit
+            (progn
+              (define-key lispy-mode-map-paredit (kbd "[") nil)
+              (define-key lispy-mode-map-paredit (kbd "]") nil)
+              (define-key lispy-mode-map-paredit (kbd "M-<left>") nil)
+              (define-key lispy-mode-map-paredit (kbd "M-<right>") nil)
+              (define-key lispy-mode-map-special (kbd "s-<return>") nil)
+              (define-key lispy-mode-map-special (kbd "C-<return>") nil)
+              (define-key lispy-mode-map-special (kbd "S-C-<return>") nil))))))
+
+
+  ;; (defun lispy-mode-key-unbindings ()
+  ;;   "Unbind keys from lispy modes."
+  ;;   (let ((modes (list 'lispy-mode-map-paredit 'lispy-mode-map-special 'lispy-mode-map-oleh 'lispy-mode-map-base
+  ;;                      'lispy-mode-map-lispy 'lispy-mode-map-c-digits 'lispy-mode-map-x 'lispy-mode-map)))
+  ;;         (map list
+  ;;              (lambda (mode)
+  ;;                (define-key mode "[" nil)
+  ;;                (define-key mode "]" nil)
+  ;;                (define-key mode (kbd "M-<left>") nil)
+  ;;                (define-key mode (kbd "M-<right>") nil))
+  ;;              modes)))
+
+(defun lispy-mode-on ()
+  "Turn lispy mode on."
+  (lispy-mode 1))
+
+
+;; Turn it on by default; toggle via M-x lispy-mode
+(add-hook 'clojure-mode-hook 'lispy-mode-on)
+(add-hook 'emacs-lisp-mode-hook 'lispy-mode-on)
+(add-hook 'lispy-mode-hook 'lispy-mode-key-unbindings)
+
 (unless (package-installed-p 'cider)
   (package-install 'cider))
 (require 'cider)
@@ -651,9 +879,8 @@ of FILE in the current directory, suitable for creation"
   (package-install 'ac-cider))
 (require 'ac-cider)
 
-(require 'cider-repl)
 (setq cider-repl-use-clojure-font-lock t)
-(setq cider-repl-pop-to-buffer-on-connect nil)
+;; (setq cider-repl-pop-to-buffer-on-connect nil)
 (add-hook 'cider-repl-mode-hook #'company-mode)
 (add-hook 'cider-mode-hook #'company-mode)
 
@@ -703,7 +930,7 @@ buffer's."
   (interactive)
   (if (eq major-mode 'clojure-mode)
       (cider-repl-set-ns (cider-current-ns)))
-  (cider-switch-to-relevant-repl-buffer)
+  (cider-switch-to-repl-buffer)
   (goto-char (point-max))
   (insert-file-contents clojure-repl-init-file)
   (goto-char (point-max)))
@@ -715,7 +942,7 @@ buffer's."
     ;; Strip excess whitespace
     (while (string-match "\\`\s+\\|\n+\\'" form)
       (setq form (replace-match "" t t form)))
-    (cider-switch-to-relevant-repl-buffer t)
+    (cider-switch-to-repl-buffer t)
     (goto-char (point-max))
     (insert form)))
 
@@ -726,13 +953,13 @@ buffer's."
     (while (string-match "\\`\s+\\|\n+\\'" form)
       (setq form (replace-match "" t t form)))
     (setq form (concat "\n" form))
-    (cider-switch-to-relevant-repl-buffer t)
+    (cider-switch-to-repl-buffer t)
     (goto-char (point-max))
     (insert form)))
 
 (define-key clojure-mode-map (kbd "s-<return>") 'init-ns)
-(define-key clojure-mode-map (kbd "C-<return>") 'cider-eval-expression-at-point-in-repl)
-(define-key clojure-mode-map (kbd "S-C-<return>") 'cider-eval-defun-at-point-in-repl)
+(define-key clojure-mode-map (kbd "C-s-<return>") 'cider-eval-expression-at-point-in-repl)
+(define-key clojure-mode-map (kbd "M-s-<return>") 'cider-eval-defun-at-point-in-repl)
 
 
 (defun pretty-print-if-possible ()
@@ -962,7 +1189,7 @@ tabbar.el v1.7."
               ((starts-with "*cider" (buffer-name)) "user")
               ((starts-with "*nrepl-server" (buffer-name)) "user")
               ((string-equal "*eshell*" (buffer-name)) "user")
-              ((string-equal "*shell*" (buffer-name)) "user")
+              ((starts-with "*term" (buffer-name)) "user")
               ((string-equal "*scratch*" (buffer-name)) "lisp")
               ((eq major-mode 'emacs-lisp-mode) "lisp")
               ((starts-with "*magit" (buffer-name)) "magit")
@@ -1060,13 +1287,33 @@ tabbar.el v1.7."
 (unless (package-installed-p 'org)
   (package-install 'org))
 (require 'org)
+(require 'ob-clojure)                   ; Use Clojure/CIDER for executable code in org files
+(setq org-babel-default-header-args     ; Use a single session for each org file
+           (cons '(:session . "default-clojure")
+                 (assq-delete-all :session org-babel-default-header-args)))
+
+;; Redefine execute to always use cider; doesn't seem to work?
+(defun org-babel-execute:clojure (body params)
+  "Execute a block of Clojure code with Babel."
+  (let ((expanded (org-babel-expand-body:clojure body params))
+        result)
+    (require 'cider)
+    (let ((result-params (cdr (assoc :result-params params))))
+      (setq result
+            (nrepl-dict-get
+             (nrepl-sync-request:eval
+              expanded (cider-current-connection) (cider-current-session))
+             (if (or (member "output" result-params)
+                     (member "pp" result-params))
+                 "out"
+               "value"))))))
 
 
 ;; org mode hooks
 (add-hook 'org-mode-hook 'turn-on-font-lock)
 (add-hook 'org-mode-hook 'visual-line-mode)
 ;; turn on soft wrapping mode for org mode
-(add-hook 'org-mode-hook 
+(add-hook 'org-mode-hook
           (lambda () (setq truncate-lines nil)))
 (setq org-completion-use-ido t)
 (setq org-src-fontify-natively t)
@@ -1262,8 +1509,7 @@ tabbar.el v1.7."
 
 
 
-;;; Misc key bindings
-
+;;; Misc key (un)bindings
 
 
 ;; The default for ctrl-backspace is to delete words backward into the
@@ -1287,7 +1533,8 @@ With ARG, do this that many times."
   (message "Type C-x C-q to exit Emacs.  It's waaaay too easy to accidentally hit C-x C-c")
   (ding))
 
-(global-set-key [f1] 'shell)
+
+(global-set-key [f1] 'multi-term)
 (global-set-key [f2] 'split-window-vertically)
 (global-set-key [f3] 'split-window-horizontally)
 (global-set-key [f4] 'delete-other-windows)
@@ -1296,7 +1543,7 @@ With ARG, do this that many times."
 (global-set-key [f6] 'helm-buffers-list)
 (global-set-key "\C-c z" 'repeat)
 (global-set-key (kbd "M-/") 'hippie-expand)
-(global-set-key (kbd "C-z") 'undo)
+;;(global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
 (global-set-key [home] 'beginning-of-line)
 (global-set-key [end] 'end-of-line)
@@ -1306,6 +1553,7 @@ With ARG, do this that many times."
 (global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
 (global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
 (global-set-key (kbd "\C-c g") 'goto-line)
+(global-set-key (kbd "\C-F") 'find-file-at-point)
 (global-set-key (kbd "\C-c c") 'compile)
 (global-set-key (kbd "C-x C-c") 'exit-message) ;; It's waaaay too easy to accidentally Ctrl-x Ctrl-c
 (global-set-key (kbd "C-x C-q") 'save-buffers-kill-terminal)
@@ -1313,6 +1561,7 @@ With ARG, do this that many times."
 (global-set-key [s-right] 'windmove-right)        ; move to right window
 (global-set-key [s-up] 'windmove-up)              ; move to upper window
 (global-set-key [s-down] 'windmove-down)          ; move to lower window
+
 
 ;;; (provide 'emacs-init)
 ;;; emacs-init.el ends here
