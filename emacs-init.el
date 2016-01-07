@@ -143,7 +143,7 @@
 (setq multi-term-program "/bin/bash")
 
 (defcustom term-unbind-key-list
-  '("C-z" "C-x" "C-c" "C-h" "C-y" "<ESC>" "<TAB>")
+  '("C-z" "C-x" "C-c" "C-h" "C-y" "<ESC>" "<TAB>" "C-[")
   "The key list that will need to be unbind."
   :type 'list
   :group 'multi-term)
