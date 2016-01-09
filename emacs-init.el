@@ -137,6 +137,13 @@
 (setq-default auto-revert-verbose nil)
 
 
+;; Markdown
+(autoload 'markdown-mode "markdown-mode"
+   "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+
+
 ;; ansi-term / multi-term
 (add-to-list 'load-path "~/.emacs.d/elisp")
 (require 'multi-term)
