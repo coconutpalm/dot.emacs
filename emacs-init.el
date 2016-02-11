@@ -81,7 +81,7 @@
 
 (setq inhibit-splash-screen t)
 (when window-system (global-unset-key "\C-z"))
-(when window-system (set-frame-size (selected-frame) 120 79))
+(when window-system (set-frame-size (selected-frame) 120 60))
 (setq x-select-enable-clipboard t) ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
 (setq-default standard-indent 3) ; set standard indent to 3 rather that 4
