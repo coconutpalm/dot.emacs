@@ -125,6 +125,8 @@
   ;; you may want to add different for other charset in this way.
   )
 
+;; No trailing whitespace, please...
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 ;; backup
 (setq make-backup-files nil) ; stop making backup ~ files
@@ -137,20 +139,13 @@
 (setq-default auto-revert-verbose nil)
 
 
-;; Markdown
-(autoload 'markdown-mode "markdown-mode"
-   "Major mode for editing Markdown files" t)
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-
-
 ;; ansi-term / multi-term
 (add-to-list 'load-path "~/.emacs.d/elisp")
 (require 'multi-term)
 (setq multi-term-program "/bin/bash")
 
 (defcustom term-unbind-key-list
-  '("C-z" "C-x" "C-c" "C-h" "C-y" "<ESC>" "<TAB>" "C-[")
+  '("C-z" "C-x" "C-c" "C-h" "C-r" "C-s" "C-y" "<ESC>" "<TAB>" "C-[")
   "The key list that will need to be unbind."
   :type 'list
   :group 'multi-term)
@@ -209,7 +204,15 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  )
 
 ; interpret and use ansi color codes in shell output windows
+(require 'ansi-color)
+
 (ansi-color-for-comint-mode-on)
+(defun colorize-compilation-buffer ()
+  (toggle-read-only)
+  (ansi-color-apply-on-region compilation-filter-start (point))
+  (toggle-read-only))
+(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+
 
 ; make completion buffers disappear after 3 seconds.
 (add-hook 'completion-setup-hook
@@ -389,7 +392,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (package-install 'exec-path-from-shell))
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-copy-envs macos-copy-from-env-list)
-  (exec-path-from-shell-initialize))
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-env "GOPATH"))
 
 
 ;;
@@ -402,6 +406,46 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;(require 'evil)
 ;;
 ;;(evil-mode 0)
+
+
+;; Markdown / AsciiDoc
+
+;; Markdown
+(unless (package-installed-p 'markdown-mode)
+  (package-install 'markdown-mode))
+(require 'markdown-mode)
+
+(unless (package-installed-p 'markdown-mode+)
+  (package-install 'markdown-mode+))
+(require 'markdown-mode+)
+
+(unless (package-installed-p 'markdown-preview-mode)
+  (package-install 'markdown-preview-mode))
+(require 'markdown-preview-mode)
+
+;; Generate a TOC from a markdown file: M-x markdown-toc-generate-toc
+;; This will compute the TOC at insert it at current position.
+;; Update existing TOC: C-u M-x markdown-toc-generate-toc
+(unless (package-installed-p 'markdown-toc)
+  (package-install 'markdown-toc))
+(require 'markdown-toc)
+
+(autoload 'markdown-preview-mode "markdown-preview-mode"
+  "Major mode for editing Markdown files with preview" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-preview-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-preview-mode))
+
+;; AsciiDoc
+
+(unless (package-installed-p 'adoc-mode)
+  (package-install 'adoc-mode))
+(require 'adoc-mode)
+
+(autoload 'adoc-mode "adoc-mode"
+  "Major mode for editing AsciiDoc files" t)
+(add-to-list 'auto-mode-alist '("\\.adoc\\'" . adoc-mode))
+(add-to-list 'auto-mode-alist '("\\.txt\\'" . adoc-mode))
+
 
 ;;
 ;; Ruby
@@ -984,6 +1028,7 @@ buffer's."
   (let* ((filename (file-name-nondirectory (buffer-file-name))))
     (if (not (or (string= filename "profiles.clj")
                  (string= filename "project.clj")
+                 (string= filename "build.boot")
                  (ends-with? filename "scratchpad.clj")
                  (ends-with? filename ".edn")))
         (cider-load-buffer))))
@@ -1021,10 +1066,9 @@ buffer's."
   (package-install 'rainbow-mode))
 (require 'rainbow-mode)
 
-; Not turned on by default, but available.  See Google for details.
 
 ;;
-;; Go lang
+;; Golang
 ;;
 (unless (package-installed-p 'go-mode)
   (package-install 'go-mode))
@@ -1035,16 +1079,43 @@ buffer's."
   (package-install 'go-autocomplete))
 (require 'go-autocomplete)
 
+
+;; Set environment
+(setq go-path "/Users/dorme/go")
+(setenv "GOPATH" go-path)
+(add-to-list 'exec-path (concat go-path "/bin"))
+(setq exec-path (cons "/usr/local/opt/go/bin" exec-path))
+
 (defun my-go-mode-hook ()
-  ; Call Gofmt before saving
-  (add-hook 'before-save-hook 'gofmt-before-save)
-  ; Customize compile command to run go build
-  (if (not (string-match "go" compile-command))
+  (setq gofmt-command "goimports")
+  (add-hook 'before-save-hook 'gofmt-before-save) ; Call Gofmt before saving
+
+  ;; Syntax checking for Go.  Depends on `go get -u github.com/dougm/goflymake`
+  (add-to-list 'load-path (concat go-path "/src/github.com/dougm/goflymake"))
+  (require 'go-flymake)
+
+  ;; Autocomplete depends on: go get -u github.com/nsf/gocode
+  (add-to-list 'load-path (concat go-path "/src/github.com/nsf/gocode/emacs"))
+  (require 'go-autocomplete)
+
+  (if (not (string-match "go" compile-command)) ; Customize compile command to run go build
       (set (make-local-variable 'compile-command)
-           "go build -v && go test -v && go vet"))
-  ; Godef jump key binding
-  (local-set-key (kbd "M-.") 'godef-jump))
+           "go build -v && go vet && ginkgo -r -p -v -trace"))
+
+  ;; When you call go-oracle-set-scope, you always need to give it a main package.
+  (load-file (concat go-path "/src/golang.org/x/tools/cmd/oracle/oracle.el"))
+
+  (local-set-key (kbd "M-.") 'godef-jump) ; Godef jump key binding
+  (local-set-key [f3] 'godef-jump)
+  (local-set-key [f1] 'godoc-at-point)
+
+  (auto-complete-mode 1)
+  (subword-mode))
+
+;; you can jump straight to each compile error by running C-x `
+
 (add-hook 'go-mode-hook 'my-go-mode-hook)
+(add-hook 'go-mode-hook 'auto-complete-for-go)
 
 
 ; Dependencies / misc
@@ -1212,84 +1283,8 @@ tabbar.el v1.7."
 (eval-after-load "sql"
   '(load-library "sql-indent"))
 
-;;
-;; w3m - Web browser in Emacs; I don't use it right now.
-;;
-;(setq w3m-command "/usr/local/bin/w3m") -- Add this back to use
-(unless (package-installed-p 'w3m)
-  (package-install 'w3m))
-;(require 'w3m)   ;; -- and add this back to use
 
-(when (locate-library "w3m")
-  (autoload 'w3m "w3m" nil t)
-  (autoload 'w3m-goto-url "w3m" nil t)
-  (autoload 'w3m-region "w3m")
-
-  (setq w3m-home-page
-        (if (file-readable-p "~/html/home.html")
-            (concat "file://" (expand-file-name "~/html/home.html"))
-          "http://www.google.com"))
-
-  (setq w3m-use-toolbar t
-        w3m-use-tab     nil
-        w3m-key-binding 'info)
-
-  (setq w3m-search-default-engine "google")
-
-  (setq w3m-command-arguments       '("-F" "-cookie")
-        w3m-mailto-url-function     'compose-mail
-        browse-url-browser-function 'w3m
-        mm-text-html-renderer       'w3m)
-
-  (add-hook 'w3m-mode-hook 'ted-hide-trailing-whitespace)
-
-  (eval-after-load "w3m"
-    '(define-key w3m-mode-map (kbd "z") 'bury-buffer))
-
-  (defalias 'eshell/w3m 'w3m)
-
-  (setq w3m-use-cookies t)
-  (setq w3m-cookie-accept-bad-cookies t)
-
-  (defun ted-w3m-edit-emacswiki-page (url)
-    (let ((node (substring (substring w3m-current-url
-                                      (string-match "wiki[/?][^/&=]+\\'"
-                                                    w3m-current-url))
-                           5)))
-      (w3m-goto-url (concat "http://www.emacswiki.org/cgi-bin/wiki"
-                            "?action=edit;id=" node))))
-
-  (defun ted-delicious-url ()
-    "Bookmark this page with del.icio.us."
-    (interactive)
-    (w3m-goto-url
-     (concat "http://del.icio.us/hober?"
-             "url="    (w3m-url-encode-string w3m-current-url)
-             "&title=" (w3m-url-encode-string w3m-current-title))))
-
-  (eval-after-load "w3m"
-    '(progn
-       (add-to-list 'w3m-uri-replace-alist
-                    '("\\`lj:\\(.+\\)" w3m-pattern-uri-replace
-                      "http://www.livejournal.com/users/\\1/"))
-       (add-to-list 'w3m-edit-function-alist
-                    '(".*emacswiki.org/cgi-bin/wiki.*"
-                      . ted-w3m-edit-emacswiki-page))
-       (define-key w3m-info-like-map "a" 'ted-delicious-url))))
-
-(defadvice org-open-at-point (around org-open-at-point-choose-browser activate)
-  (let ((browse-url-browser-function
-         (cond ((equal (ad-get-arg 0) '(4))
-                'browse-url-generic)
-               ((equal (ad-get-arg 0) '(16))
-                'choose-browser)
-               (t
-                (lambda (url &optional new)
-                  (w3m-browse-url url t)))
-               )))
-    ad-do-it))
-
-
+;; Org mode
 
 (unless (package-installed-p 'org)
   (package-install 'org))
