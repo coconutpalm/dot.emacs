@@ -81,7 +81,7 @@
 
 (setq inhibit-splash-screen t)
 (when window-system (global-unset-key "\C-z"))
-(when window-system (set-frame-size (selected-frame) 120 79))
+(when window-system (set-frame-size (selected-frame) 120 60))
 (setq x-select-enable-clipboard t) ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
 (setq-default standard-indent 3) ; set standard indent to 3 rather that 4
@@ -1559,10 +1559,16 @@ With ARG, do this that many times."
 (global-set-key (kbd "\C-c c") 'compile)
 (global-set-key (kbd "C-x C-c") 'exit-message) ;; It's waaaay too easy to accidentally Ctrl-x Ctrl-c
 (global-set-key (kbd "C-x C-q") 'save-buffers-kill-terminal)
-(global-set-key [s-left] 'windmove-left)          ; move to left window
+
+(global-set-key [s-left] 'windmove-left)   ; move to left window
 (global-set-key [s-right] 'windmove-right)        ; move to right window
 (global-set-key [s-up] 'windmove-up)              ; move to upper window
 (global-set-key [s-down] 'windmove-down)          ; move to lower window
+
+(global-set-key [A-left] 'windmove-left)   ; move to left window
+(global-set-key [A-right] 'windmove-right)        ; move to right window
+(global-set-key [A-up] 'windmove-up)              ; move to upper window
+(global-set-key [A-down] 'windmove-down)          ; move to lower window
 
 
 ;;; (provide 'emacs-init)
