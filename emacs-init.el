@@ -810,6 +810,7 @@ of FILE in the current directory, suitable for creation"
 ;; clojure-semantic (https://github.com/kototama/clojure-semantic)
 ;; (Prerequisite for Lispy Clojure support)
 (add-to-list 'load-path "~/.emacs.d/clojure-semantic")
+(load "clojure.el")
 
 ;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
 (unless (package-installed-p 'lispy)
