@@ -9,4 +9,5 @@ eshell/
 project-explorer-cache/
 projectile-bookmarks.eld
 projectile.cache
+tramp
 ^#.*#$
