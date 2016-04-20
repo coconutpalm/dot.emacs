@@ -379,6 +379,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; Upgrade packages automatically on startup
 ;;  If you don't want this, comment out package-utils-upgrade-all
 ;;
+
+(unless (package-installed-p 'epl)
+  (package-install 'epl))
+(require 'epl)
+
 (unless (package-installed-p 'package-utils)
   (package-install 'package-utils))
 (require 'package-utils)
@@ -815,7 +820,7 @@ of FILE in the current directory, suitable for creation"
   "Disable some Lispy-mode keybindings that conflict with Clojure or other packages."
   (if lispy-mode
       (progn
-        (if lispy-mode-map
+        (if (boundp 'lispy-mode-map)
             (progn
               (define-key lispy-mode-map (kbd "[") nil)
               (define-key lispy-mode-map (kbd "]") nil)
@@ -825,7 +830,7 @@ of FILE in the current directory, suitable for creation"
               (define-key lispy-mode-map (kbd "C-<return>") nil)
               (define-key lispy-mode-map (kbd "S-C-<return>") nil)))
 
-        (if lispy-mode-map-x
+        (if (boundp 'lispy-mode-map-x)
             (progn
               (define-key lispy-mode-map-x (kbd "[") nil)
               (define-key lispy-mode-map-x (kbd "]") nil)
@@ -835,7 +840,7 @@ of FILE in the current directory, suitable for creation"
               (define-key lispy-mode-map-x (kbd "C-<return>") nil)
               (define-key lispy-mode-map-x (kbd "S-C-<return>") nil)))
 
-        (if lispy-mode-map-c-digits
+        (if (boundp 'lispy-mode-map-c-digits)
             (progn
               (define-key lispy-mode-map-c-digits (kbd "[") nil)
               (define-key lispy-mode-map-c-digits (kbd "]") nil)
@@ -845,7 +850,7 @@ of FILE in the current directory, suitable for creation"
               (define-key lispy-mode-map-c-digits (kbd "C-<return>") nil)
               (define-key lispy-mode-map-c-digits (kbd "S-C-<return>") nil)))
 
-        (if lispy-mode-map-lispy
+        (if (boundp 'lispy-mode-map-lispy)
             (progn
               (define-key lispy-mode-map-lispy (kbd "[") nil)
               (define-key lispy-mode-map-lispy (kbd "]") nil)
@@ -855,7 +860,7 @@ of FILE in the current directory, suitable for creation"
               (define-key lispy-mode-map-lispy (kbd "C-<return>") nil)
               (define-key lispy-mode-map-lispy (kbd "S-C-<return>") nil)))
 
-        (if lispy-mode-map-base
+        (if (boundp 'lispy-mode-map-base)
             (progn
               (define-key lispy-mode-map-base (kbd "[") nil)
               (define-key lispy-mode-map-base (kbd "]") nil)
@@ -865,7 +870,7 @@ of FILE in the current directory, suitable for creation"
               (define-key lispy-mode-map-base (kbd "C-<return>") nil)
               (define-key lispy-mode-map-base (kbd "S-C-<return>") nil)))
 
-        (if lispy-mode-map-oleh
+        (if (boundp 'lispy-mode-map-oleh)
             (progn
               (define-key lispy-mode-map-oleh (kbd "[") nil)
               (define-key lispy-mode-map-oleh (kbd "]") nil)
@@ -875,7 +880,7 @@ of FILE in the current directory, suitable for creation"
               (define-key lispy-mode-map-oleh (kbd "C-<return>") nil)
               (define-key lispy-mode-map-oleh (kbd "S-C-<return>") nil)))
 
-        (if lispy-mode-map-special
+        (if (boundp 'lispy-mode-map-special)
             (progn
               (define-key lispy-mode-map-special (kbd "[") nil)
               (define-key lispy-mode-map-special (kbd "]") nil)
@@ -885,7 +890,7 @@ of FILE in the current directory, suitable for creation"
               (define-key lispy-mode-map-special (kbd "C-<return>") nil)
               (define-key lispy-mode-map-special (kbd "S-C-<return>") nil)))
 
-        (if lispy-mode-map-paredit
+        (if (boundp 'lispy-mode-map-paredit)
             (progn
               (define-key lispy-mode-map-paredit (kbd "[") nil)
               (define-key lispy-mode-map-paredit (kbd "]") nil)
@@ -917,6 +922,13 @@ of FILE in the current directory, suitable for creation"
 (add-hook 'clojure-mode-hook 'lispy-mode-on)
 (add-hook 'emacs-lisp-mode-hook 'lispy-mode-on)
 (add-hook 'lispy-mode-hook 'lispy-mode-key-unbindings)
+
+;; (unless (package-installed-p 'spinner)
+;;   (package-install 'spinner))
+
+;; The version in the package manager is temporarily messed up; load manually for now
+(load "spinner-1.7.1.el")
+(require 'spinner)
 
 (unless (package-installed-p 'cider)
   (package-install 'cider))
@@ -1088,7 +1100,7 @@ buffer's."
 
 (defun my-go-mode-hook ()
   (setq gofmt-command "goimports")
-  (add-hook 'before-save-hook 'gofmt-before-save) ; Call Gofmt before saving
+  (add-hook 'before-save-hook #'gofmt-before-save) ; Call Gofmt before saving
 
   ;; Syntax checking for Go.  Depends on `go get -u github.com/dougm/goflymake`
   (add-to-list 'load-path (concat go-path "/src/github.com/dougm/goflymake"))
@@ -1573,4 +1585,3 @@ With ARG, do this that many times."
 
 ;;; (provide 'emacs-init)
 ;;; emacs-init.el ends here
-
