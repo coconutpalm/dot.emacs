@@ -449,8 +449,10 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (autoload 'adoc-mode "adoc-mode"
   "Major mode for editing AsciiDoc files" t)
 (add-to-list 'auto-mode-alist '("\\.adoc\\'" . adoc-mode))
+(add-to-list 'auto-mode-alist '("\\.asciidoc\\'" . adoc-mode))
 (add-to-list 'auto-mode-alist '("\\.txt\\'" . adoc-mode))
 
+(require 'asciidoc)
 
 ;;
 ;; Ruby
