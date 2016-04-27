@@ -380,14 +380,15 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;  If you don't want this, comment out package-utils-upgrade-all
 ;;
 
-(unless (package-installed-p 'epl)
-  (package-install 'epl))
-(require 'epl)
-
 (unless (package-installed-p 'package-utils)
   (package-install 'package-utils))
 (require 'package-utils)
-(package-utils-upgrade-all)
+;; (package-utils-upgrade-all)
+
+
+(unless (package-installed-p 'epl)
+  (package-install 'epl))
+(require 'epl)
 
 
 ;;
@@ -399,6 +400,15 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (exec-path-from-shell-copy-envs macos-copy-from-env-list)
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-env "GOPATH"))
+
+
+;; (unless (package-installed-p 'spinner)
+;;  (package-install 'spinner))
+;; (require 'spinner)
+
+;; The version in the package manager is temporarily messed up; load manually for now
+;; (load "spinner-1.7.1.el")
+;; (require 'spinner)
 
 
 ;;
@@ -565,6 +575,15 @@ of FILE in the current directory, suitable for creation"
 
 (unless (package-installed-p 'helm)
   (package-install 'helm))
+
+;;(unless (package-installed-p 'swiper)
+;;  (package-install 'swiper))
+;;(unless (package-installed-p 'swiper-helm)
+;;  (package-install 'swiper-helm))
+;;
+;;(require 'swiper)
+;;(require 'swiper-helm)
+
 (require 'helm-config)
 (require 'helm-buffers)
 (require 'helm-locate)
@@ -925,13 +944,6 @@ of FILE in the current directory, suitable for creation"
 (add-hook 'clojure-mode-hook 'lispy-mode-on)
 (add-hook 'emacs-lisp-mode-hook 'lispy-mode-on)
 (add-hook 'lispy-mode-hook 'lispy-mode-key-unbindings)
-
-;; (unless (package-installed-p 'spinner)
-;;   (package-install 'spinner))
-
-;; The version in the package manager is temporarily messed up; load manually for now
-(load "spinner-1.7.1.el")
-(require 'spinner)
 
 (unless (package-installed-p 'cider)
   (package-install 'cider))
