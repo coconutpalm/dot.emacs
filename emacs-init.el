@@ -20,7 +20,7 @@
 (setq clojure-repl-init-file "~/.repl.clj")
 
 ;; On MacOS, make sure we have these environment variables:
-(setq macos-copy-from-env-list '("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "PATH"))
+(setq macos-copy-from-env-list '("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "PATH" "JAVA_HOME"))
 
 
 ;;;
@@ -375,10 +375,22 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (package-initialize)
 
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+(require 'use-package)
+
+(when (not package-archive-contents)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
 ;;
 ;; Upgrade packages automatically on startup
 ;;  If you don't want this, comment out package-utils-upgrade-all
 ;;
+
+(unless (package-installed-p 'epl)
+  (package-install 'epl))
+(require 'epl)
 
 (unless (package-installed-p 'package-utils)
   (package-install 'package-utils))
@@ -386,9 +398,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; (package-utils-upgrade-all)
 
 
-(unless (package-installed-p 'epl)
-  (package-install 'epl))
-(require 'epl)
 
 
 ;;
@@ -430,9 +439,10 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (package-install 'markdown-mode))
 (require 'markdown-mode)
 
-(unless (package-installed-p 'markdown-mode+)
-  (package-install 'markdown-mode+))
-(require 'markdown-mode+)
+;; Temporarily unavailable
+;(unless (package-installed-p 'markdown-mode+)
+;  (package-install 'markdown-mode+))
+;(require 'markdown-mode+)
 
 (unless (package-installed-p 'markdown-preview-mode)
   (package-install 'markdown-preview-mode))
@@ -467,22 +477,24 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;
 ;; Ruby
 ;;
-(unless (package-installed-p 'enh-ruby-mode)
-  (package-install 'enh-ruby-mode))
+;(unless (package-installed-p 'enh-ruby-mode)
+;  (package-install 'enh-ruby-mode))
 
-(autoload 'enh-ruby-mode "enh-ruby-mode" "Major mode for ruby files" t)
-(add-to-list 'auto-mode-alist '("\\.rb$" . enh-ruby-mode))
-(add-to-list 'auto-mode-alist '("\\.rake$" . enh-ruby-mode))
-(add-to-list 'auto-mode-alist '("Rakefile$" . enh-ruby-mode))
-(add-to-list 'auto-mode-alist '("\\.gemspec$" . enh-ruby-mode))
-(add-to-list 'auto-mode-alist '("\\.ru$" . enh-ruby-mode))
-(add-to-list 'auto-mode-alist '("Gemfile$" . enh-ruby-mode))
+;(autoload 'enh-ruby-mode "enh-ruby-mode" "Major mode for ruby files" t)
+;(add-to-list 'auto-mode-alist '("\\.rb$" . enh-ruby-mode))
+;(add-to-list 'auto-mode-alist '("\\.rake$" . enh-ruby-mode))
+;(add-to-list 'auto-mode-alist '("Rakefile$" . enh-ruby-mode))
+;(add-to-list 'auto-mode-alist '("\\.gemspec$" . enh-ruby-mode))
+;(add-to-list 'auto-mode-alist '("\\.ru$" . enh-ruby-mode))
+;(add-to-list 'auto-mode-alist '("Gemfile$" . enh-ruby-mode))
 
-(add-to-list 'interpreter-mode-alist '("ruby" . enh-ruby-mode))
+;(add-to-list 'interpreter-mode-alist '("ruby" . enh-ruby-mode))
 ;; (setq enh-ruby-program "(path-to-ruby1.9)/bin/ruby") ; so that still works if ruby points to ruby1.8
-
-(setq enh-ruby-bounce-deep-indent t)
-(setq enh-ruby-hanging-brace-indent-level 2)
+;
+;(setq enh-ruby-bounce-deep-indent t)
+;(setq enh-ruby-hanging-brace-indent-level 2)
+;
+;
 
 (require 'cl) ; If you don't have it already
 
@@ -515,17 +527,6 @@ of FILE in the current directory, suitable for creation"
                    (line-number-at-pos)
                    ) t))
 
-(add-hook 'enh-ruby-mode-hook
-          (lambda ()
-            (local-set-key (kbd "C-c l") 'rspec-compile-on-line)
-            (local-set-key (kbd "C-c c") 'rspec-compile-file)
-            ))
-
-(add-hook 'enh-ruby-mode-hook
-          (lambda ()
-            (make-local-variable 'ac-ignores)
-            (add-to-list 'ac-ignores "end"))) ; auto-complete should ignore 'end'
-
 ;; Robe mode makes Emacs into a Ruby IDE
 (unless (package-installed-p 'robe)
   (package-install 'robe))
@@ -533,20 +534,6 @@ of FILE in the current directory, suitable for creation"
 (add-hook 'robe-mode-hook 'ac-robe-setup)
 
 (add-hook 'ruby-mode-hook 'robe-mode)
-(add-hook 'enh-ruby-mode-hook 'robe-mode)
-
-;; Yard mode fontifies ruby doc comments
-(unless (package-installed-p 'yard-mode)
-  (package-install 'yard-mode))
-
-(add-hook 'ruby-mode-hook 'yard-mode)
-(add-hook 'enh-ruby-mode-hook 'yard-mode)
-
-;; Dash-at-point searches docs for the word at the point
-(unless (package-installed-p 'dash-at-point)
-  (package-install 'dash-at-point))
-(global-set-key "\C-cd" 'dash-at-point)
-(global-set-key "\C-ce" 'dash-at-point-with-docset)
 
 ;; Textmate emulation
 (unless (package-installed-p 'textmate)
@@ -576,13 +563,6 @@ of FILE in the current directory, suitable for creation"
 (unless (package-installed-p 'helm)
   (package-install 'helm))
 
-;;(unless (package-installed-p 'swiper)
-;;  (package-install 'swiper))
-;;(unless (package-installed-p 'swiper-helm)
-;;  (package-install 'swiper-helm))
-;;
-;;(require 'swiper)
-;;(require 'swiper-helm)
 
 (require 'helm-config)
 (require 'helm-buffers)
@@ -679,7 +659,6 @@ of FILE in the current directory, suitable for creation"
 (require 'helm-projectile)
 
 (projectile-global-mode)
-(helm-projectile-on)
 
 (setq projectile-switch-project-action 'project-explorer-open)
 (setq projectile-enable-caching t)
@@ -698,19 +677,21 @@ of FILE in the current directory, suitable for creation"
 ;; Scala/ensime
 ;;
 
-;; Scala-mode from the package manager
-(unless (package-installed-p 'scala-mode2)
-  (package-install 'scala-mode2))
+(use-package scala-mode
+  :interpreter
+  ("scala" . scala-mode))
+
 
 ;; Extend Scala-mode with IDE features
-(unless (package-installed-p 'ensime)
-  (package-install 'ensime))
+(use-package ensime
+  :commands ensime ensime-mode)
 
 ;(setq ensime-sbt-command "/usr/local/java/activator/sbt")
-(require 'ensime)
+
 ;; Start ensime-mode whenever scala-mode is started for a buffer. You may
 ;; have to customize this step if you're not using the standard scala mode.
-(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+(add-hook 'scala-mode-hook 'ensime-mode)
+
 (add-hook 'scala-mode-hook
           (lambda ()
             ;; see http://ergoemacs.org/emacs/keyboard_shortcuts_examples.html
@@ -1100,7 +1081,6 @@ buffer's."
 (unless (package-installed-p 'go-mode)
   (package-install 'go-mode))
 (require 'go-mode)
-(require 'go-mode-autoloads)
 
 (unless (package-installed-p 'go-autocomplete)
   (package-install 'go-autocomplete))
@@ -1159,8 +1139,8 @@ buffer's."
   (package-install 's))
 (require 's)
 
-(unless (package-installed-p 'tabbar)
-  (package-install 'tabbar))
+(use-package tabbar
+  :commands ensime ensime-mode)
 
 (unless (package-installed-p 'smart-mode-line)
   (package-install 'smart-mode-line))
@@ -1178,10 +1158,6 @@ buffer's."
 (unless (package-installed-p 'tree-mode)
   (package-install 'tree-mode))
 (require 'tree-mode)
-
-(unless (package-installed-p 'windata)
-  (package-install 'windata))
-(require 'windata)
 
 
 ;; enable tabbar minor mode
