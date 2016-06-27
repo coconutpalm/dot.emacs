@@ -940,8 +940,8 @@ of FILE in the current directory, suitable for creation"
 
 (setq cider-repl-use-clojure-font-lock t)
 ;; (setq cider-repl-pop-to-buffer-on-connect nil)
-(add-hook 'cider-repl-mode-hook #'company-mode)
-(add-hook 'cider-mode-hook #'company-mode)
+;; (add-hook 'cider-repl-mode-hook #'company-mode)
+;; (add-hook 'cider-mode-hook #'company-mode)
 
 ;; Abbreviate the REPL prompt if it gets long
 (setq cider-repl-prompt-function
