@@ -937,11 +937,24 @@ of FILE in the current directory, suitable for creation"
 (unless (package-installed-p 'ac-cider)
   (package-install 'ac-cider))
 (require 'ac-cider)
+(add-hook 'cider-mode-hook 'ac-flyspell-workaround)
+(add-hook 'cider-mode-hook 'ac-cider-setup)
+(add-hook 'cider-repl-mode-hook 'ac-cider-setup)
+(eval-after-load "auto-complete"
+  '(progn
+     (add-to-list 'ac-modes 'cider-mode)
+     (add-to-list 'ac-modes 'cider-repl-mode)))
+
+
+(defun set-auto-complete-as-completion-at-point-function ()
+  (setq completion-at-point-functions '(auto-complete)))
+
+(add-hook 'auto-complete-mode-hook 'set-auto-complete-as-completion-at-point-function)
+(add-hook 'cider-mode-hook 'set-auto-complete-as-completion-at-point-function)
+
 
 (setq cider-repl-use-clojure-font-lock t)
 ;; (setq cider-repl-pop-to-buffer-on-connect nil)
-;; (add-hook 'cider-repl-mode-hook #'company-mode)
-;; (add-hook 'cider-mode-hook #'company-mode)
 
 ;; Abbreviate the REPL prompt if it gets long
 (setq cider-repl-prompt-function
