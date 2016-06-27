@@ -1508,7 +1508,7 @@ tabbar.el v1.7."
           (insert "    "))
         (forward-line 1))
       (concat (buffer-substring-no-properties (point-min) (point-max))
-              "\n\n"))))
+              "\n\n;; Execute the following to upgrade packages:\n(package-utils-upgrade-all)"))))
 
 (setq initial-scratch-message (ted-random-emacs-haiku))
 ;(setq initial-major-mode 'text-mode)
