@@ -398,7 +398,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; (package-utils-upgrade-all)
 
 
-;; Spell checking
+;; Spell checking: from https://raw.githubusercontent.com/kaushalmodi/.emacs.d/master/setup-files/setup-spell.el
 (require 'setup-spell)
 
 
