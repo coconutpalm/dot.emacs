@@ -398,10 +398,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; (package-utils-upgrade-all)
 
 
-;; Spell checking: from https://raw.githubusercontent.com/kaushalmodi/.emacs.d/master/setup-files/setup-spell.el
-(require 'setup-spell)
-
-
 ;;
 ;; Fix macos environment variable handling
 ;;
@@ -674,6 +670,16 @@ of FILE in the current directory, suitable for creation"
 (global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
+
+
+
+;; Spell checking: from https://raw.githubusercontent.com/kaushalmodi/.emacs.d/master/setup-files/setup-spell.el
+(require 'setup-spell)
+
+;; Helm support: from https://raw.githubusercontent.com/pronobis/helm-flyspell/master/helm-flyspell.el
+(require 'helm-flyspell)
+(define-key flyspell-mode-map (kbd "C-;") 'helm-flyspell-correct)
+
 
 ;;
 ;; Scala/ensime
