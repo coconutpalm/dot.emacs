@@ -81,7 +81,7 @@
 
 (setq inhibit-splash-screen t)
 (when window-system (global-unset-key "\C-z"))
-(when window-system (set-frame-size (selected-frame) 120 45))
+(when window-system (set-frame-size (selected-frame) 120 37))
 (setq x-select-enable-clipboard t) ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
 (setq-default standard-indent 3) ; set standard indent to 3 rather that 4
@@ -214,9 +214,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
 
 
-; make completion buffers disappear after 3 seconds.
+; make completion buffers disappear after 5 seconds.
 (add-hook 'completion-setup-hook
-  (lambda () (run-at-time 3 nil
+  (lambda () (run-at-time 5 nil
     (lambda () (delete-windows-on "*Completions*")))))
 
 
@@ -396,8 +396,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (package-install 'package-utils))
 (require 'package-utils)
 ;; (package-utils-upgrade-all)
-
-
 
 
 ;;
@@ -672,6 +670,16 @@ of FILE in the current directory, suitable for creation"
 (global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
+
+
+
+;; Spell checking: from https://raw.githubusercontent.com/kaushalmodi/.emacs.d/master/setup-files/setup-spell.el
+(require 'setup-spell)
+
+;; Helm support: from https://raw.githubusercontent.com/pronobis/helm-flyspell/master/helm-flyspell.el
+(require 'helm-flyspell)
+(define-key flyspell-mode-map (kbd "C-;") 'helm-flyspell-correct)
+
 
 ;;
 ;; Scala/ensime
@@ -1521,7 +1529,8 @@ tabbar.el v1.7."
           (insert "    "))
         (forward-line 1))
       (concat (buffer-substring-no-properties (point-min) (point-max))
-              "\n\n;; Execute the following to upgrade packages:\n(package-utils-upgrade-all)\n"))))
+              "\n\n;; Execute the following to upgrade packages:\n(package-utils-upgrade-all)\n\n;; and the following to change font sizes:\n(set-face-attribute 'default nil :height 140 :weight 'normal)
+\n"))))
 
 (setq initial-scratch-message (ted-random-emacs-haiku))
 ;(setq initial-major-mode 'text-mode)
