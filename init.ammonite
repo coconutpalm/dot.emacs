@@ -1,0 +1,4 @@
+#!/bin/bash
+mkdir ~/.ammonite && curl -L -o ~/.ammonite/predef.scala https://git.io/vo4wx
+mkdir -p ~/bin
+curl -L -o ~/bin/amm https://git.io/vo4w5 && chmod +x ~/bin/amm

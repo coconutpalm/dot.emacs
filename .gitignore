@@ -10,4 +10,4 @@ project-explorer-cache/
 projectile-bookmarks.eld
 projectile.cache
 tramp
-^#.*#$
+ede-projects.el
