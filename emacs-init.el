@@ -81,7 +81,7 @@
 
 (setq inhibit-splash-screen t)
 (when window-system (global-unset-key "\C-z"))
-(when window-system (set-frame-size (selected-frame) 120 45))
+(when window-system (set-frame-size (selected-frame) 120 37))
 (setq x-select-enable-clipboard t) ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
 (setq-default standard-indent 3) ; set standard indent to 3 rather that 4
@@ -214,9 +214,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
 
 
-; make completion buffers disappear after 3 seconds.
+; make completion buffers disappear after 5 seconds.
 (add-hook 'completion-setup-hook
-  (lambda () (run-at-time 3 nil
+  (lambda () (run-at-time 5 nil
     (lambda () (delete-windows-on "*Completions*")))))
 
 
@@ -398,6 +398,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; (package-utils-upgrade-all)
 
 
+;; Spell checking
+(require 'setup-spell)
 
 
 ;;
