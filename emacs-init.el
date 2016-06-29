@@ -23,6 +23,46 @@
 (setq macos-copy-from-env-list '("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "PATH" "JAVA_HOME"))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Package manager init
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Initialize the package manager with the MELPA archive
+
+
+(unless (boundp 'package--initialized)
+  ;; don't set gnu/org/melpa if the site-local or local-preinit have
+  ;; done so (e.g. firewalled corporate environments)
+  (require 'package)
+  (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+                           ("org" . "http://orgmode.org/elpa/")
+                           ("melpa" . "http://melpa.org/packages/")
+                           ("elpa" . "http://tromy.com/elpa/")
+                           ("marmalade" . "http://marmalade-repo.org/packages/"))))
+(package-initialize)
+(when (not package-archive-contents)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+
+;;
+;; Upgrade packages automatically on startup
+;;  If you don't want this, comment out package-utils-upgrade-all
+;;
+
+(unless (package-installed-p 'epl)
+  (package-install 'epl))
+(require 'epl)
+
+(unless (package-installed-p 'package-utils)
+  (package-install 'package-utils))
+(require 'package-utils)
+;; (package-utils-upgrade-all)
+
+
+
 ;;;
 ;;; Generic utilities
 ;;;
@@ -50,6 +90,161 @@
            (t nil)))
 
 
+
+(make-variable-buffer-local 'tags-file-name)
+(make-variable-buffer-local 'show-paren-mode)
+
+(add-to-list 'auto-mode-alist '("\\.log\\'" . auto-revert-tail-mode))
+(defun add-to-load-path (path)
+  "Add PATH to LOAD-PATH if PATH exists."
+  (when (file-exists-p path)
+    (add-to-list 'load-path path)))
+(add-to-load-path (expand-file-name "lisp" user-emacs-directory))
+
+(add-to-list 'auto-mode-alist '("\\.xml\\'" . nxml-mode))
+;; WORKAROUND http://debbugs.gnu.org/cgi/bugreport.cgi?bug=16449
+(add-hook 'nxml-mode-hook (lambda () (flyspell-mode -1)))
+
+(use-package ibuffer
+  :ensure nil
+  :bind ("C-x C-b". ibuffer))
+
+(use-package subword
+  :ensure nil
+  :diminish subword-mode
+  :config (global-subword-mode t))
+
+(use-package dired
+  :ensure nil
+  :config
+  ;; a workflow optimisation too far?
+  (bind-key "C-c c" 'sbt-command dired-mode-map)
+  (bind-key "C-c e" 'next-error dired-mode-map))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; This section is for generic interactive convenience methods.
+;; Arguably could be uploaded to MELPA as package 'fommil-utils.
+;; References included where shamelessly stolen.
+(defun indent-buffer ()
+  "Indent the entire buffer."
+  (interactive)
+  (save-excursion
+    (delete-trailing-whitespace)
+    (indent-region (point-min) (point-max) nil)
+    (untabify (point-min) (point-max))))
+
+(defun unfill-paragraph (&optional region)
+  ;; http://www.emacswiki.org/emacs/UnfillParagraph
+  "Transforms a paragraph in REGION into a single line of text."
+  (interactive)
+  (let ((fill-column (point-max)))
+    (fill-paragraph nil region)))
+
+(defun unfill-buffer ()
+  "Unfill the buffer for function `visual-line-mode'."
+  (interactive)
+  (let ((fill-column (point-max)))
+    (fill-region 0 (point-max))))
+
+(defun revert-buffer-no-confirm ()
+  ;; http://www.emacswiki.org/emacs-en/download/misc-cmds.el
+  "Revert buffer without confirmation."
+  (interactive)
+  (revert-buffer t t))
+
+(defun contextual-backspace ()
+  "Hungry whitespace or delete word depending on context."
+  (interactive)
+  (if (looking-back "[[:space:]\n]\\{2,\\}" (- (point) 2))
+      (while (looking-back "[[:space:]\n]" (- (point) 1))
+        (delete-char -1))
+    (cond
+     ((and (boundp 'smartparens-strict-mode)
+           smartparens-strict-mode)
+      (sp-backward-kill-word 1))
+     (subword-mode
+      (subword-backward-kill 1))
+     (t
+      (backward-kill-word 1)))))
+
+(defun exit ()
+  "Short hand for DEATH TO ALL PUNY BUFFERS!"
+  (interactive)
+  (if (daemonp)
+      (message "You silly")
+    (save-buffers-kill-emacs)))
+
+(defun safe-kill-emacs ()
+  "Only exit Emacs if this is a small session, otherwise prompt."
+  (interactive)
+  (if (daemonp)
+      ;; intentionally not save-buffers-kill-terminal as it has an
+      ;; impact on other client sessions.
+      (delete-frame)
+    (let ((count-buffers (length (buffer-list))))
+      (if (< count-buffers 10)
+          (save-buffers-kill-emacs)
+        (message-box "use 'M-x exit'")))))
+
+(defun declare-buffer-bankruptcy ()
+  "Declare buffer bankruptcy and clean up everything using `midnight'."
+  (interactive)
+  (let ((clean-buffer-list-delay-general 0)
+        (clean-buffer-list-delay-special 0))
+    (clean-buffer-list)))
+
+
+(defvar ido-buffer-whitelist
+  '("^[*]\\(notmuch\\-hello\\|unsent\\|ag search\\|grep\\|eshell\\).*")
+  "Whitelist regexp of `clean-buffer-list' buffers to show when switching buffer.")
+
+(defun midnight-clean-or-ido-whitelisted (name)
+  "T if midnight is likely to kill the buffer named NAME, unless whitelisted.
+Approximates the rules of `clean-buffer-list'."
+  (require 'midnight)
+  (require 'dash)
+  (cl-flet* ((buffer-finder (regexp) (string-match regexp name))
+             (buffer-find (regexps) (-partial #'-find #'buffer-finder)))
+    (and (buffer-find clean-buffer-list-kill-regexps)
+         (not (or (buffer-find clean-buffer-list-kill-never-regexps)
+                  (buffer-find ido-buffer-whitelist))))))
+
+(defun company-or-dabbrev-complete ()
+  "Force a `company-complete', falling back to `dabbrev-expand'."
+  (interactive)
+  (if company-mode
+      (company-complete)
+    (call-interactively 'dabbrev-expand)))
+
+
+(defun company-backends-for-buffer ()
+  "Calculate appropriate `company-backends' for the buffer.
+For small projects, use TAGS for completions, otherwise use a
+very minimal set."
+  (projectile-visit-project-tags-table)
+  (cl-flet ((size () (buffer-size (get-file-buffer tags-file-name))))
+    (let ((base '(company-keywords company-dabbrev-code company-yasnippet)))
+      (if (and tags-file-name (<= 20000000 (size)))
+          (list (push 'company-etags base))
+        (list base)))))
+
+
+(defun sp-restrict-c (sym)
+  "Smartparens restriction on `SYM' for C-derived parenthesis."
+  (sp-restrict-to-pairs-interactive "{([" sym))
+
+
+(defun plist-merge (&rest plists)
+  "Merge property lists"
+  (if plists
+      (let ((result (copy-sequence (car plists))))
+        (while (setq plists (cdr plists))
+          (let ((plist (car plists)))
+            (while plist
+              (setq result (plist-put result (car plist) (car (cdr plist)))
+                    plist (cdr (cdr plist))))))
+        result)
+    nil))
 
 ;;
 ;; Unbind key bindings
@@ -80,9 +275,7 @@
 ;;; Misc display settings
 
 (setq inhibit-splash-screen t)
-(when window-system (global-unset-key "\C-z"))
-(when window-system (set-frame-size (selected-frame) 120 37))
-(setq x-select-enable-clipboard t) ; enable use of system clipboard across emacs and applications
+(setq x-select-enable-clipboard t)      ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
 (setq-default standard-indent 3) ; set standard indent to 3 rather that 4
 (setq-default tab-width 3)
@@ -106,7 +299,10 @@
 (delete-selection-mode 1) ; typing with the mark active will overwrite the marked region
 (transient-mark-mode 1) ; enable visual feedback on selections, default since v23
 
-(when (eq system-type 'darwin)
+(when window-system
+  (global-unset-key "\C-z")
+  (set-frame-size (selected-frame) 120 37)
+
   ;; default Latin font (e.g. Consolas)
   (set-face-attribute 'default nil :family "Mononoki")
 
@@ -115,7 +311,7 @@
   ;; WARNING!  Depending on the default font,
   ;; if the size is not supported very well, the frame will be clipped
   ;; so that the beginning of the buffer may not be visible correctly.
-  (set-face-attribute 'default nil :height 140 :weight 'normal)
+  (set-face-attribute 'default nil :height 100 :weight 'normal)
 
   ;; use specific font for Korean charset.
   ;; if you want to use different font size for specific charset,
@@ -124,6 +320,7 @@
 
   ;; you may want to add different for other charset in this way.
   )
+
 
 ;; No trailing whitespace, please...
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
@@ -137,6 +334,19 @@
 (setq-default auto-revert-interval 10) ; default is 5 s
 ;(auto-revert-tail-mode t) ; auto-revert if file grows at the end, also works for remote files
 (setq-default auto-revert-verbose nil)
+
+
+;; protects against accidental mouse movements
+;; http://stackoverflow.com/a/3024055/1041691
+(add-hook 'mouse-leave-buffer-hook
+          (lambda () (when (and (>= (recursion-depth) 1)
+                           (active-minibuffer-window))
+                  (abort-recursive-edit))))
+
+
+;; *scratch* is immortal
+(add-hook 'kill-buffer-query-functions
+          (lambda () (not (member (buffer-name) '("*scratch*" "scratch.el")))))
 
 
 ;; ansi-term / multi-term
@@ -246,21 +456,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode))
 
 
-;; auto-complete
-(add-to-list 'load-path "~/.emacs.d/elisp-root")
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(setq ac-show-menu-immediately-on-auto-complete t)
-(setq-default ac-sources (add-to-list 'ac-sources 'ac-source-dictionary))
-(global-auto-complete-mode t)
-; Start auto-completion after 2 characters of a word
-(setq ac-auto-start t)
-; case sensitivity is important when finding matches
-(setq ac-ignore-case nil)
-(setq ac-delay 0.0)
-(setq ac-quick-help-delay 0.5)
-(ac-config-default)
-
 (defun my-semicolon ()
   (interactive)
   (insert ";")
@@ -351,52 +546,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
              (require 'groovy-electric)
              (groovy-electric-mode)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Package manager-managed
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-; Initialize the package manager with the MELPA archive
-(require 'package)
-(add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/") t)
-
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/") t)
-
-(add-to-list 'package-archives
-             '("melpa-stable" . "http://melpa-stable.milkbox.net/packages/") t)
-
-(add-to-list 'package-archives
-             '("tromey" . "http://tromey.com/elpa/") t)
-
-(when (< emacs-major-version 24)
-  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
-(package-refresh-contents)
-
-(package-initialize)
-
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-(require 'use-package)
-
-(when (not package-archive-contents)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-;;
-;; Upgrade packages automatically on startup
-;;  If you don't want this, comment out package-utils-upgrade-all
-;;
-
-(unless (package-installed-p 'epl)
-  (package-install 'epl))
-(require 'epl)
-
-(unless (package-installed-p 'package-utils)
-  (package-install 'package-utils))
-(require 'package-utils)
-;; (package-utils-upgrade-all)
-
 
 ;;
 ;; Fix macos environment variable handling
@@ -409,13 +558,34 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (exec-path-from-shell-copy-env "GOPATH"))
 
 
-;; (unless (package-installed-p 'spinner)
-;;  (package-install 'spinner))
-;; (require 'spinner)
+(unless (package-installed-p 'auto-complete)
+  (package-install 'auto-complete))
+(require 'auto-complete)
+(require 'auto-complete-config)
 
-;; The version in the package manager is temporarily messed up; load manually for now
-;; (load "spinner-1.7.1.el")
-;; (require 'spinner)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+(setq ac-show-menu-immediately-on-auto-complete t)
+(setq-default ac-sources (add-to-list 'ac-sources 'ac-source-dictionary))
+(global-auto-complete-mode t)
+; Start auto-completion after 2 characters of a word
+(setq ac-auto-start t)
+; case sensitivity is important when finding matches
+(setq ac-ignore-case nil)
+(setq ac-delay 0.0)
+(setq ac-quick-help-delay 0.5)
+(ac-config-default)
+
+
+(unless (package-installed-p 'popup)
+  (package-install 'popup))
+(require 'popup)
+
+
+
+(unless (package-installed-p 'spinner)
+  (package-install 'spinner))
+ (require 'spinner)
+
 
 
 ;;
@@ -540,9 +710,16 @@ of FILE in the current directory, suitable for creation"
 
 ;; Magit - Git support
 
-(unless (package-installed-p 'magit)
-  (package-install 'magit))
-(require 'magit)
+(use-package git-gutter
+  :diminish git-gutter-mode
+  :commands git-gutter-mode)
+
+(use-package magit
+  :commands magit-status magit-blame magit-refresh-all
+  :init (setq
+         magit-revert-buffers nil)
+  :bind (("s-g" . magit-status)
+         ("s-b" . magit-blame)))
 
 (setq magit-revert-buffers 0.5)
 (setq magit-push-always-verify nil)
@@ -552,6 +729,16 @@ of FILE in the current directory, suitable for creation"
 (global-set-key (kbd "C-x G") 'magit-diff-unstaged)
 (global-set-key (kbd "C-x C-G") 'magit-diff-unstaged)
 (add-hook 'after-save-hook 'magit-refresh-all)
+
+(use-package git-timemachine
+  :commands git-timemachine
+  :init (setq
+         git-timemachine-abbreviation-length 4))
+
+(use-package etags-select
+  :commands etags-select-find-tag)
+
+
 
 ;;
 ;; Projectile / Helm
@@ -569,11 +756,6 @@ of FILE in the current directory, suitable for creation"
 (require 'helm-files)
 
 (helm-mode 1)
-
-(unless (package-installed-p 'helm-ls-git)
-  (package-install 'helm-ls-git))
-(require 'helm-ls-git)
-(global-set-key (kbd "C-c pg") 'helm-ls-git-ls)
 
 (unless (package-installed-p 'helm-descbinds)
   (package-install 'helm-descbinds))
@@ -681,37 +863,169 @@ of FILE in the current directory, suitable for creation"
 (define-key flyspell-mode-map (kbd "C-;") 'helm-flyspell-correct)
 
 
+(use-package company
+  :diminish company-mode
+  :commands company-mode
+  :init
+  (setq
+   company-dabbrev-ignore-case nil
+   company-dabbrev-code-ignore-case nil
+   company-dabbrev-downcase nil
+   company-idle-delay 0
+   company-minimum-prefix-length 4)
+  :config
+  ;; dabbrev is too slow, use C-TAB explicitly
+  (delete 'company-dabbrev company-backends)
+  ;; disables TAB in company-mode, freeing it for yasnippet
+  (define-key company-active-map [tab] nil)
+  (define-key company-active-map (kbd "TAB") nil))
+
+
+
+(use-package hydra
+  :commands defhydra
+  :bind ("C-M-s" . hydra-splitter/body))
+
+(defun hydra-splitter/body ()
+  "Defines a Hydra to resize the windows."
+  ;; overwrites the original function and calls it
+  ;; https://github.com/abo-abo/hydra/issues/149
+  (interactive)
+  (require 'hydra-examples)
+  (funcall
+   (defhydra hydra-splitter nil "splitter"
+     ("<left>" hydra-move-splitter-left)
+     ("<down>" hydra-move-splitter-down)
+     ("<up>" hydra-move-splitter-up)
+     ("<right>" hydra-move-splitter-right))))
+
+(defun hydra-smerge/body ()
+  "Defines a Hydra to give ediff commands in `smerge-mode'."
+  (interactive)
+  (funcall
+   (defhydra hydra-smerge nil "smerge"
+     ("p" smerge-prev)
+     ("n" smerge-next)
+     ("e" smerge-ediff)
+     ("a" smerge-keep-mine)
+     ("b" smerge-keep-other))))
+(add-hook 'smerge-mode-hook (lambda () (hydra-smerge/body)))
+
+
 ;;
 ;; Scala/ensime
 ;;
 
+
+;; Java / Scala support for templates
+(defun mvn-package-for-buffer ()
+  "Calculate the expected package name for the buffer;
+assuming it is in a maven-style project."
+  (let* ((kind (file-name-extension buffer-file-name))
+         (root (locate-dominating-file default-directory kind)))
+    (when root
+      (require 'subr-x) ;; maybe we should just use 's
+      (replace-regexp-in-string
+       (regexp-quote "/") "."
+       (string-remove-suffix "/"
+                             (string-remove-prefix
+                              (expand-file-name (concat root "/" kind "/"))
+                              default-directory))
+       nil 'literal))))
+
+
+(defun scala-mode-newline-comments ()
+  "Custom newline appropriate for `scala-mode'."
+  ;; shouldn't this be in a post-insert hook?
+  (interactive)
+  (newline-and-indent)
+  (scala-indent:insert-asterisk-on-multiline-comment))
+
+(defun c-mode-newline-comments ()
+  "Newline with indent and preserve multiline comments."
+  ;; TODO: annoyingly preserve single line comments, I don't want that
+  (interactive)
+  (c-indent-new-comment-line)
+  (indent-according-to-mode))
+
+
 (use-package scala-mode
   :interpreter
-  ("scala" . scala-mode))
+  ("scala" . scala-mode)
+  :init
+  (setq
+   scala-indent:use-javadoc-style t
+   scala-indent:align-parameters t)
+  :config
+  (sp-local-pair 'scala-mode "(" nil :post-handlers '(("||\n[i]" "RET")))
+  (sp-local-pair 'scala-mode "{" nil :post-handlers '(("||\n[i]" "RET") ("| " "SPC")))
+
+  (bind-key "RET" 'scala-mode-newline-comments scala-mode-map) ; Or: reindent-then-newline-and-indent
+  ;; BUG https://github.com/Fuco1/smartparens/issues/468
+  ;; backwards/next not working particularly well
+
+  (bind-key [f1] 'ensime-sbt scala-mode-map)
+  (bind-key "M-R" 'ensime-refactor-rename scala-mode-map)
+  (bind-key "M-M" 'ensime-refactor-extract-method scala-mode-map)
+  (bind-key "M-L" 'ensime-refactor-extract-local scala-mode-map)
+  (bind-key "M-I" 'ensime-refactor-inline-local scala-mode-map)
+  (bind-key "C-O" 'ensime-refactor-organize-imports scala-mode-map)
+  (bind-key "C-M-j" 'join-line scala-mode-map)
+  (bind-key "<backtab>" 'scala-indent:indent-with-reluctant-strategy scala-mode-map)
+  (bind-key "s-n" 'ensime-search scala-mode-map)
+  (bind-key "s-t" 'ensime-print-type-at-point scala-mode-map)
+  (bind-key "M-." 'ensime-edit-definition-with-fallback scala-mode-map)
+
+  ;; i.e. bypass company-mode
+  (bind-key "C-<tab>" 'dabbrev-expand scala-mode-map)
+
+  (bind-key "C-c c" 'sbt-command scala-mode-map)
+  (bind-key "C-c e" 'next-error scala-mode-map))
 
 
-;; Extend Scala-mode with IDE features
+(defun ensime-edit-definition-with-fallback ()
+  "Variant of `ensime-edit-definition' with ctags if ENSIME is not available."
+  (interactive)
+  (unless (and (ensime-connection-or-nil)
+               (ensime-edit-definition))
+    (projectile-find-tag)))
+
+
 (use-package ensime
-  :commands ensime ensime-mode)
+  :ensure t
+  :commands ensime ensime-mode
+  :init
+  (put 'ensime-auto-generate-config 'safe-local-variable #'booleanp)
+  (setq
+   ensime-default-buffer-prefix "ENSIME-"
+   ensime-prefer-noninteractive t
+   ensime-refactor-preview t
+   ensime-refactor-preview-override-hunk 10)
+  :config
+  (auto-complete-mode)   ;; Turn off auto-complete since Ensime does that already
+  (subword-mode)
+  (require 'ensime-helm)
+  (add-hook 'git-timemachine-mode-hook (lambda () (ensime-mode 0)))
 
-;(setq ensime-sbt-command "/usr/local/java/activator/sbt")
+  (setq ensime-goto-test-config-defaults
+        (plist-merge ensime-goto-test-config-defaults
+                     '(:test-class-suffixes ("Spec" "Test" "Check"))
+                     '(:test-template-fn ensime-goto-test--test-template-scalatest-flatspec))))
 
-;; Start ensime-mode whenever scala-mode is started for a buffer. You may
-;; have to customize this step if you're not using the standard scala mode.
-(add-hook 'scala-mode-hook 'ensime-mode)
+;; This should be done by Ensime, but:
+;;    https://github.com/ensime/ensime-server/issues/61
+(defcustom ensime-mode-key-prefix [?\C-c ?\C-e]
+  "The prefix key for ensime-mode commands."
+  :group 'ensime-mode
+  :type 'sexp)
 
-(add-hook 'scala-mode-hook
-          (lambda ()
-            ;; see http://ergoemacs.org/emacs/keyboard_shortcuts_examples.html
-            (local-set-key [f1] 'ensime-sbt)
-            (local-set-key (kbd "M-R") 'ensime-refactor-rename)
-            (local-set-key (kbd "M-M") 'ensime-refactor-extract-method)
-            (local-set-key (kbd "M-L") 'ensime-refactor-extract-local)
-            (local-set-key (kbd "M-I") 'ensime-refactor-inline-local)
-            (local-set-key (kbd "C-O") 'ensime-refactor-organize-imports)
-            ))
+(require 'ensime)
 
-(setq exec-path (append exec-path (list "~/liftweb" )))
+;; (require 'ensime-vars)
+;; (require 'ensime-company)
+;; (require 'ensime-notes)
+
+(setq exec-path (append exec-path (list "~/liftweb" "/usr/bin")))
 
 (setq ensime-sem-high-faces
   '(
@@ -727,54 +1041,76 @@ of FILE in the current directory, suitable for creation"
    (package . font-lock-preprocessor-face)
    ))
 
-;; Scala-mode settings
-(add-hook 'scala-mode-hook '(lambda ()
 
-  ;; Bind the 'newline-and-indent' command to RET (aka 'enter'). This
-  ;; is normally also available as C-j. The 'newline-and-indent'
-  ;; command has the following functionality: 1) it removes trailing
-  ;; whitespace from the current line, 2) it create a new line, and 3)
-  ;; indents it.  An alternative is the
-  ;; 'reindent-then-newline-and-indent' command.
-  (local-set-key (kbd "RET") 'newline-and-indent)
+(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :init (setq sbt:prefer-nested-projects t)
+  :config
+  ;; WORKAROUND: https://github.com/hvesalai/sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
 
-  ;; Alternatively, bind the 'newline-and-indent' command and
-  ;; 'scala-indent:insert-asterisk-on-multiline-comment' to RET in
-  ;; order to get indentation and asterisk-insertion within multi-line
-  ;; comments.
-  ;; (local-set-key (kbd "RET") '(lambda ()
-  ;;   (interactive)
-  ;;   (newline-and-indent)
-  ;;   (scala-indent:insert-asterisk-on-multiline-comment)))
+  (bind-key "C-c c" 'sbt-command sbt:mode-map)
+  (bind-key "C-c e" 'next-error sbt:mode-map))
 
-  ;; Bind the 'join-line' command to C-M-j. This command is normally
-  ;; bound to M-^ which is hard to access, especially on some European
-  ;; keyboards. The 'join-line' command has the effect or joining the
-  ;; current line with the previous while fixing whitespace at the
-  ;; joint.
-  (local-set-key (kbd "C-M-j") 'join-line)
+(defcustom
+  scala-mode-prettify-symbols
+  '(("->" . ?→)
+    ("<-" . ?←)
+    ("=>" . ?⇒)
+    ("<=" . ?≤)
+    (">=" . ?≥)
+    ("==" . ?≡)
+    ("!=" . ?≠)
+    ;; implicit https://github.com/chrissimpkins/Hack/issues/214
+    ("+-" . ?±))
+  "Prettify symbols for scala-mode.")
 
-  ;; Bind the backtab (shift tab) to
-  ;; 'scala-indent:indent-with-reluctant-strategy command. This is usefull
-  ;; when using the 'eager' mode by default and you want to "outdent" a
-  ;; code line as a new statement.
-  (local-set-key (kbd "<backtab>") 'scala-indent:indent-with-reluctant-strategy)
+(add-hook 'scala-mode-hook
+          (lambda ()
+            (show-paren-mode t)
+            (smartparens-mode t)
+            (yas-minor-mode t)
+            (git-gutter-mode t)
+            (setq prettify-symbols-alist scala-mode-prettify-symbols)
+            (prettify-symbols-mode t)
+            (scala-mode:goto-start-of-code)))
 
-  ;; and other bindings here
-  (auto-complete-mode)  ;; Turn off auto-complete since Ensime does that already
-  (subword-mode)        ;; Turn on subword-mode so we respect camelCaseWords
-))
+(add-hook 'ensime-mode-hook
+          (lambda ()
+            (company-mode t)
+            (let ((backends (company-backends-for-buffer)))
+              (setq company-backends (push 'ensime-company backends)))))
+
+;;..............................................................................
+;; Java
+(use-package cc-mode
+  :ensure nil
+  :config
+  (bind-key "C-c c" 'sbt-command java-mode-map)
+  (bind-key "C-c e" 'next-error java-mode-map)
+  (bind-key "RET" 'c-mode-newline-comments java-mode-map))
+
+(add-hook 'java-mode-hook
+          (lambda ()
+            (whitespace-mode-with-local-variables)
+            (show-paren-mode t)
+            (smartparens-mode t)
+            (yas-minor-mode t)
+            (git-gutter-mode t)
+            (company-mode t)
+            (ensime-mode t)))
 
 
-(unless (package-installed-p 'yasnippet)
-  (package-install 'yasnippet))
-(require 'yasnippet)
-;;(yas/load-directory "~/snippets")
-(yas-global-mode 1)
-(add-to-list 'ac-sources 'ac-source-yasnippet)
-;; Fix yasnippet / auto-complete incompatibility
-(defalias 'yas/get-snippet-tables 'yas--get-snippet-tables)
-(defalias 'yas/table-hash 'yas--table-hash)
+;;..............................................................................
+;; C
+(add-hook 'c-mode-hook (lambda ()
+                         (yas-minor-mode t)
+                         (company-mode t)
+                         (smartparens-mode t)))
 
 
 ;; smart tabs (indent with tabs, align with spaces)
@@ -1080,19 +1416,25 @@ buffer's."
 (add-hook 'clojure-mode-hook
           (lambda ()
             ;; see http://ergoemacs.org/emacs/keyboard_shortcuts_examples.html
+            (git-gutter-mode t)
             (local-set-key [f1] 'cider-jack-in)))
 
 (unless (package-installed-p 'clojure-mode-extra-font-locking)
   (package-install 'clojure-mode-extra-font-locking))
 (require 'clojure-mode-extra-font-locking)
 
-(unless (package-installed-p 'auto-complete)
-  (package-install 'auto-complete))
-(require 'auto-complete)
 
-(unless (package-installed-p 'popup)
-  (package-install 'popup))
-(require 'popup)
+(unless (package-installed-p 'yasnippet)
+  (package-install 'yasnippet))
+(require 'yasnippet)
+;;(yas/load-directory "~/snippets")
+(yas-global-mode 1)
+(add-to-list 'ac-sources 'ac-source-yasnippet)
+;; Fix yasnippet / auto-complete incompatibility
+(defalias 'yas/get-snippet-tables 'yas--get-snippet-tables)
+(defalias 'yas/table-hash 'yas--table-hash)
+
+
 
 (unless (package-installed-p 'rainbow-mode)
   (package-install 'rainbow-mode))
