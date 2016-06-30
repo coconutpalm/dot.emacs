@@ -16,6 +16,9 @@
 (setq nodejs-path "/usr/bin/nodejs")
 (setq lein-path "~/bin/lein")
 
+;; Scala
+(setq ensime-sbt-command "/Users/dorme/bin/sbt/bin/sbt")
+
 ;; In Clojure, Cmd-enter inserts the contents of this file into the current repl
 (setq clojure-repl-init-file "~/.repl.clj")
 
@@ -1002,8 +1005,9 @@ assuming it is in a maven-style project."
    ensime-refactor-preview t
    ensime-refactor-preview-override-hunk 10)
   :config
-  (auto-complete-mode)   ;; Turn off auto-complete since Ensime does that already
+  (auto-complete-mode) ;; Turn off auto-complete since Ensime does that already
   (subword-mode)
+
   (require 'ensime-helm)
   (add-hook 'git-timemachine-mode-hook (lambda () (ensime-mode 0)))
 
