@@ -13,11 +13,10 @@
 ;;; Configuration settings
 ;;;
 
+(setq debug-on-error t)
+
 (setq nodejs-path "/usr/bin/nodejs")
 (setq lein-path "~/bin/lein")
-
-;; Scala
-(setq ensime-sbt-command "/Users/dorme/bin/sbt/bin/sbt")
 
 ;; In Clojure, Cmd-enter inserts the contents of this file into the current repl
 (setq clojure-repl-init-file "~/.repl.clj")
@@ -37,9 +36,9 @@
   ;; don't set gnu/org/melpa if the site-local or local-preinit have
   ;; done so (e.g. firewalled corporate environments)
   (require 'package)
-  (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+  (setq package-archives '(("melpa" . "http://melpa.org/packages/")
+                           ("gnu" . "http://elpa.gnu.org/packages/")
                            ("org" . "http://orgmode.org/elpa/")
-                           ("melpa" . "http://melpa.org/packages/")
                            ("elpa" . "http://tromy.com/elpa/")
                            ("marmalade" . "http://marmalade-repo.org/packages/"))))
 (package-initialize)
@@ -985,6 +984,8 @@ assuming it is in a maven-style project."
   (bind-key "C-c c" 'sbt-command scala-mode-map)
   (bind-key "C-c e" 'next-error scala-mode-map))
 
+(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+
 
 (defun ensime-edit-definition-with-fallback ()
   "Variant of `ensime-edit-definition' with ctags if ENSIME is not available."
@@ -1011,7 +1012,8 @@ assuming it is in a maven-style project."
   (require 'ensime-helm)
   (add-hook 'git-timemachine-mode-hook (lambda () (ensime-mode 0)))
 
-  (setq ensime-goto-test-config-defaults
+  (setq ensime-sbt-command "/Users/dorme/bin/sbt/sbt"
+        ensime-goto-test-config-defaults
         (plist-merge ensime-goto-test-config-defaults
                      '(:test-class-suffixes ("Spec" "Test" "Check"))
                      '(:test-template-fn ensime-goto-test--test-template-scalatest-flatspec))))
@@ -1086,6 +1088,7 @@ assuming it is in a maven-style project."
 (add-hook 'ensime-mode-hook
           (lambda ()
             (company-mode t)
+            (setq ensime-sbt-command "/Users/dorme/bin/sbt/sbt")
             (let ((backends (company-backends-for-buffer)))
               (setq company-backends (push 'ensime-company backends)))))
 
