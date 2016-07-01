@@ -1,14 +1,17 @@
 #!/bin/bash
+
+echo "This script assumes that curl is installed"
+
 HERE=`pwd`
 
 mkdir -p ~/bin
-ln -s dot.sbt ~/.sbt
-ln -s dot.emacs ~/.emacs
-ln -s dot.vimrc ~/.vimrc
+ln -s ~/.emacs.d/dot.sbt ~/.sbt
+ln -s ~/.emacs.d/dot.emacs ~/.emacs
+ln -s ~/.emacs.d/dot.vimrc ~/.vimrc
 
 # Ammonite Scala shell
 mkdir ~/.ammonite
-ln -s predef.scala ~/.ammonite/predef.scala
+ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
 
 cd ~/bin
 
@@ -33,11 +36,17 @@ cat > mvn <<EOF
 #!/bin/bash
 export MAVEN_HOME=`pwd`/maven
 export M2_HOME=`pwd`/maven
-$M2_HOME/bin/mvn $*
+`pwd`/maven/bin/mvn $*
 EOF
 chmod 755 mvn
 
 # Ammonite Scala shell
 curl -L -o ~/bin/amm https://git.io/vo4w5 && chmod +x ~/bin/amm
+
+cat >> ~/.bashrc <<EOF
+
+export PATH="$PATH:~/bin"
+EOF
+
 
 echo "See the 'baseline' folder for common apps"
