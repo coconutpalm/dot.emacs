@@ -43,10 +43,21 @@ def commitAll(message: String) = { %git('commit, "-a", "-m", message)}
 
 def bash = { %bash("-l") }
 
-def c(dir : String) = { cd! dir }
+def c(dir : Path) = { cd! dir }
 
-def l = { ls!  }
-def make = { %make }
+def l = { ls! }
 def predefs = { %vim home/".emacs.d"/"predef.scala" }
+
+def make(targets : String*) = {
+   def multiMake(targets : String*) = targets match {
+      case target :: Nil => %make(target)
+      case target :: more => %make(target); multiMake(more)
+   }
+   if (targets.length == 0) {
+      %make
+   } else {
+      multiMake(targets : _*)
+   } 
+}
 
 ammonite.shell.Configure(repl, wd)
