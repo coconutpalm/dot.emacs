@@ -49,12 +49,12 @@ def l = { ls! }
 def predefs = { %vim home/".emacs.d"/"predef.scala" }
 
 def make(targets : String*) = {
-   def multiMake(targets : String*) = targets match {
+   def multiMake(targets : String*) : Any = targets match {
       case target :: Nil => %make(target)
-      case target :: more => %make(target); multiMake(more)
+      case target :: more => %make(target); multiMake(more : _*)
    }
    if (targets.length == 0) {
-      %make
+      %make()
    } else {
       multiMake(targets : _*)
    } 
