@@ -38,8 +38,8 @@ def pull = { %git 'pull }
 def push = { %git 'push }
 def merge(branch: String) = { %git('merge, branch) }
 def commit = { %git('commit) }
-def commitall = { %git('commit, "-a") }
-def commitall(message: String) = { %git('commit, "-a", "-m", message)}
+def commitAll = { %git('commit, "-a") }
+def commitAll(message: String) = { %git('commit, "-a", "-m", message)}
 
 def bash = { %bash("-l") }
 
