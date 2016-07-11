@@ -13,3 +13,4 @@ tramp
 ede-projects.el
 sbt-launcher
 launchers
+*.swp
