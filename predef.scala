@@ -1,10 +1,32 @@
+//Slick is at: http://slick.lightbend.com/doc/3.1.1/code-generation.html
+
+load.ivy("com.typesafe.slick" %% "slick" % "3.1.1")
+load.ivy("com.typesafe.slick" %% "slick-codegen" % "3.1.1")
+load.ivy("org.slf4j" % "slf4j-nop" % "1.6.4")
+load.ivy("com.lihaoyi" %% "scalarx" % "0.3.1")
+
 load.ivy("com.lihaoyi" %% "ammonite-shell" % ammonite.Constants.version)
+
 @
 val shellSession = ammonite.shell.ShellSession()
+
 import shellSession._
 import ammonite.shell.PPrints._
 import ammonite.ops._
 import ammonite.shell._
+import rx._
+
+import slick.driver.PostgresDriver.api._
+import scala.concurrent.ExecutionContext.Implicits.global
+
+
+val redshift=System.getProperty("REDSHIFT")
+val redshift_user=System.getProperty("RS_USER")
+val redshift_pass=System.getProperty("RS_PASS")
+val redshift_db=System.getProperty("RS_DB")
+val redshift_port=System.getProperty("RS_PORT")
+
+
 
 implicit def symbol2str(s : Symbol) : String = s.name
 implicit def path2str(p : Path) : String = {
@@ -14,6 +36,7 @@ implicit def relpath2str(p : RelPath) : String = {
   val absPath = wd/p
   absPath.segments.foldLeft("") { (cur,next) => cur + java.io.File.separator + next }
 }
+
 
 val beetl=root/'Users/'dorme/'shopsmart/"beetl-deps"/'beetl
 val dim=root/'Users/'dorme/'dev/'datainmotion/"datainmotion-server"
@@ -60,4 +83,8 @@ def make(targets : String*) = {
    } 
 }
 
+def webjar(lib : String, asset : String, version : String) = s"//cdn.jsdelivr.net/webjars/org.webjars/${lib}/${version}/${asset}"
+
+
 ammonite.shell.Configure(repl, wd)
+
