@@ -1,0 +1,20 @@
+Example time tracking file
+
+
+* Time tracking week of July 18
+** Overview
+(C-c C-x C-r - Insert clock report)
+(C-c C-c - Update report or detail line clock total)
+
+#+BEGIN: clocktable :maxlevel 4 :block thisweek :scope tree
+#+CAPTION: Clock summary at [2016-07-22 Fri 10:42], for week 2016-W29.
+
+#+END:
+
+** Work week detail
+(C-c C-x C-i - Clock in for task)
+(C-c C-x C-o - Clock out for task)
+
+*** Monday
+**** Backlog grooming
+CLOCK: [2016-07-18 Mon 14:00]--[2016-07-18 Mon 15:30] =>  3:47

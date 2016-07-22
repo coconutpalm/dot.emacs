@@ -1953,6 +1953,8 @@ With ARG, do this that many times."
 (global-set-key [A-up] 'windmove-up)              ; move to upper window
 (global-set-key [A-down] 'windmove-down)          ; move to lower window
 
+(find-file (concat (file-name-as-directory "~/") "TIME.org" ))
+
 
 ;;; (provide 'emacs-init)
 ;;; emacs-init.el ends here
