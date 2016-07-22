@@ -27,7 +27,6 @@ val redshift_db=System.getProperty("RS_DB")
 val redshift_port=System.getProperty("RS_PORT")
 
 
-
 implicit def symbol2str(s : Symbol) : String = s.name
 implicit def path2str(p : Path) : String = {
   p.segments.foldLeft("") { (cur,next) => cur + java.io.File.separator + next }
@@ -70,6 +69,7 @@ def c(dir : Path) = { cd! dir }
 
 def l = { ls! }
 def predefs = { %vim home/".emacs.d"/"predef.scala" }
+def emacsd = { %vim home/".emacs.d"/"emacs-init.el" }
 
 def make(targets : String*) = {
    def multiMake(targets : String*) : Unit = targets.toList match {
@@ -83,6 +83,7 @@ def make(targets : String*) = {
    } 
 }
 
+// @see http://www.webjars.org/documentation
 def webjar(lib : String, asset : String, version : String) = s"//cdn.jsdelivr.net/webjars/org.webjars/${lib}/${version}/${asset}"
 
 

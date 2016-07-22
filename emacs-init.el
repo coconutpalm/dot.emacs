@@ -14,6 +14,7 @@
 ;;;
 
 (setq debug-on-error t)
+(add-to-list 'load-path "~/.emacs.d/elisp")
 
 (setq nodejs-path "/usr/bin/nodejs")
 (setq lein-path "~/bin/lein")
@@ -24,6 +25,8 @@
 ;; On MacOS, make sure we have these environment variables:
 (setq macos-copy-from-env-list '("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "PATH" "JAVA_HOME"))
 
+;; My minor mode
+(require 'modi-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Package manager init
@@ -110,6 +113,9 @@
 (use-package ibuffer
   :ensure nil
   :bind ("C-x C-b". ibuffer))
+
+(use-package ivy
+  :ensure nil)
 
 (use-package subword
   :ensure nil
@@ -313,7 +319,7 @@ very minimal set."
   ;; WARNING!  Depending on the default font,
   ;; if the size is not supported very well, the frame will be clipped
   ;; so that the beginning of the buffer may not be visible correctly.
-  (set-face-attribute 'default nil :height 100 :weight 'normal)
+  (set-face-attribute 'default nil :height 120 :weight 'normal)
 
   ;; use specific font for Korean charset.
   ;; if you want to use different font size for specific charset,
@@ -352,7 +358,6 @@ very minimal set."
 
 
 ;; ansi-term / multi-term
-(add-to-list 'load-path "~/.emacs.d/elisp")
 (require 'multi-term)
 (setq multi-term-program "/bin/bash")
 
@@ -953,14 +958,12 @@ assuming it is in a maven-style project."
 
 (use-package scala-mode
   :interpreter
-  ("scala" . scala-mode)
+  ("activator" . scala-mode)
   :init
   (setq
    scala-indent:use-javadoc-style t
    scala-indent:align-parameters t)
   :config
-  (sp-local-pair 'scala-mode "(" nil :post-handlers '(("||\n[i]" "RET")))
-  (sp-local-pair 'scala-mode "{" nil :post-handlers '(("||\n[i]" "RET") ("| " "SPC")))
 
   (bind-key "RET" 'scala-mode-newline-comments scala-mode-map) ; Or: reindent-then-newline-and-indent
   ;; BUG https://github.com/Fuco1/smartparens/issues/468
@@ -1665,6 +1668,9 @@ tabbar.el v1.7."
 (unless (package-installed-p 'org)
   (package-install 'org))
 (require 'org)
+
+(setq org-time-clocksum-format (quote (:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t)))
+
 (require 'ob-clojure)                   ; Use Clojure/CIDER for executable code in org files
 (setq org-babel-default-header-args     ; Use a single session for each org file
            (cons '(:session . "default-clojure")
@@ -1878,7 +1884,7 @@ tabbar.el v1.7."
           (insert "    "))
         (forward-line 1))
       (concat (buffer-substring-no-properties (point-min) (point-max))
-              "\n\n;; Execute the following to upgrade packages:\n(package-utils-upgrade-all)\n\n;; and the following to change font sizes:\n(set-face-attribute 'default nil :height 140 :weight 'normal)
+              "\n\n;; Execute the following to upgrade packages:\n(package-utils-upgrade-all)\n\n;; and the following to change font sizes:\n(set-face-attribute 'default nil :height 120 :weight 'normal)
 \n"))))
 
 (setq initial-scratch-message (ted-random-emacs-haiku))

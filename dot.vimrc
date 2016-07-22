@@ -267,6 +267,7 @@ NeoBundle 'ciaranm/inkpot'
 
 NeoBundle 'bling/vim-airline'
 NeoBundle 'vim-airline/vim-airline-themes'
+NeoBundle 'rakr/vim-two-firewatch'
 " NeoBundle 'osyo-manga/unite-airline_themes', {'autoload':{'unite_sources':'airline_themes'}}
 
 NeoBundle 'ervandew/supertab'
@@ -414,7 +415,10 @@ highlight SignColumn guibg=black      " gVim/MacVim
 " Plugin 'airblade/vim-gitgutter'
 " Plugin 'mhinz/vim-signify'
 
-let g:airline_theme='luna'
+set background=light
+colo two-firewatch
+
+let g:airline_theme='twofirewatch'
 set laststatus=2
 set ttimeoutlen=50
 
