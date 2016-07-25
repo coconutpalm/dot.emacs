@@ -142,8 +142,8 @@ NeoBundle 'guns/vim-sexp'
 let g:sexp_insert_after_wrap = 1
 
 "NeoBundle 'tpope/vim-fireplace'
-NeoBundle 'luochen1990/rainbow'
-let g:rainbow_active = 1
+"NeoBundle 'luochen1990/rainbow'
+"let g:rainbow_active = 1
 
 
 "****************************************************** Send commands to terminal
@@ -184,6 +184,7 @@ iabbrev ===  <Esc>70i-<Esc>
 
 "Underline line above
 iabbrev --- <Esc>kyyp<c-v>$jr-A
+
 
 " Underline the current line with dashes in normal mode
 "nnoremap <F5> yyp<c-v>$r-

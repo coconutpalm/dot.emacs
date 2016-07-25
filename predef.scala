@@ -62,6 +62,8 @@ def merge(branch: String) = { %git('merge, branch) }
 def commit = { %git('commit) }
 def commitAll = { %git('commit, "-a") }
 def commitAll(message: String) = { %git('commit, "-a", "-m", message)}
+def diff = { %git 'diff }
+def diff(file: String) = { %git('diff, file) }
 
 def bash = { %bash("-l") }
 
@@ -70,6 +72,7 @@ def c(dir : Path) = { cd! dir }
 def l = { ls! }
 def predefs = { %vim home/".emacs.d"/"predef.scala" }
 def emacsd = { %vim home/".emacs.d"/"emacs-init.el" }
+def vimrc = { %vim home/".emacs.d"/"dot.vimrc" }
 
 def make(targets : String*) = {
    def multiMake(targets : String*) : Unit = targets.toList match {

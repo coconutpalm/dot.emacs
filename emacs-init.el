@@ -1420,6 +1420,7 @@ buffer's."
   (package-install 'clojure-mode))
 (require 'clojure-mode)
 
+(add-to-list 'auto-mode-alist '("\\.hl\\'" . clojure-mode))
 (add-to-list 'auto-mode-alist '("\\.boot\\'" . clojure-mode))
 (add-to-list 'magic-mode-alist '(".* boot" . clojure-mode)) ; Shebang script support
 
