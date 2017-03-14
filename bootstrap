@@ -13,26 +13,24 @@ ln -s ~/.emacs.d/dot.vimrc ~/.vimrc
 mkdir ~/.ammonite
 ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
 
-cd ~/bin
-
-unzip $HERE/sbt-launcher.zip
-cat > sbt <<EOF
+cd ~/bin && unzip $HERE/sbt-launcher.zip
+cat > ~/bin/sbt <<EOF
 #!/bin/bash
 sbt-launcher/sbt %*
 EOF
-chmod 755 sbt
+chmod 755 ~/bin/sbt
 
-curl -fsSLo boot https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
-chmod 755 boot
+curl -fsSLo ~/bin/boot https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
+chmod 755 ~/bin/boot
 
-curl -fsSLo lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
-chmod 755 lein
+curl -fsSLo ~/bin/lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+chmod 755 ~/bin/lein
 
 # Note: no 'latest' link in Maven's repo; have to upgrade this manually
-curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
-tar -xzvf maven-latest.tgz
-ln -s apache-maven* maven
-cat > mvn <<EOF
+cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+cd ~/bin && tar -xzvf maven-latest.tgz
+cd ~/bin && ln -s apache-maven* maven
+cat > ~/bin/mvn <<EOF
 #!/bin/bash
 export MAVEN_HOME=`pwd`/maven
 export M2_HOME=`pwd`/maven
