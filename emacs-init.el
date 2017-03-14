@@ -1720,8 +1720,8 @@ tabbar.el v1.7."
 (global-set-key (kbd "C-c C-n") 'flycheck-tip-cycle)
 
 ; Malabar Mode (for Java)
-(unless (package-installed-p 'malabar-mode)
-  (package-install 'malabar-mode))
+;; (unless (package-installed-p 'malabar-mode)
+;;   (package-install 'malabar-mode))
 
 (unless (package-installed-p 'cedet)
   (package-install 'cedet))
@@ -1740,20 +1740,20 @@ tabbar.el v1.7."
 ;(add-to-list 'auto-mode-alist '("\\.java\\'" . malabar-mode))
 
                                         ; tab bar
-(defun my-java-malabar-mode-hook ()
-  ;; IDEA default for jump to source
-  (define-key c-mode-base-map "\C-\M-g" 'malabar-jump-to-thing)
-  (global-set-key "\M-n" 'semantic-ia-complete-symbol)
-  )
-(add-hook 'c-mode-common-hook 'my-java-malabar-mode-hook)
+;; (defun my-java-malabar-mode-hook ()
+;;   ;; IDEA default for jump to source
+;;   (define-key c-mode-base-map "\C-\M-g" 'malabar-jump-to-thing)
+;;   (global-set-key "\M-n" 'semantic-ia-complete-symbol)
+;;   )
+;; (add-hook 'c-mode-common-hook 'my-java-malabar-mode-hook)
 
 
 ;; Compiling the file on save makes malabar display the errors in the
 ;; Java source code.
-(add-hook 'malabar-mode-hook
-          (lambda ()
-            (add-hook 'after-save-hook 'malabar-compile-file-silently
-                      nil t)))
+;; (add-hook 'malabar-mode-hook
+;;           (lambda ()
+;;             (add-hook 'after-save-hook 'malabar-compile-file-silently
+;;                       nil t)))
 
 (require 'compile)
 (setq compilation-error-regexp-alist
