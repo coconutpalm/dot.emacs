@@ -28,6 +28,14 @@
 ;; My minor mode
 (require 'modi-mode)
 
+
+(defun starts-with (begins s)
+      "Return non-nil if string S starts with BEGINS."
+      (cond ((>= (length s) (length begins))
+             (string-equal (substring s 0 (length begins)) begins))
+            (t nil)))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Package manager init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,9 +53,15 @@
                            ("elpa" . "http://tromy.com/elpa/")
                            ("marmalade" . "http://marmalade-repo.org/packages/"))))
 (package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
 (when (not package-archive-contents)
   (package-refresh-contents)
   (package-install 'use-package))
+
 (require 'use-package)
 (setq use-package-always-ensure t)
 
@@ -1516,9 +1530,6 @@ buffer's."
   (package-install 's))
 (require 's)
 
-(use-package tabbar
-  :commands ensime ensime-mode)
-
 (unless (package-installed-p 'smart-mode-line)
   (package-install 'smart-mode-line))
 (require 'smart-mode-line)
@@ -1536,16 +1547,21 @@ buffer's."
   (package-install 'tree-mode))
 (require 'tree-mode)
 
+;; We don't want tabbar in aquamacs
+(unless (boundp 'aquamacs-version)
 
-;; enable tabbar minor mode
-;(setq tabbar-use-images nil) ; speed up by not using images
-(tabbar-mode 1)
-(global-set-key [M-left] 'tabbar-backward-tab)
-(global-set-key [M-right] 'tabbar-forward-tab)
+  (use-package tabbar
+    :commands ensime ensime-mode)
+
+  ;; enable tabbar minor mode
+                                        ;(setq tabbar-use-images nil) ; speed up by not using images
+  (tabbar-mode 1)
+  (global-set-key [M-left] 'tabbar-backward-tab)
+  (global-set-key [M-right] 'tabbar-forward-tab)
 
 
-;; tabbar coloring code...
-(set-face-attribute
+  ;; tabbar coloring code...
+  (set-face-attribute
    'tabbar-default nil
    :background "gray60")
   (set-face-attribute
@@ -1565,97 +1581,90 @@ buffer's."
    'tabbar-separator nil
    :height 1.0)
 
-;; Change padding of the tabs
-;; we also need to set separator to avoid overlapping tabs by highlighted tabs
-(custom-set-variables
- '(tabbar-separator (quote (0.5))))
+  ;; Change padding of the tabs
+  ;; we also need to set separator to avoid overlapping tabs by highlighted tabs
+  (custom-set-variables
+   '(tabbar-separator (quote (0.5))))
 
-;; adding spaces
-(defun tabbar-buffer-tab-label (tab)
-  "Return a label for TAB.  That is, a string used to represent it on the tab bar."
-  (let ((label  (if tabbar--buffer-show-groups
-                    (format "[%s]  " (tabbar-tab-tabset tab))
-                  (format "%s  " (tabbar-tab-value tab)))))
-    ;; Unless the tab bar auto scrolls to keep the selected tab
-    ;; visible, shorten the tab label to keep as many tabs as possible
-    ;; in the visible area of the tab bar.
-    (if tabbar-auto-scroll-flag
-        label
-      (tabbar-shorten
-       label (max 1 (/ (window-width)
-                       (length (tabbar-view
-                                (tabbar-current-tabset)))))))))
+  ;; adding spaces
+  (defun tabbar-buffer-tab-label (tab)
+    "Return a label for TAB.  That is, a string used to represent it on the tab bar."
+    (let ((label  (if tabbar--buffer-show-groups
+                      (format "[%s]  " (tabbar-tab-tabset tab))
+                    (format "%s  " (tabbar-tab-value tab)))))
+      ;; Unless the tab bar auto scrolls to keep the selected tab
+      ;; visible, shorten the tab label to keep as many tabs as possible
+      ;; in the visible area of the tab bar.
+      (if tabbar-auto-scroll-flag
+          label
+        (tabbar-shorten
+         label (max 1 (/ (window-width)
+                         (length (tabbar-view
+                                  (tabbar-current-tabset)))))))))
 
-(dolist (func '(tabbar-mode tabbar-forward-tab tabbar-forward-group tabbar-backward-tab tabbar-backward-group))
-      (autoload func "tabbar" "Tabs at the top of buffers and easy control-tab navigation"))
+  (dolist (func '(tabbar-mode tabbar-forward-tab tabbar-forward-group tabbar-backward-tab tabbar-backward-group))
+    (autoload func "tabbar" "Tabs at the top of buffers and easy control-tab navigation"))
 
-(defmacro defun-prefix-alt (name on-no-prefix on-prefix &optional do-always)
-  `(defun ,name (arg)
-     (interactive "P")
-     ,do-always
-     (if (equal nil arg)
-         ,on-no-prefix
-       ,on-prefix)))
+  (defmacro defun-prefix-alt (name on-no-prefix on-prefix &optional do-always)
+    `(defun ,name (arg)
+       (interactive "P")
+       ,do-always
+       (if (equal nil arg)
+           ,on-no-prefix
+         ,on-prefix)))
 
-(defun-prefix-alt shk-tabbar-next (tabbar-forward-tab) (tabbar-forward-group) (tabbar-mode 1))
-(defun-prefix-alt shk-tabbar-prev (tabbar-backward-tab) (tabbar-backward-group) (tabbar-mode 1))
-(global-set-key [(control tab)] 'shk-tabbar-next)
-(global-set-key [(control shift tab)] 'shk-tabbar-prev)
+  (defun-prefix-alt shk-tabbar-next (tabbar-forward-tab) (tabbar-forward-group) (tabbar-mode 1))
+  (defun-prefix-alt shk-tabbar-prev (tabbar-backward-tab) (tabbar-backward-group) (tabbar-mode 1))
+  (global-set-key [(control tab)] 'shk-tabbar-next)
+  (global-set-key [(control shift tab)] 'shk-tabbar-prev)
 
-;; Add a buffer modification state indicator in the tab label, and place a
-;; space around the label to make it looks less crowd.
-(defadvice tabbar-buffer-tab-label (after fixup_tab_label_space_and_flag activate)
-  (setq ad-return-value
-        (if (and (buffer-modified-p (tabbar-tab-value tab))
-                 (buffer-file-name (tabbar-tab-value tab)))
-            (concat " + " (concat ad-return-value " "))
-          (concat " " (concat ad-return-value " ")))))
+  ;; Add a buffer modification state indicator in the tab label, and place a
+  ;; space around the label to make it looks less crowd.
+  (defadvice tabbar-buffer-tab-label (after fixup_tab_label_space_and_flag activate)
+    (setq ad-return-value
+          (if (and (buffer-modified-p (tabbar-tab-value tab))
+                   (buffer-file-name (tabbar-tab-value tab)))
+              (concat " + " (concat ad-return-value " "))
+            (concat " " (concat ad-return-value " ")))))
 
-;; Called each time the modification state of the buffer changed.
-(defun ztl-modification-state-change ()
-   (tabbar-set-template tabbar-current-tabset nil)
-   (tabbar-display-update))
+  ;; Called each time the modification state of the buffer changed.
+  (defun ztl-modification-state-change ()
+    (tabbar-set-template tabbar-current-tabset nil)
+    (tabbar-display-update))
 
-;; First-change-hook is called BEFORE the change is made.
-(defun ztl-on-buffer-modification ()
-   (set-buffer-modified-p t)
-   (ztl-modification-state-change))
+  ;; First-change-hook is called BEFORE the change is made.
+  (defun ztl-on-buffer-modification ()
+    (set-buffer-modified-p t)
+    (ztl-modification-state-change))
 
-(add-hook 'after-save-hook 'ztl-modification-state-change)
-;; This doesn't work for revert, I don't know.
-;;(add-hook 'after-revert-hook 'ztl-modification-state-change)
-(add-hook 'first-change-hook 'ztl-on-buffer-modification)
+  (add-hook 'after-save-hook 'ztl-modification-state-change)
+  ;; This doesn't work for revert, I don't know.
+  ;;(add-hook 'after-revert-hook 'ztl-modification-state-change)
+  (add-hook 'first-change-hook 'ztl-on-buffer-modification)
 
-(setq tabbar-cycle-scope 'tabs)
-
-
-(defun starts-with (begins s)
-      "Return non-nil if string S starts with BEGINS."
-      (cond ((>= (length s) (length begins))
-             (string-equal (substring s 0 (length begins)) begins))
-            (t nil)))
+  (setq tabbar-cycle-scope 'tabs)
 
 
-(setq tabbar-buffer-groups-function
-      (lambda ()
-  "Return the name of the tab group names the current buffer belongs to.
+  (setq tabbar-buffer-groups-function
+        (lambda ()
+          "Return the name of the tab group names the current buffer belongs to.
 There are two groups: Emacs buffers (those whose name starts with '*', plus
 dired buffers), and the rest.  This works at least with Emacs v24.2 using
 tabbar.el v1.7."
-  (list (cond ((starts-with "*sbt*" (buffer-name)) "user")
-              ((starts-with "*cider-error" (buffer-name)) "emacs")
-              ((starts-with "*cider" (buffer-name)) "user")
-              ((starts-with "*nrepl-server" (buffer-name)) "user")
-              ((string-equal "*eshell*" (buffer-name)) "user")
-              ((starts-with "*term" (buffer-name)) "user")
-              ((string-equal "*scratch*" (buffer-name)) "lisp")
-              ((eq major-mode 'emacs-lisp-mode) "lisp")
-              ((starts-with "*magit" (buffer-name)) "magit")
-              ((starts-with "*helm" (buffer-name)) "helm")
-              ((starts-with "*Helm" (buffer-name)) "helm")
-              ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
-              ((eq major-mode 'dired-mode) "emacs")
-              (t "user")))))
+          (list (cond ((starts-with "*sbt*" (buffer-name)) "user")
+                      ((starts-with "*cider-error" (buffer-name)) "emacs")
+                      ((starts-with "*cider" (buffer-name)) "user")
+                      ((starts-with "*nrepl-server" (buffer-name)) "user")
+                      ((string-equal "*eshell*" (buffer-name)) "user")
+                      ((starts-with "*term" (buffer-name)) "user")
+                      ((string-equal "*scratch*" (buffer-name)) "lisp")
+                      ((eq major-mode 'emacs-lisp-mode) "lisp")
+                      ((starts-with "*magit" (buffer-name)) "magit")
+                      ((starts-with "*helm" (buffer-name)) "helm")
+                      ((starts-with "*Helm" (buffer-name)) "helm")
+                      ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
+                      ((eq major-mode 'dired-mode) "emacs")
+                      (t "user"))))))
 
 ;;SQL
 
