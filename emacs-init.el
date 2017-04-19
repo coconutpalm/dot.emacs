@@ -1945,7 +1945,12 @@ With ARG, do this that many times."
 
 (when (boundp 'aquamacs-version)
   (define-key osx-key-mode-map [home] 'beginning-of-line)
-  (define-key osx-key-mode-map [end] 'end-of-line))
+  (define-key osx-key-mode-map [end] 'end-of-line)
+  (define-key osx-key-mode-map (kbd "C-<left>") 'backward-word)
+  (define-key osx-key-mode-map (kbc "C-<right>") 'forward-word))
+
+(global-set-key "\M-[1;5C"    'forward-word)      ; Ctrl+right   => forward word
+(global-set-key "\M-[1;5D"    'backward-word)     ; Ctrl+left    => backward word
 
 (global-set-key (kbd "C-<left>") 'backward-word)
 (global-set-key (kbd "C-<right>") 'forward-word)
