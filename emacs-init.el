@@ -43,15 +43,13 @@
 ; Initialize the package manager with the MELPA archive
 
 
-(unless (boundp 'package--initialized)
-  ;; don't set gnu/org/melpa if the site-local or local-preinit have
-  ;; done so (e.g. firewalled corporate environments)
-  (require 'package)
-  (setq package-archives '(("melpa" . "http://melpa.org/packages/")
-                           ("gnu" . "http://elpa.gnu.org/packages/")
-                           ("org" . "http://orgmode.org/elpa/")
-                           ("elpa" . "http://tromy.com/elpa/")
-                           ("marmalade" . "http://marmalade-repo.org/packages/"))))
+(require 'package)
+(setq package-archives '(("melpa" . "http://melpa.org/packages/")
+			 ("gnu" . "http://elpa.gnu.org/packages/")
+			 ("org" . "http://orgmode.org/elpa/")
+			;("elpa" . "http://tromy.com/elpa/")
+			 ("marmalade" . "http://marmalade-repo.org/packages/")))
+
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
