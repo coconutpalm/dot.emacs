@@ -971,7 +971,7 @@ assuming it is in a maven-style project."
 
 (use-package scala-mode
   :interpreter
-  ("activator" . scala-mode)
+  ("sbt" . scala-mode)
   :init
   (setq
    scala-indent:use-javadoc-style t
