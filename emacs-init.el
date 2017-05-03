@@ -1000,7 +1000,7 @@ assuming it is in a maven-style project."
   (bind-key "C-c c" 'sbt-command scala-mode-map)
   (bind-key "C-c e" 'next-error scala-mode-map))
 
-(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+;; (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
 
 
 (defun ensime-edit-definition-with-fallback ()
