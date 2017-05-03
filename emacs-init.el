@@ -305,6 +305,7 @@ very minimal set."
 (global-hl-line-mode 1) ; highlight current line, turn it on for all modes by default
 (set-face-background 'hl-line "lightgray")
 (setq column-number-mode t)
+(global-prettify-symbols-mode)
 
 (setq display-time-day-and-date t
       display-time-24hr-format nil)
@@ -1149,7 +1150,7 @@ assuming it is in a maven-style project."
 (smart-tabs-insinuate 'c 'c++ 'java 'javascript 'cperl 'python 'ruby 'nxml)
 
 
-; Clojure
+;; Clojure
 
 ;;
 ;; Smart parenthesis matching everywhere, please
@@ -1436,8 +1437,22 @@ buffer's."
 (add-to-list 'auto-mode-alist '("\\.boot\\'" . clojure-mode))
 (add-to-list 'magic-mode-alist '(".* boot" . clojure-mode)) ; Shebang script support
 
+(defun clojure-pretty-symbols ()
+  "Pretty symbols for Clojure code."
+  (setq prettify-symbols-alist
+        '(("fn" . 955)                  ; lambda
+          ("comp" . ?∘)               ; dot
+          ("->" . ?→)
+          ("<-" . ?←)
+          ("=>" . ?⇒)
+          ("<=" . ?≤)
+          (">=" . ?≥)
+          ("=" . ?≡)
+          ("unless" . ?≠))))
+
 (add-hook 'clojure-mode-hook
           (lambda ()
+            (clojure-pretty-symbols)
             ;; see http://ergoemacs.org/emacs/keyboard_shortcuts_examples.html
             (git-gutter-mode t)
             (local-set-key [f1] 'cider-jack-in)))
@@ -1945,7 +1960,7 @@ With ARG, do this that many times."
   (define-key osx-key-mode-map [home] 'beginning-of-line)
   (define-key osx-key-mode-map [end] 'end-of-line)
   (define-key osx-key-mode-map (kbd "C-<left>") 'backward-word)
-  (define-key osx-key-mode-map (kbc "C-<right>") 'forward-word))
+  (define-key osx-key-mode-map (kbd "C-<right>") 'forward-word))
 
 (global-set-key "\M-[1;5C"    'forward-word)      ; Ctrl+right   => forward word
 (global-set-key "\M-[1;5D"    'backward-word)     ; Ctrl+left    => backward word
