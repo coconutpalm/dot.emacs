@@ -972,6 +972,7 @@ assuming it is in a maven-style project."
 (use-package scala-mode
   :interpreter
   ("sbt" . scala-mode)
+  ("routes" . scala-mode)
   :init
   (setq
    scala-indent:use-javadoc-style t
@@ -983,6 +984,7 @@ assuming it is in a maven-style project."
   ;; backwards/next not working particularly well
 
   (bind-key [f1] 'ensime-sbt scala-mode-map)
+  (bind-key "M-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
   (bind-key "M-R" 'ensime-refactor-rename scala-mode-map)
   (bind-key "M-M" 'ensime-refactor-extract-method scala-mode-map)
   (bind-key "M-L" 'ensime-refactor-extract-local scala-mode-map)
