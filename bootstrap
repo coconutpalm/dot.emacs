@@ -16,7 +16,7 @@ ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
 cd ~/bin && unzip $HERE/sbt-launcher.zip
 cat > ~/bin/sbt <<EOF
 #!/bin/bash
-sbt-launcher/sbt %*
+sbt-launcher/sbt $@
 EOF
 chmod 755 ~/bin/sbt
 
@@ -34,7 +34,7 @@ cat > ~/bin/mvn <<EOF
 #!/bin/bash
 export MAVEN_HOME=`pwd`/maven
 export M2_HOME=`pwd`/maven
-`pwd`/maven/bin/mvn %*
+`pwd`/maven/bin/mvn $@
 EOF
 chmod 755 ~/bin/mvn
 
