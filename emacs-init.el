@@ -1482,7 +1482,7 @@ buffer's."
 (unless (package-installed-p 'yasnippet)
   (package-install 'yasnippet))
 (require 'yasnippet)
-;;(yas/load-directory "~/snippets")
+(yas/load-directory "~/.snippets")
 (yas-global-mode 1)
 (add-to-list 'ac-sources 'ac-source-yasnippet)
 ;; Fix yasnippet / auto-complete incompatibility
