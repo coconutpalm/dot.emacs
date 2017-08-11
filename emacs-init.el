@@ -864,6 +864,7 @@ of FILE in the current directory, suitable for creation"
 (setq projectile-enable-caching t)
 (setq projectile-completion-system 'helm)
 (setq projectile-indexing-method 'native)
+(setq projectile-use-git-grep t)
 
 (global-set-key (kbd "C-x p p") 'projectile-switch-project)
 (global-set-key (kbd "C-c C-f") 'projectile-find-file)
