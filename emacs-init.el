@@ -875,6 +875,17 @@ of FILE in the current directory, suitable for creation"
 (global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
 
 
+(use-package highlight-symbol
+  :diminish highlight-symbol-mode
+  :commands highlight-symbol
+  :bind ("s-h" . highlight-symbol))
+
+
+;; Like Eclipse's quick outline
+(use-package popup-imenu
+  :commands popup-imenu
+  :bind ("C-o" . popup-imenu))
+
 
 ;; Spell checking: from https://raw.githubusercontent.com/kaushalmodi/.emacs.d/master/setup-files/setup-spell.el
 (require 'setup-spell)
