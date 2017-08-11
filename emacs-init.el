@@ -1023,7 +1023,9 @@ assuming it is in a maven-style project."
    ensime-default-buffer-prefix "ENSIME-"
    ensime-prefer-noninteractive t
    ensime-refactor-preview t
-   ensime-refactor-preview-override-hunk 10)
+   ensime-refactor-preview-override-hunk 10
+   ensime-startup-snapshot-notification nil
+   scala-indent :step 1)
   :config
   (auto-complete-mode) ;; Turn off auto-complete since Ensime does that already
   (subword-mode)
@@ -1031,7 +1033,8 @@ assuming it is in a maven-style project."
   (require 'ensime-helm)
   (add-hook 'git-timemachine-mode-hook (lambda () (ensime-mode 0)))
 
-  (setq ensime-sbt-command "/Users/dorme/bin/sbt/sbt"
+  (setq ensime-sbt-command "/usr/local/bin/sbt"
+        ensime-search-interface 'helm
         ensime-goto-test-config-defaults
         (plist-merge ensime-goto-test-config-defaults
                      '(:test-class-suffixes ("Spec" "Test" "Check"))
