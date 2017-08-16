@@ -172,21 +172,6 @@
   (interactive)
   (revert-buffer t t))
 
-(defun contextual-backspace ()
-  "Hungry whitespace or delete word depending on context."
-  (interactive)
-  (if (looking-back "[[:space:]\n]\\{2,\\}" (- (point) 2))
-      (while (looking-back "[[:space:]\n]" (- (point) 1))
-        (delete-char -1))
-    (cond
-     ((and (boundp 'smartparens-strict-mode)
-           smartparens-strict-mode)
-      (sp-backward-kill-word 1))
-     (subword-mode
-      (subword-backward-kill 1))
-     (t
-      (backward-kill-word 1)))))
-
 (defun exit ()
   "Short hand for DEATH TO ALL PUNY BUFFERS!"
   (interactive)
@@ -249,11 +234,6 @@ very minimal set."
         (list base)))))
 
 
-(defun sp-restrict-c (sym)
-  "Smartparens restriction on `SYM' for C-derived parenthesis."
-  (sp-restrict-to-pairs-interactive "{([" sym))
-
-
 (defun plist-merge (&rest plists)
   "Merge property lists"
   (if plists
@@ -275,7 +255,7 @@ very minimal set."
 
 (defun get-key-combo (key)
   "Just return the key combo entered by the user"
-  (interactive "kKey combo: ")
+  (interactive "Key combo: ")
   key)
 
 
@@ -596,28 +576,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (ac-config-default)
 
 
-(unless (package-installed-p 'popup)
-  (package-install 'popup))
-(require 'popup)
-
-
 
 (unless (package-installed-p 'spinner)
   (package-install 'spinner))
  (require 'spinner)
 
-
-
-;;
-;; Evil mode (for those who truly are...)
-;;
-;; Commented because it messes up key bindings even when it's not on
-;;
-;;(unless (package-installed-p 'evil)
-;;  (package-install 'evil))
-;;(require 'evil)
-;;
-;;(evil-mode 0)
 
 
 ;; Markdown / AsciiDoc
@@ -867,12 +830,17 @@ of FILE in the current directory, suitable for creation"
 (setq projectile-use-git-grep t)
 
 (global-set-key (kbd "C-x p p") 'projectile-switch-project)
-(global-set-key (kbd "C-c C-f") 'projectile-find-file)
 (global-set-key (kbd "s-f") 'projectile-find-file)
+(global-set-key (kbd "s-F") 'projectile-grep)
+(global-set-key (kbd "C-c C-f") 'projectile-find-file)
 (global-set-key (kbd "C-x M-f") 'projectile-find-file)
 (global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
+
+
+(use-package etags-select
+  :commands etags-select-find-tag)
 
 
 (use-package highlight-symbol
@@ -881,10 +849,23 @@ of FILE in the current directory, suitable for creation"
   :bind ("s-h" . highlight-symbol))
 
 
+(use-package goto-chg
+  :commands goto-last-change
+  :bind (("C-," . goto-last-change)
+         ("C-." . goto-last-change-reverse)))
+
+
 ;; Like Eclipse's quick outline
 (use-package popup-imenu
   :commands popup-imenu
   :bind ("C-o" . popup-imenu))
+
+
+;; Visual undo tree
+(use-package undo-tree
+  :diminish undo-tree-mode
+  :config (global-undo-tree-mode)
+  :bind ("C-_" . undo-tree-visualize))
 
 
 ;; Spell checking: from https://raw.githubusercontent.com/kaushalmodi/.emacs.d/master/setup-files/setup-spell.el
@@ -982,9 +963,9 @@ assuming it is in a maven-style project."
 
 
 (use-package scala-mode
+  :pin melpa
   :interpreter
-  ("sbt" . scala-mode)
-  ("routes" . scala-mode)
+  ("scala" . scala-mode)
   :init
   (setq
    scala-indent:use-javadoc-style t
@@ -996,12 +977,15 @@ assuming it is in a maven-style project."
   ;; backwards/next not working particularly well
 
   (bind-key [f1] 'ensime-sbt scala-mode-map)
-  (bind-key "M-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
+  (bind-key [f3] 'ensime-edit-definition-of-thing-at-point scala-mode-map)
+  (bind-key "C-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
   (bind-key "M-R" 'ensime-refactor-rename scala-mode-map)
   (bind-key "M-M" 'ensime-refactor-extract-method scala-mode-map)
   (bind-key "M-L" 'ensime-refactor-extract-local scala-mode-map)
   (bind-key "M-I" 'ensime-refactor-inline-local scala-mode-map)
+  (bind-key "M-T" 'ensime-refactor-add-type-annotation scala-mode-map)
   (bind-key "C-O" 'ensime-refactor-organize-imports scala-mode-map)
+  (bind-key "M-<return>" 'ensime-import-type-at-point scala-mode-map)
   (bind-key "C-M-j" 'join-line scala-mode-map)
   (bind-key "<backtab>" 'scala-indent:indent-with-reluctant-strategy scala-mode-map)
   (bind-key "s-n" 'ensime-search scala-mode-map)
@@ -1027,6 +1011,7 @@ assuming it is in a maven-style project."
 
 (use-package ensime
   :ensure t
+  :pin melpa
   :commands ensime ensime-mode
   :init
   (put 'ensime-auto-generate-config 'safe-local-variable #'booleanp)
@@ -1036,7 +1021,9 @@ assuming it is in a maven-style project."
    ensime-refactor-preview t
    ensime-refactor-preview-override-hunk 10
    ensime-startup-snapshot-notification nil
-   scala-indent :step 1)
+   ensime-startup-notification nil
+   ensime-implicit-gutter-icons t
+   scala-indent:step 1)
   :config
   (auto-complete-mode) ;; Turn off auto-complete since Ensime does that already
   (subword-mode)
@@ -1050,6 +1037,7 @@ assuming it is in a maven-style project."
         (plist-merge ensime-goto-test-config-defaults
                      '(:test-class-suffixes ("Spec" "Test" "Check"))
                      '(:test-template-fn ensime-goto-test--test-template-scalatest-flatspec))))
+
 
 ;; This should be done by Ensime, but:
 ;;    https://github.com/ensime/ensime-server/issues/61
@@ -1082,6 +1070,9 @@ assuming it is in a maven-style project."
 
 
 (use-package sbt-mode
+  :pin melpa
+  :interpreter
+  ("sbt" . sbt-mode)
   :commands sbt-start sbt-command
   :init (setq sbt:prefer-nested-projects t)
   :config
@@ -1114,6 +1105,8 @@ assuming it is in a maven-style project."
             (smartparens-mode t)
             (yas-minor-mode t)
             (git-gutter-mode t)
+            (company-mode t)
+            (ensime-mode t)
             (setq prettify-symbols-alist scala-mode-prettify-symbols)
             (prettify-symbols-mode t)
             (scala-mode:goto-start-of-code)))
@@ -1121,7 +1114,7 @@ assuming it is in a maven-style project."
 (add-hook 'ensime-mode-hook
           (lambda ()
             (company-mode t)
-            (setq ensime-sbt-command "/Users/dorme/bin/sbt/sbt")
+            (setq ensime-sbt-command "/usr/local/bin/sbt")
             (let ((backends (company-backends-for-buffer)))
               (setq company-backends (push 'ensime-company backends)))))
 
@@ -1172,15 +1165,47 @@ assuming it is in a maven-style project."
 ;;
 ;; Smart parenthesis matching everywhere, please
 ;;
-(unless (package-installed-p 'smartparens)
-  (package-install 'smartparens))
-(require 'smartparens-config)
-(smartparens-global-mode)
-(show-smartparens-global-mode t)
-(sp-with-modes '(rhtml-mode)
-               (sp-local-pair "<" ">")
-               (sp-local-pair "<%" "%>"))
+;; (unless (package-installed-p 'smartparens)
+  ;; (package-install 'smartparens))
+;; (require 'smartparens-config)
+;; (smartparens-global-mode)
+;; (show-smartparens-global-mode t)
+;; (sp-with-modes '(rhtml-mode)
+               ;; (sp-local-pair "<" ">")
+               ;; (sp-local-pair "<%" "%>"))
 
+
+(use-package smartparens
+  :diminish smartparens-mode
+  :commands
+  smartparens-strict-mode
+  smartparens-mode
+  sp-restrict-to-pairs-interactive
+  sp-local-pair
+  :init
+  (smartparens-global-mode)
+  (setq sp-interactive-dwim t)
+  (show-smartparens-global-mode t)
+  :config
+  (require 'smartparens-config)
+  (sp-use-smartparens-bindings)
+
+  (sp-pair "(" ")" :wrap "C-(")
+  (sp-pair "[" "]" :wrap "s-[")
+  (sp-pair "{" "}" :wrap "C-{"))
+
+(sp-local-pair 'scala-mode "(" nil :post-handlers '(("||\n[i]" "RET")))
+(sp-local-pair 'scala-mode "{" nil :post-handlers '(("||\n[i]" "RET") ("| " "SPC")))
+
+(defun sp-restrict-c (sym)
+  "Smartparens restriction on `SYM' for C-derived parenthesis."
+  (sp-restrict-to-pairs-interactive "{([" sym))
+
+(bind-key "s-<delete>" (sp-restrict-c 'sp-kill-sexp) scala-mode-map)
+(bind-key "s-<backspace>" (sp-restrict-c 'sp-backward-kill-sexp) scala-mode-map)
+(bind-key "s-<home>" (sp-restrict-c 'sp-beginning-of-sexp) scala-mode-map)
+(bind-key "s-<end>" (sp-restrict-c 'sp-end-of-sexp) scala-mode-map)
+(bind-key "s-{" 'sp-rewrap-sexp smartparens-mode-map)
 
 (unless (package-installed-p 'paredit)
   (package-install 'paredit))
@@ -1579,7 +1604,6 @@ buffer's."
 
 ;; We don't want tabbar in aquamacs
 (unless (boundp 'aquamacs-version)
-
   (use-package tabbar
     :commands ensime ensime-mode)
 
@@ -1682,6 +1706,7 @@ There are two groups: Emacs buffers (those whose name starts with '*', plus
 dired buffers), and the rest.  This works at least with Emacs v24.2 using
 tabbar.el v1.7."
           (list (cond ((starts-with "*sbt*" (buffer-name)) "user")
+                      ((string-equal "TAGS" (buffer-name)) "emacs")
                       ((starts-with "*cider-error" (buffer-name)) "emacs")
                       ((starts-with "*cider" (buffer-name)) "user")
                       ((starts-with "*nrepl-server" (buffer-name)) "user")
@@ -1757,6 +1782,10 @@ tabbar.el v1.7."
 
 (require 'flycheck-tip)
 (global-set-key (kbd "C-c C-n") 'flycheck-tip-cycle)
+
+(use-package flycheck-cask
+  :commands flycheck-cask-setup
+  :config (add-hook 'emacs-lisp-mode-hook (flycheck-cask-setup)))
 
 ; Malabar Mode (for Java)
 ;; (unless (package-installed-p 'malabar-mode)
@@ -1952,6 +1981,22 @@ With ARG, do this that many times."
   (interactive "p")
   (delete-word (- arg)))
 
+(defun contextual-backspace ()
+  "Hungry whitespace or delete word depending on context."
+  (interactive)
+  (if (looking-back "[[:space:]\n]\\{2,\\}" (- (point) 2))
+      (while (looking-back "[[:space:]\n]" (- (point) 1))
+        (delete-char -1))
+    (cond
+     ((and (boundp 'smartparens-strict-mode)
+           smartparens-strict-mode)
+      (sp-backward-kill-word 1))
+     (subword-mode
+      (subword-backward-kill 1))
+     (t
+      (backward-delete-word 1)))))
+
+
 (defun exit-message ()
   "Define a friendly message to display for the re-bound C-x C-c."
   (interactive)
@@ -1960,10 +2005,6 @@ With ARG, do this that many times."
 
 
 (global-set-key [f1] 'multi-term)
-(global-set-key [f2] 'split-window-vertically)
-(global-set-key [f3] 'split-window-horizontally)
-(global-set-key [f4] 'delete-other-windows)
-(global-set-key [f5] 'delete-window)
 (global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
 (global-set-key [f6] 'helm-buffers-list)
 (global-set-key "\C-c z" 'repeat)
@@ -1984,7 +2025,9 @@ With ARG, do this that many times."
 
 (global-set-key (kbd "C-<left>") 'backward-word)
 (global-set-key (kbd "C-<right>") 'forward-word)
-(global-set-key (kbd "C-<backspace>") 'backward-delete-word)
+(global-set-key (kbd "C-<backspace>") 'backward-delete-word) ; NOTE alternative below********
+;; (global-set-key (kbd "C-<backspace>") 'contextual-backspace)
+
 (global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
 (global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
 (global-set-key (kbd "\C-c g") 'goto-line)
