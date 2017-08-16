@@ -962,6 +962,12 @@ assuming it is in a maven-style project."
   (indent-according-to-mode))
 
 
+(use-package play-routes-mode
+  :pin melpa
+  :init
+  (require 'play-routes-mode))
+
+
 (use-package scala-mode
   :pin melpa
   :interpreter
