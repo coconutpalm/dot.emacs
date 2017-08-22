@@ -865,6 +865,9 @@ of FILE in the current directory, suitable for creation"
 (use-package undo-tree
   :diminish undo-tree-mode
   :config (global-undo-tree-mode)
+  :init
+  (add-hook 'undo-tree-mode-hook (lambda () (unbind-key "C-/" undo-tree-map)))
+  (setq undo-tree-visualizer-timestamps t)
   :bind ("C-_" . undo-tree-visualize))
 
 
