@@ -1004,7 +1004,7 @@ assuming it is in a maven-style project."
   ;; i.e. bypass company-mode
   (bind-key "C-<tab>" 'dabbrev-expand scala-mode-map)
 
-  (bind-key "C-c c" 'sbt-command scala-mode-map)
+  (bind-key "C-c c" 'sbt-hydra scala-mode-map)
   (bind-key "C-c e" 'next-error scala-mode-map))
 
 ;; (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
