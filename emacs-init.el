@@ -1032,7 +1032,7 @@ assuming it is in a maven-style project."
    ensime-startup-snapshot-notification nil
    ensime-startup-notification nil
    ensime-implicit-gutter-icons t
-   scala-indent:step 1)
+   scala-indent:step 2)
   :config
   (auto-complete-mode) ;; Turn off auto-complete since Ensime does that already
   (subword-mode)
