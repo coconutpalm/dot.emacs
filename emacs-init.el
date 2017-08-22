@@ -1111,7 +1111,6 @@ assuming it is in a maven-style project."
 (add-hook 'scala-mode-hook
           (lambda ()
             (show-paren-mode t)
-            (smartparens-mode t)
             (yas-minor-mode t)
             (git-gutter-mode t)
             (company-mode t)
@@ -1140,7 +1139,6 @@ assuming it is in a maven-style project."
           (lambda ()
             (whitespace-mode-with-local-variables)
             (show-paren-mode t)
-            (smartparens-mode t)
             (yas-minor-mode t)
             (git-gutter-mode t)
             (company-mode t)
@@ -1197,7 +1195,7 @@ assuming it is in a maven-style project."
   (show-smartparens-global-mode t)
   :config
   (require 'smartparens-config)
-  (sp-use-smartparens-bindings)
+  ;; (sp-use-smartparens-bindings)
 
   (sp-pair "(" ")" :wrap "C-(")
   (sp-pair "[" "]" :wrap "s-[")
