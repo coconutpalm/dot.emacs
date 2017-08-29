@@ -1615,11 +1615,9 @@ buffer's."
     :commands ensime ensime-mode)
 
   ;; enable tabbar minor mode
-                                        ;(setq tabbar-use-images nil) ; speed up by not using images
   (tabbar-mode 1)
   (global-set-key [M-left] 'tabbar-backward-tab)
   (global-set-key [M-right] 'tabbar-forward-tab)
-
 
   ;; tabbar coloring code...
   (set-face-attribute
@@ -1712,8 +1710,10 @@ buffer's."
 There are two groups: Emacs buffers (those whose name starts with '*', plus
 dired buffers), and the rest.  This works at least with Emacs v24.2 using
 tabbar.el v1.7."
-          (list (cond ((starts-with "*sbt*" (buffer-name)) "terminal")
-                      ((starts-with "*terminal" (buffer-name)) "terminal")
+          (list (cond ((starts-with "*sbt*" (buffer-name)) "system")
+                      ((starts-with "*terminal" (buffer-name)) "system")
+                      ((eq major-mode 'org-mode) "system")
+                      ((eq major-mode 'clojure-mode) "clojure")
                       ((string-equal "TAGS" (buffer-name)) "emacs")
                       ((starts-with "*cider-error" (buffer-name)) "emacs")
                       ((starts-with "*cider" (buffer-name)) "user")
