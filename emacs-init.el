@@ -1126,6 +1126,17 @@ assuming it is in a maven-style project."
             (let ((backends (company-backends-for-buffer)))
               (setq company-backends (push 'ensime-company backends)))))
 
+
+;;..............................................................................
+;; YAML
+
+(use-package yaml-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+  (add-hook 'yaml-mode-hook
+            '(lambda ()
+               (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
+
 ;;..............................................................................
 ;; Java
 (use-package cc-mode
