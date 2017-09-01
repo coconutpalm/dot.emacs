@@ -1714,6 +1714,7 @@ tabbar.el v1.7."
                       ((starts-with "*terminal" (buffer-name)) "system")
                       ((eq major-mode 'org-mode) "system")
                       ((eq major-mode 'clojure-mode) "clojure")
+                      ((eq major-mode 'clojurescript-mode) "clojure")
                       ((string-equal "TAGS" (buffer-name)) "emacs")
                       ((starts-with "*cider-error" (buffer-name)) "emacs")
                       ((starts-with "*cider" (buffer-name)) "user")
