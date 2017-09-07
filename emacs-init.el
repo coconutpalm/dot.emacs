@@ -2018,6 +2018,9 @@ With ARG, do this that many times."
 ;; Horizontal scrolling, please
 (setq-default truncate-lines t)
 
+;; and no tool bar; I never use it
+(tool-bar-mode 0)
+
 
 (global-set-key [f1] 'multi-term)
 (global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
