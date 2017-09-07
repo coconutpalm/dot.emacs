@@ -2015,6 +2015,10 @@ With ARG, do this that many times."
   (ding))
 
 
+;; Horizontal scrolling, please
+(setq-default truncate-lines t)
+
+
 (global-set-key [f1] 'multi-term)
 (global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
 (global-set-key [f6] 'helm-buffers-list)
