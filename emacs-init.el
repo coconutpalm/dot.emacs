@@ -1050,6 +1050,8 @@ assuming it is in a maven-style project."
 
 (require 'ensime)
 
+(define-key ensime-mode-map (kbd "C-<return>") 'ensime-print-errors-at-point)
+
 ;; (require 'ensime-vars)
 ;; (require 'ensime-company)
 ;; (require 'ensime-notes)
@@ -1967,7 +1969,7 @@ tabbar.el v1.7."
         (forward-line 1))
       (concat (buffer-substring-no-properties (point-min) (point-max))
               "\n\n;; Execute the following to upgrade packages:\n(package-utils-upgrade-all)\n\n;; and the following to change fonts/sizes:\n(set-default-font \"Mononoki 12\")
-\n\n;;Quick key binding examples:\n(bind-key \"C-c c\" 'sbt-hydra scala-mode-map)\n\n(global-set-key (kbd \"C-/\") 'comment-or-uncomment-region-or-line)\n(global-set-key [A-left] 'windmove-left)\n\n(define-key clojure-mode-map (kbd \"s-<return>\") 'init-ns)\n(define-key clojure-mode-map (kbd \"C-s-<return>\") 'cider-eval-expression-at-point-in-repl)\n(define-key clojure-mode-map (kbd \"M-s-<return>\") 'cider-eval-defun-at-point-in-repl)\n"))))
+\n\n;;Quick key binding examples:\n(bind-key \"C-c c\" 'sbt-hydra scala-mode-map)\n(define-key ensime-mode-map (kbd "C-<return>") 'ensime-print-errors-at-point)\n\n(global-set-key (kbd \"C-/\") 'comment-or-uncomment-region-or-line)\n(global-set-key [A-left] 'windmove-left)\n\n(define-key clojure-mode-map (kbd \"s-<return>\") 'init-ns)\n(define-key clojure-mode-map (kbd \"C-s-<return>\") 'cider-eval-expression-at-point-in-repl)\n(define-key clojure-mode-map (kbd \"M-s-<return>\") 'cider-eval-defun-at-point-in-repl)\n"))))
 
 (setq initial-scratch-message (ted-random-emacs-haiku))
 (setq-default word-wrap t)
