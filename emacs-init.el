@@ -1540,58 +1540,7 @@ buffer's."
   (package-install 'rainbow-mode))
 (require 'rainbow-mode)
 
-
-;;
-;; Golang
-;;
-(unless (package-installed-p 'go-mode)
-  (package-install 'go-mode))
-(require 'go-mode)
-
-(unless (package-installed-p 'go-autocomplete)
-  (package-install 'go-autocomplete))
-(require 'go-autocomplete)
-
-
-;; Set environment
-(setq go-path "/Users/dorme/go")
-(setenv "GOPATH" go-path)
-(add-to-list 'exec-path (concat go-path "/bin"))
-(setq exec-path (cons "/usr/local/opt/go/bin" exec-path))
-
-(defun my-go-mode-hook ()
-  (setq gofmt-command "goimports")
-  (add-hook 'before-save-hook #'gofmt-before-save) ; Call Gofmt before saving
-
-  ;; Syntax checking for Go.  Depends on `go get -u github.com/dougm/goflymake`
-  (add-to-list 'load-path (concat go-path "/src/github.com/dougm/goflymake"))
-  (require 'go-flymake)
-
-  ;; Autocomplete depends on: go get -u github.com/nsf/gocode
-  (add-to-list 'load-path (concat go-path "/src/github.com/nsf/gocode/emacs"))
-  (require 'go-autocomplete)
-
-  (if (not (string-match "go" compile-command)) ; Customize compile command to run go build
-      (set (make-local-variable 'compile-command)
-           "go build -v && go vet && ginkgo -r -p -v -trace"))
-
-  ;; When you call go-oracle-set-scope, you always need to give it a main package.
-  (load-file (concat go-path "/src/golang.org/x/tools/cmd/oracle/oracle.el"))
-
-  (local-set-key (kbd "M-.") 'godef-jump) ; Godef jump key binding
-  (local-set-key [f3] 'godef-jump)
-  (local-set-key [f1] 'godoc-at-point)
-
-  (auto-complete-mode 1)
-  (subword-mode))
-
-;; you can jump straight to each compile error by running C-x `
-
-(add-hook 'go-mode-hook 'my-go-mode-hook)
-(add-hook 'go-mode-hook 'auto-complete-for-go)
-
-
-; Dependencies / misc
+;; Dependencies / misc
 
 (unless (package-installed-p 'dash)
   (package-install 'dash))
