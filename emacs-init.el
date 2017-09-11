@@ -1060,7 +1060,7 @@ assuming it is in a maven-style project."
 (define-key ensime-mode-map (kbd "C-<return>") 'ensime-print-errors-at-point)
 
 ;; (require 'ensime-vars)
-;; (require 'ensime-company)
+(require 'ensime-company)
 ;; (require 'ensime-notes)
 
 (setq exec-path (append exec-path (list "~/liftweb" "/usr/bin")))
