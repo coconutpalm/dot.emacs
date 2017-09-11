@@ -958,6 +958,13 @@ assuming it is in a maven-style project."
   (indent-according-to-mode))
 
 
+(use-package nov
+  :init
+  (setq show-trailing-whitespace nil)
+  :config
+  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
+
+
 (use-package play-routes-mode
   :pin melpa
   :init
