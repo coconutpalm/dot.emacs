@@ -306,7 +306,7 @@ very minimal set."
   (set-frame-size (selected-frame) 120 37)
 
   ;; default Latin font (e.g. Consolas)
-  (set-default-font "Mononoki 12")
+  (set-default-font "Mononoki 16")
 
   ;; use specific font for Korean charset.
   ;; if you want to use different font size for specific charset,
