@@ -23,7 +23,10 @@
 (setq clojure-repl-init-file "~/.repl.clj")
 
 ;; On MacOS, make sure we have these environment variables:
-(setq macos-copy-from-env-list '("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "PATH" "JAVA_HOME"))
+;;
+;; Make sure the following is in the environment to enable 256 colors in terminals:
+;; TERM=xterm-256color
+(setq macos-copy-from-env-list '("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "PATH" "JAVA_HOME" "TERM"))
 
 ;; My minor mode
 (require 'modi-mode)
