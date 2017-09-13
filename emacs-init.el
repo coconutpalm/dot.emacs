@@ -579,6 +579,27 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  (require 'spinner)
 
 
+;; Prettify the UI
+(use-package sublimity
+  :init
+  (require 'sublimity)
+  (require 'sublimity-scroll)
+  ;; (require 'sublimity-map) ;; experimental
+  ;; (require 'sublimity-attractive)
+
+  (sublimity-mode 1))
+
+;; Horizontal scrolling, please
+(setq-default truncate-lines t)
+
+(defun unclutter-window ()
+  (interactive)
+  (scroll-bar-mode -1)
+  (set-face-foreground 'vertical-border (face-background 'default))
+  (set-face-background 'fringe (face-background 'default))
+  (set-face-foreground 'fringe (face-background 'default)))
+
+(unclutter-window)
 
 ;; Markdown / AsciiDoc
 
@@ -989,6 +1010,7 @@ assuming it is in a maven-style project."
   ;; BUG https://github.com/Fuco1/smartparens/issues/468
   ;; backwards/next not working particularly well
 
+  (bind-key "C-c C-e e" 'ensime scala-mode-map)
   (bind-key [f1] 'ensime-sbt scala-mode-map)
   (bind-key [f3] 'ensime-edit-definition-of-thing-at-point scala-mode-map)
   (bind-key "C-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
@@ -1182,6 +1204,7 @@ assuming it is in a maven-style project."
 (autoload 'smart-tabs-advice "smart-tabs-mode")
 (autoload 'smart-tabs-insinuate "smart-tabs-mode")
 (smart-tabs-insinuate 'c 'c++ 'java 'javascript 'cperl 'python 'ruby 'nxml)
+
 
 
 ;; Clojure
@@ -1976,9 +1999,6 @@ With ARG, do this that many times."
   (message "Type C-x C-q to exit Emacs.  It's waaaay too easy to accidentally hit C-x C-c")
   (ding))
 
-
-;; Horizontal scrolling, please
-(setq-default truncate-lines t)
 
 ;; and no tool bar; I never use it
 (tool-bar-mode 0)
