@@ -286,6 +286,7 @@ very minimal set."
 (setq scroll-step 1)             ; control screen "leaping"
 (setq-default indent-tabs-mode nil) ; spaces instead of tabs by default
 (global-linum-mode t)
+(setq linum-format " %4d ")
 (global-hl-line-mode 1) ; highlight current line, turn it on for all modes by default
 (set-face-background 'hl-line "lightgray")
 (setq column-number-mode t)
@@ -1611,7 +1612,7 @@ buffer's."
   ;; tabbar coloring code...
   (set-face-attribute
    'tabbar-default nil
-   :background "gray60")
+   :background "white")                 ; "gray60"
   (set-face-attribute
    'tabbar-unselected nil
    :background "gray85"
@@ -1624,7 +1625,7 @@ buffer's."
    :box nil)
   (set-face-attribute
    'tabbar-button nil
-   :box '(:line-width 1 :color "gray72" :style released-button))
+   :box nil)                            ; '(:line-width 1 :color "gray72" :style released-button)
   (set-face-attribute
    'tabbar-separator nil
    :height 1.0)
