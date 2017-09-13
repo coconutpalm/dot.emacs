@@ -1746,10 +1746,10 @@ tabbar.el v1.7."
             (org-indent-mode t)) t)
 
 ; Flycheck
-(unless (package-installed-p 'flycheck)
-  (package-install 'flycheck))
+;; (unless (package-installed-p 'flycheck)
+  ;; (package-install 'flycheck))
 
-(add-hook 'after-init-hook #'global-flycheck-mode)
+;; (add-hook 'after-init-hook #'global-flycheck-mode)
 
 ; Flycheck-tip
 ;; (unless (package-installed-p 'flycheck-tip)
