@@ -346,7 +346,7 @@ very minimal set."
 
 ;; ansi-term / multi-term
 (require 'multi-term)
-(setq multi-term-program "/bin/bash")
+(setq multi-term-program "~/.emacs.d/login-shell")
 
 (defcustom term-unbind-key-list
   '("C-z" "C-x" "C-c" "C-h" "C-r" "C-s" "C-y" "<ESC>" "<TAB>" "C-[")
