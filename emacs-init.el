@@ -16,7 +16,7 @@
 (setq debug-on-error t)
 (add-to-list 'load-path "~/.emacs.d/elisp")
 
-(setq nodejs-path "/usr/bin/nodejs")
+(setq nodejs-path "/usr/local/bin/node")
 (setq lein-path "~/bin/lein")
 
 ;; In Clojure, Cmd-enter inserts the contents of this file into the current repl
