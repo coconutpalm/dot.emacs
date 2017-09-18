@@ -1014,6 +1014,7 @@ assuming it is in a maven-style project."
   (bind-key "C-c C-e e" 'ensime scala-mode-map)
   (bind-key [f1] 'ensime-sbt scala-mode-map)
   (bind-key [f3] 'ensime-edit-definition-of-thing-at-point scala-mode-map)
+  (bind-key "C-c C-s" 'ensime-helm-search scala-mode-map)
   (bind-key "C-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
   (bind-key "M-R" 'ensime-refactor-diff-rename scala-mode-map)
   (bind-key "M-M" 'ensime-refactor-diff-extract-method scala-mode-map)
