@@ -323,6 +323,41 @@ very minimal set."
   )
 
 
+;;
+;; Fix macos environment variable handling
+;;
+(unless (package-installed-p 'exec-path-from-shell)
+  (package-install 'exec-path-from-shell))
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-copy-envs macos-copy-from-env-list)
+  (exec-path-from-shell-initialize))
+
+
+;; Prettify the UI
+(use-package sublimity
+  :init
+  (require 'sublimity)
+  (require 'sublimity-scroll)
+  ;; (require 'sublimity-map) ;; experimental
+  ;; (require 'sublimity-attractive)
+
+  (sublimity-mode 1))
+
+(use-package spinner)
+
+;; Horizontal scrolling, please
+(setq-default truncate-lines t)
+
+(defun unclutter-window ()
+  (interactive)
+  (scroll-bar-mode -1)
+  (set-face-foreground 'vertical-border (face-background 'default))
+  (set-face-background 'fringe (face-background 'default))
+  (set-face-foreground 'fringe (face-background 'default)))
+
+(unclutter-window)
+
+
 ;; No trailing whitespace, please...
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
@@ -498,14 +533,16 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; flymake-jslint
 (use-package flymake-jslint)
 
-;; Make sure we can find the lintnode executable
-(setq lintnode-location "~/.emacs.d/elisp/lintnode")
+
+;; (use-package lintnode)
+
 ;; JSLint can be... opinionated
-(setq lintnode-jslint-excludes (list 'nomen 'undef 'plusplus 'onevar 'white))
+;; (setq lintnode-jslint-excludes (list 'nomen 'undef 'plusplus 'onevar 'white))
 ;; Start the server when we first open a js file and start checking
-(add-hook 'js-mode-hook
-          (lambda ()
-            (lintnode-hook)))
+;; (add-hook 'js-mode-hook
+;;           (lambda ()
+;;             (lintnode-hook)))
+
 ;; Put messages in the mini-buffer
 (custom-set-variables
      '(help-at-pt-timer-delay 0.9)
@@ -534,55 +571,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
                      (lambda (output)
                      (replace-regexp-in-string ".*1G.*3G" "> " output)))))
 
-
-; Java/Groovy configuration
-
-(add-to-list 'load-path "~/.emacs.d/groovy")
-;;; use groovy-mode when file ends in .groovy or has #!/bin/groovy at start
-(autoload 'groovy-mode "groovy-mode" "Major mode for editing Groovy code." t)
-(add-to-list 'auto-mode-alist '("\.groovy$" . groovy-mode))
-(add-to-list 'interpreter-mode-alist '("groovy" . groovy-mode))
-
-;;; make Groovy mode electric by default.
-(add-hook 'groovy-mode-hook
-          '(lambda ()
-             (require 'groovy-electric)
-             (groovy-electric-mode)))
-
-
-;;
-;; Fix macos environment variable handling
-;;
-(unless (package-installed-p 'exec-path-from-shell)
-  (package-install 'exec-path-from-shell))
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-copy-envs macos-copy-from-env-list)
-  (exec-path-from-shell-initialize))
-
-
-;; Prettify the UI
-(use-package sublimity
-  :init
-  (require 'sublimity)
-  (require 'sublimity-scroll)
-  ;; (require 'sublimity-map) ;; experimental
-  ;; (require 'sublimity-attractive)
-
-  (sublimity-mode 1))
-
-(use-package spinner)
-
-;; Horizontal scrolling, please
-(setq-default truncate-lines t)
-
-(defun unclutter-window ()
-  (interactive)
-  (scroll-bar-mode -1)
-  (set-face-foreground 'vertical-border (face-background 'default))
-  (set-face-background 'fringe (face-background 'default))
-  (set-face-foreground 'fringe (face-background 'default)))
-
-(unclutter-window)
 
 ;; Markdown / AsciiDoc
 
@@ -1248,6 +1236,7 @@ assuming it is in a maven-style project."
 ;; (Prerequisite for Lispy Clojure support)
 (add-to-list 'load-path "~/.emacs.d/clojure-semantic")
 (load "clojure.el")
+
 
 ;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
 (unless (package-installed-p 'lispy)
