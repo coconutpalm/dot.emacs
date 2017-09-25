@@ -122,8 +122,10 @@
 (add-to-load-path (expand-file-name "lisp" user-emacs-directory))
 
 (add-to-list 'auto-mode-alist '("\\.xml\\'" . nxml-mode))
+
 ;; WORKAROUND http://debbugs.gnu.org/cgi/bugreport.cgi?bug=16449
-(add-hook 'nxml-mode-hook (lambda () (flyspell-mode -1)))
+;; (add-hook 'nxml-mode-hook (lambda () (flyspell-mode -1)))
+
 
 (use-package ibuffer
   :ensure nil
@@ -140,7 +142,7 @@
 (use-package dired
   :ensure nil
   :config
-  (setq dired-dwim-target t)
+  (setq dired-dwim-target t)            ; If two dired windows are open, "copy" and "move" target the other window's path
   ;; a workflow optimisation too far?
   (bind-key "C-c c" 'sbt-hydra dired-mode-map)
   (bind-key "C-c e" 'next-error dired-mode-map))
@@ -349,8 +351,10 @@ very minimal set."
 
 
 ;; ansi-term / multi-term
-(require 'multi-term)
-(setq multi-term-program "~/.emacs.d/login-shell")
+(use-package multi-term
+  :ensure nil
+  :config (setq multi-term-program "~/.emacs.d/login-shell"))
+
 
 (defcustom term-unbind-key-list
   '("C-z" "C-x" "C-c" "C-h" "C-r" "C-s" "C-y" "<ESC>" "<TAB>" "C-[")
@@ -441,17 +445,18 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 
 ;; Web-mode
-(add-to-list 'load-path "~/.emacs.d/elisp/web-mode")
-(require 'web-mode)
-(add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode))
+(use-package web-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode)))
+
 
 
 (defun my-semicolon ()
@@ -476,23 +481,23 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (add-hook 'css-mode-hook
   (lambda ()
-     (make-local-variable 'ac-ignores)
-     (add-to-list 'ac-ignores ";")
-     (add-to-list 'ac-ignores ":")
-     (add-to-list 'ac-ignores "{")
+     ;; (make-local-variable 'ac-ignores)
+     ;; (add-to-list 'ac-ignores ";")
+     ;; (add-to-list 'ac-ignores ":")
+     ;; (add-to-list 'ac-ignores "{")
      (define-key (current-local-map) (kbd ";") 'my-semicolon)
      (define-key (current-local-map) (kbd ":") 'my-colon)
      (define-key (current-local-map) (kbd "}") 'my-closebrace)
      (define-key (current-local-map) (kbd "{") 'my-brace) ))
 
-(add-hook 'ruby-mode-hook
-          (lambda ()
-            (make-local-variable 'ac-ignores)
-            (add-to-list 'ac-ignores "end")))
+;; (add-hook 'ruby-mode-hook
+;;           (lambda ()
+;;             (make-local-variable 'ac-ignores)
+;;             (add-to-list 'ac-ignores "end")))
 
 ;; flymake-jslint
-(add-to-list 'load-path "~/.emacs.d/elisp/lintnode")
-(require 'flymake-jslint)
+(use-package flymake-jslint)
+
 ;; Make sure we can find the lintnode executable
 (setq lintnode-location "~/.emacs.d/elisp/lintnode")
 ;; JSLint can be... opinionated
@@ -515,8 +520,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
             (hs-minor-mode t)))
 
 ;; Javascript REPL
-(add-to-list 'load-path "~/.emacs.d/elisp")
-(require 'js-comint)
+(use-package js-comint)
+
 ;; Use node as our repl
 (setq inferior-js-program-command nodejs-path)
 
@@ -552,32 +557,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (package-install 'exec-path-from-shell))
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-copy-envs macos-copy-from-env-list)
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-env "GOPATH"))
-
-
-(unless (package-installed-p 'auto-complete)
-  (package-install 'auto-complete))
-(require 'auto-complete)
-(require 'auto-complete-config)
-
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(setq ac-show-menu-immediately-on-auto-complete t)
-(setq-default ac-sources (add-to-list 'ac-sources 'ac-source-dictionary))
-(global-auto-complete-mode t)
-; Start auto-completion after 2 characters of a word
-(setq ac-auto-start t)
-; case sensitivity is important when finding matches
-(setq ac-ignore-case nil)
-(setq ac-delay 0.0)
-(setq ac-quick-help-delay 0.5)
-(ac-config-default)
-
-
-
-(unless (package-installed-p 'spinner)
-  (package-install 'spinner))
- (require 'spinner)
+  (exec-path-from-shell-initialize))
 
 
 ;; Prettify the UI
@@ -589,6 +569,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   ;; (require 'sublimity-attractive)
 
   (sublimity-mode 1))
+
+(use-package spinner)
 
 ;; Horizontal scrolling, please
 (setq-default truncate-lines t)
@@ -632,17 +614,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; AsciiDoc
 
-(unless (package-installed-p 'adoc-mode)
-  (package-install 'adoc-mode))
-(require 'adoc-mode)
-
-(autoload 'adoc-mode "adoc-mode"
-  "Major mode for editing AsciiDoc files" t)
-(add-to-list 'auto-mode-alist '("\\.adoc\\'" . adoc-mode))
-(add-to-list 'auto-mode-alist '("\\.asciidoc\\'" . adoc-mode))
-(add-to-list 'auto-mode-alist '("\\.txt\\'" . adoc-mode))
-
-(require 'asciidoc)
+(use-package adoc-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.adoc\\'" . adoc-mode))
+  (add-to-list 'auto-mode-alist '("\\.asciidoc\\'" . adoc-mode))
+  (add-to-list 'auto-mode-alist '("\\.txt\\'" . adoc-mode)))
 
 ;;
 ;; Ruby
@@ -666,7 +642,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;
 ;
 
-(require 'cl) ; If you don't have it already
+
+(use-package cl)
+
+;; (require 'cl) ; If you don't have it already
+
 
 (defun* get-closest-gemfile-root (&optional (file "Gemfile"))
   "Determine the pathname of the first instance of FILE starting from the current directory towards root.
@@ -700,8 +680,6 @@ of FILE in the current directory, suitable for creation"
 ;; Robe mode makes Emacs into a Ruby IDE
 (unless (package-installed-p 'robe)
   (package-install 'robe))
-
-(add-hook 'robe-mode-hook 'ac-robe-setup)
 
 (add-hook 'ruby-mode-hook 'robe-mode)
 
@@ -891,11 +869,11 @@ of FILE in the current directory, suitable for creation"
 
 
 ;; Spell checking: from https://raw.githubusercontent.com/kaushalmodi/.emacs.d/master/setup-files/setup-spell.el
-(require 'setup-spell)
+;; (require 'setup-spell)
 
 ;; Helm support: from https://raw.githubusercontent.com/pronobis/helm-flyspell/master/helm-flyspell.el
-(require 'helm-flyspell)
-(define-key flyspell-mode-map (kbd "C-;") 'helm-flyspell-correct)
+;; (require 'helm-flyspell)
+;; (define-key flyspell-mode-map (kbd "C-;") 'helm-flyspell-correct)
 
 
 (use-package company
@@ -1062,7 +1040,6 @@ assuming it is in a maven-style project."
    ensime-implicit-gutter-icons t
    scala-indent:step 2)
   :config
-  (auto-complete-mode) ;; Turn off auto-complete since Ensime does that already
   (subword-mode)
 
   (require 'ensime-helm)
@@ -1392,27 +1369,7 @@ assuming it is in a maven-style project."
 (setq cider-lein-command lein-path)
 (add-hook 'cider-mode-hook #'eldoc-mode)
 
-(unless (package-installed-p 'ac-cider)
-  (package-install 'ac-cider))
-(require 'ac-cider)
-(add-hook 'cider-mode-hook 'ac-flyspell-workaround)
-(add-hook 'cider-mode-hook 'ac-cider-setup)
-(add-hook 'cider-repl-mode-hook 'ac-cider-setup)
-(eval-after-load "auto-complete"
-  '(progn
-     (add-to-list 'ac-modes 'cider-mode)
-     (add-to-list 'ac-modes 'cider-repl-mode)))
-
-
-(defun set-auto-complete-as-completion-at-point-function ()
-  (setq completion-at-point-functions '(auto-complete)))
-
-(add-hook 'auto-complete-mode-hook 'set-auto-complete-as-completion-at-point-function)
-(add-hook 'cider-mode-hook 'set-auto-complete-as-completion-at-point-function)
-
-
 (setq cider-repl-use-clojure-font-lock t)
-;; (setq cider-repl-pop-to-buffer-on-connect nil)
 
 ;; Abbreviate the REPL prompt if it gets long
 (setq cider-repl-prompt-function
@@ -1553,16 +1510,11 @@ buffer's."
 (require 'clojure-mode-extra-font-locking)
 
 
-(unless (package-installed-p 'yasnippet)
-  (package-install 'yasnippet))
-(require 'yasnippet)
-(yas/load-directory "~/.snippets")
-(yas-global-mode 1)
-(add-to-list 'ac-sources 'ac-source-yasnippet)
-;; Fix yasnippet / auto-complete incompatibility
-(defalias 'yas/get-snippet-tables 'yas--get-snippet-tables)
-(defalias 'yas/table-hash 'yas--table-hash)
-
+;; FIXME: Need to enable Company mode support here?
+(use-package yasnippet
+  :config
+  (yas/load-directory "~/.snippets")
+  (yas-global-mode 1))
 
 
 (unless (package-installed-p 'rainbow-mode)
