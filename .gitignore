@@ -15,3 +15,7 @@ sbt-launcher
 launchers
 *.swp
 /SessionDesktop.el
+build.sbt
+idea.sbt
+preloaded
+network-security.data
