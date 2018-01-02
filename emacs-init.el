@@ -126,6 +126,11 @@
 ;; WORKAROUND http://debbugs.gnu.org/cgi/bugreport.cgi?bug=16449
 ;; (add-hook 'nxml-mode-hook (lambda () (flyspell-mode -1)))
 
+(use-package back-button
+  :ensure nil
+  :config
+  (back-button-mode 1)
+  (require 'smartrep))                  ;Smart avoidance of repetitive prefix keys
 
 (use-package ibuffer
   :ensure nil
@@ -1035,10 +1040,11 @@ assuming it is in a maven-style project."
 
   (setq ensime-sbt-command "/usr/local/bin/sbt"
         ensime-search-interface 'helm
-        ensime-goto-test-config-defaults
-        (plist-merge ensime-goto-test-config-defaults
-                     '(:test-class-suffixes ("Spec" "Test" "Check"))
-                     '(:test-template-fn ensime-goto-test--test-template-scalatest-flatspec))))
+        ;ensime-goto-test-config-defaults
+;        (plist-merge ensime-goto-test-config-defaults
+;                     '(:test-class-suffixes ("Spec" "Test" "Check"))
+;                     '(:test-template-fn ensime-goto-test--test-template-scalatest-flatspec))
+        ))
 
 
 ;; This should be done by Ensime, but:
