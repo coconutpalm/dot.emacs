@@ -1675,6 +1675,19 @@ tabbar.el v1.7."
   '(load-library "sql-indent"))
 
 
+;; Jira
+
+(use-package jira-markup-mode
+  :ensure nil
+  :config
+  (add-to-list 'auto-mode-alist '("\\.confluence$" . jira-markup-mode)))
+
+;; also:
+;; https://github.com/echosa/emacs-jira
+;; https://github.com/baohaojun/org-jira
+;; https://www.emacswiki.org/emacs/JiraMode
+
+
 ;; Org mode
 
 (unless (package-installed-p 'org)
