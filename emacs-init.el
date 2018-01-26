@@ -334,6 +334,7 @@ very minimal set."
   :init
   (require 'sublimity)
   (require 'sublimity-scroll)
+  (setq sublimity-scroll-drift-length 1)
   ;; (require 'sublimity-map) ;; experimental
   ;; (require 'sublimity-attractive)
 
@@ -1079,7 +1080,8 @@ assuming it is in a maven-style project."
    'self-insert-command
    minibuffer-local-completion-map)
 
-  (bind-key "C-c c" 'sbt-command sbt:mode-map)
+  (bind-key "C-c c" 'sbt-hydra sbt:mode-map)
+  (bind-key "C-c s" 'sbt-command sbt:mode-map)
   (bind-key "C-c e" 'next-error sbt:mode-map))
 
 (defcustom
