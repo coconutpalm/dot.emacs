@@ -123,15 +123,6 @@
 
 (add-to-list 'auto-mode-alist '("\\.xml\\'" . nxml-mode))
 
-;; WORKAROUND http://debbugs.gnu.org/cgi/bugreport.cgi?bug=16449
-;; (add-hook 'nxml-mode-hook (lambda () (flyspell-mode -1)))
-
-(use-package back-button
-  :ensure nil
-  :config
-  (back-button-mode 1)
-  (require 'smartrep))                  ;Smart avoidance of repetitive prefix keys
-
 (use-package ibuffer
   :ensure nil
   :bind ("C-x C-b". ibuffer))
@@ -317,7 +308,7 @@ very minimal set."
   (set-frame-size (selected-frame) 120 37)
 
   ;; default Latin font (e.g. Consolas)
-  (set-default-font "Mononoki 16")
+  (set-default-font "Mononoki 14")
 
   ;; use specific font for Korean charset.
   ;; if you want to use different font size for specific charset,
@@ -390,17 +381,12 @@ very minimal set."
           (lambda () (not (member (buffer-name) '("*scratch*" "scratch.el")))))
 
 
-;; ansi-term / multi-term
-(use-package multi-term
-  :ensure nil
-  :config (setq multi-term-program "~/.emacs.d/login-shell"))
-
-
+;; ansi-term
 (defcustom term-unbind-key-list
   '("C-z" "C-x" "C-c" "C-h" "C-r" "C-s" "C-y" "<ESC>" "<TAB>" "C-[")
   "The key list that will need to be unbind."
   :type 'list
-  :group 'multi-term)
+  :group 'term)
 
 (defcustom term-bind-key-alist
   '(
@@ -423,7 +409,7 @@ very minimal set."
   "The key alist that will need to be bind.
 If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :type 'alist
-  :group 'multi-term)
+  :group 'term)
 
 (defun remote-term (new-buffer-name cmd &rest switches)
   "Ansi-terms on remote hosts."
@@ -1062,21 +1048,21 @@ assuming it is in a maven-style project."
 (require 'ensime-company)
 ;; (require 'ensime-notes)
 
-(setq exec-path (append exec-path (list "~/liftweb" "/usr/bin")))
+(setq exec-path (append exec-path (list "/usr/bin")))
 
-(setq ensime-sem-high-faces
-  '(
-   (var . (:foreground "#ff2222"))
-   (val . (:foreground "#1111ff"))
-   (varField . (:foreground "#ff3333"))
-   (valField . (:foreground "#dd11ff"))
-   (functionCall . (:foreground "#84BEE3"))
-   (param . (:foreground "#111111"))
-   (class . font-lock-type-face)
-   (trait . (:foreground "#084EA8"))
-   (object . (:foreground "#026DF7"))
-   (package . font-lock-preprocessor-face)
-   ))
+;; (setq ensime-sem-high-faces   ;; This is currently buggy
+;;   '(
+;;    (var . (:foreground "#ff2222"))
+;;    (val . (:foreground "#1111ff"))
+;;    (varField . (:foreground "#ff3333"))
+;;    (valField . (:foreground "#dd11ff"))
+;;    (functionCall . (:foreground "#84BEE3"))
+;;    (param . (:foreground "#111111"))
+;;    (class . font-lock-type-face)
+;;    (trait . (:foreground "#084EA8"))
+;;    (object . (:foreground "#026DF7"))
+;;    (package . font-lock-preprocessor-face)
+;;    ))
 
 
 (use-package sbt-mode
@@ -1185,15 +1171,6 @@ assuming it is in a maven-style project."
 ;;
 ;; Smart parenthesis matching everywhere, please
 ;;
-;; (unless (package-installed-p 'smartparens)
-  ;; (package-install 'smartparens))
-;; (require 'smartparens-config)
-;; (smartparens-global-mode)
-;; (show-smartparens-global-mode t)
-;; (sp-with-modes '(rhtml-mode)
-               ;; (sp-local-pair "<" ">")
-               ;; (sp-local-pair "<%" "%>"))
-
 
 (use-package smartparens
   :diminish smartparens-mode
@@ -1966,7 +1943,7 @@ With ARG, do this that many times."
 (tool-bar-mode 0)
 
 
-(global-set-key [f1] 'multi-term)
+(global-set-key [f1] 'terminal)
 (global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
 (global-set-key [f6] 'helm-buffers-list)
 (global-set-key "\C-c z" 'repeat)
