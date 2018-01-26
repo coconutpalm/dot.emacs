@@ -452,6 +452,62 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (toggle-read-only))
 (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
 
+(eval-after-load "ansi-term"
+  '(define-key ansi-term-raw-map (kbd "C-c C-y") 'term-paste))
+
+
+;; Ctrl-t to launch an ansi-term
+(defun ansi-term-with-config ()
+  (ansi-term "/bin/bash")
+  (term-send-string (get-buffer-process "*ansi-term*") "source /etc/profile\n"))
+
+(defun terminal ()
+  "Switch to terminal. Launch if nonexistent."
+  (interactive)
+  (if (get-buffer "*ansi-term*")
+      (switch-to-buffer "*ansi-term*")
+    (ansi-term-with-config))
+
+  (get-buffer-process "*ansi-term*"))
+
+(defalias 'tt 'terminal)
+(global-set-key "\C-t" 'terminal)
+
+(defun named-term (name)
+  (interactive "sName: ")
+  (ansi-term "/bin/bash" name))
+
+;; Kill term buffers when their process dies
+(defun oleh-term-exec-hook ()
+  (let* ((buff (current-buffer))
+         (proc (get-buffer-process buff)))
+    (set-process-sentinel
+     proc
+     `(lambda (process event)
+        (if (string= event "finished\n")
+            (kill-buffer ,buff))))))
+
+(add-hook 'term-exec-hook 'oleh-term-exec-hook)
+
+
+;; Integrate dired with ansi-term
+(require 'dired-x)
+(global-set-key (kbd"\C-c \C-t") 'dired-jump)
+(define-key dired-mode-map (kbd "`") 'dired-open-term)
+(define-key dired-mode-map (kbd "\C-t") 'dired-open-term)
+
+(defun dired-open-term ()
+  "Open an `ansi-term' that corresponds to current directory."
+  (interactive)
+  (let ((current-dir (dired-current-directory)))
+    (term-send-string
+     (terminal)
+     (if (file-remote-p current-dir)
+         (let ((v (tramp-dissect-file-name current-dir t)))
+           (format "ssh %s@%s\n"
+                   (aref v 1) (aref v 2)))
+       (format "cd '%s'\n" current-dir)))))
+
 
 ; make completion buffers disappear after 5 seconds.
 (add-hook 'completion-setup-hook
