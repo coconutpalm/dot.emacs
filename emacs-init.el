@@ -464,6 +464,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (defun terminal ()
   "Switch to terminal. Launch if nonexistent."
   (interactive)
+  (split-window)
+  (other-window 1 nil)
+
   (if (get-buffer "*ansi-term*")
       (switch-to-buffer "*ansi-term*")
     (ansi-term-with-config))
@@ -477,6 +480,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (interactive "sName: ")
   (ansi-term "/bin/bash" name))
 
+
 ;; Kill term buffers when their process dies
 (defun oleh-term-exec-hook ()
   (let* ((buff (current-buffer))
@@ -485,7 +489,10 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
      proc
      `(lambda (process event)
         (if (string= event "finished\n")
-            (kill-buffer ,buff))))))
+            ((lambda ()                      ; Oddly: do isn't working here
+               (kill-buffer ,buff)
+               (delete-window)
+               (previous-window))))))))
 
 (add-hook 'term-exec-hook 'oleh-term-exec-hook)
 
