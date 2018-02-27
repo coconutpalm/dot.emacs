@@ -1715,6 +1715,7 @@ tabbar.el v1.7."
                       ((string-equal "*scratch*" (buffer-name)) "lisp")
                       ((eq major-mode 'emacs-lisp-mode) "lisp")
                       ((starts-with "magit" (buffer-name)) "magit")
+                      ((starts-with "*magit" (buffer-name)) "magit")
                       ((starts-with "*helm" (buffer-name)) "helm")
                       ((starts-with "*Helm" (buffer-name)) "helm")
                       ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
