@@ -276,6 +276,9 @@ very minimal set."
 
 ;;; Misc display settings
 
+;; Set the selection color; but doesn't work well with syntax highlight
+;; (set-face-attribute 'region nil :background "#5555ff" :foreground "#ffffff")
+
 (setq inhibit-splash-screen t)
 (setq x-select-enable-clipboard t)      ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
@@ -1033,8 +1036,16 @@ assuming it is in a maven-style project."
   ;; backwards/next not working particularly well
 
   (bind-key "C-c C-e e" 'ensime scala-mode-map)
+  (bind-key "C-c C-e d" 'ensime-db-attach scala-mode-map)
+  (bind-key "C-c C-e b" 'ensime-db-set-break scala-mode-map)
+  (bind-key "C-c C-e B" 'ensime-db-clear-break scala-mode-map)
+  (bind-key "C-c C-e i" 'ensime-db-inspect-value-at-point scala-mode-map)
+  (bind-key "C-c C-e t" 'ensime-db-backtrace scala-mode-map)
   (bind-key [f1] 'ensime-sbt scala-mode-map)
   (bind-key [f3] 'ensime-edit-definition-of-thing-at-point scala-mode-map)
+  (bind-key [f7] 'ensime-db-step scala-mode-map)
+  (bind-key [f8] 'ensime-db-step-out scala-mode-map)
+  (bind-key [f9] 'ensime-db-continue scala-mode-map)
   (bind-key "C-c C-s" 'ensime-helm-search scala-mode-map)
   (bind-key "C-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
   (bind-key "M-R" 'ensime-refactor-diff-rename scala-mode-map)
@@ -1088,7 +1099,7 @@ assuming it is in a maven-style project."
   (require 'ensime-helm)
   (add-hook 'git-timemachine-mode-hook (lambda () (ensime-mode 0)))
 
-  (setq ensime-sbt-command "/usr/local/bin/sbt"
+  (setq ensime-sbt-command "/usr/local/bin/sbt -jvm-debug 9999"
         ensime-search-interface 'helm
         ;ensime-goto-test-config-defaults
 ;        (plist-merge ensime-goto-test-config-defaults
