@@ -1048,6 +1048,7 @@ assuming it is in a maven-style project."
   (bind-key [f9] 'ensime-db-continue scala-mode-map)
   (bind-key "C-c C-s" 'ensime-helm-search scala-mode-map)
   (bind-key "C-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
+  (bind-key "C-T" 'ensime-show-hierarchy-of-type-at-point scala-mode-map)
   (bind-key "M-R" 'ensime-refactor-diff-rename scala-mode-map)
   (bind-key "M-M" 'ensime-refactor-diff-extract-method scala-mode-map)
   (bind-key "M-L" 'ensime-refactor-diff-extract-local scala-mode-map)
