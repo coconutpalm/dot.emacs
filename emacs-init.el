@@ -1099,7 +1099,7 @@ assuming it is in a maven-style project."
   (require 'ensime-helm)
   (add-hook 'git-timemachine-mode-hook (lambda () (ensime-mode 0)))
 
-  (setq ensime-sbt-command "/usr/local/bin/sbt -jvm-debug 9999"
+  (setq ensime-sbt-command "/usr/local/bin/sbt"
         ensime-search-interface 'helm
         ;ensime-goto-test-config-defaults
 ;        (plist-merge ensime-goto-test-config-defaults
