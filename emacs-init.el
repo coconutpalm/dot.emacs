@@ -333,15 +333,15 @@ very minimal set."
 
 
 ;; Prettify the UI
-(use-package sublimity
-  :init
-  (require 'sublimity)
-  (require 'sublimity-scroll)
-  (setq sublimity-scroll-drift-length 1)
-  ;; (require 'sublimity-map) ;; experimental
-  ;; (require 'sublimity-attractive)
+;; (use-package sublimity
+;;   :init
+;;   (require 'sublimity)
+;;   (require 'sublimity-scroll)
+;;   (setq sublimity-scroll-drift-length 1)
+;;   ;; (require 'sublimity-map) ;; experimental
+;;   ;; (require 'sublimity-attractive)
 
-  (sublimity-mode 1))
+;;   (sublimity-mode 1))
 
 (use-package spinner)
 
@@ -480,7 +480,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (global-set-key "\C-t" 'terminal)
 
 (defun named-term (name)
-  (interactive "sName: ")
+  (interactive "Name: ")
   (ansi-term "/bin/bash" name))
 
 
@@ -1048,7 +1048,7 @@ assuming it is in a maven-style project."
   (bind-key [f9] 'ensime-db-continue scala-mode-map)
   (bind-key "C-c C-s" 'ensime-helm-search scala-mode-map)
   (bind-key "C-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
-  (bind-key "C-T" 'ensime-show-hierarchy-of-type-at-point scala-mode-map)
+  (bind-key "C-M-T" 'ensime-show-hierarchy-of-type-at-point scala-mode-map)
   (bind-key "M-R" 'ensime-refactor-diff-rename scala-mode-map)
   (bind-key "M-M" 'ensime-refactor-diff-extract-method scala-mode-map)
   (bind-key "M-L" 'ensime-refactor-diff-extract-local scala-mode-map)
@@ -1968,7 +1968,8 @@ tabbar.el v1.7."
           (insert "    "))
         (forward-line 1))
       (concat (buffer-substring-no-properties (point-min) (point-max))
-              "\n\n;; Execute the following to upgrade packages:\n(package-utils-upgrade-all)\n\n;; and the following to change fonts/sizes:\n(set-default-font \"Mononoki 12\")
+              "\n\n;; Execute the following to upgrade packages:\n(package-utils-upgrade-all)\n\n;; and the following to change fonts/sizes:\n(set-default-font \"Mononoki 12\")\n\n;; Enable word wrap:\n(visual-line-mode)
+
 \n\n;;Quick key binding examples:\n(bind-key \"C-c c\" 'sbt-hydra scala-mode-map)\n(define-key ensime-mode-map (kbd \"C-<return>\") 'ensime-print-errors-at-point)\n\n(global-set-key (kbd \"C-/\") 'comment-or-uncomment-region-or-line)\n(global-set-key [A-left] 'windmove-left)\n\n(define-key clojure-mode-map (kbd \"s-<return>\") 'init-ns)\n(define-key clojure-mode-map (kbd \"C-s-<return>\") 'cider-eval-expression-at-point-in-repl)\n(define-key clojure-mode-map (kbd \"M-s-<return>\") 'cider-eval-defun-at-point-in-repl)\n"))))
 
 (setq initial-scratch-message (ted-random-emacs-haiku))
