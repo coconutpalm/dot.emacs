@@ -500,6 +500,15 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (add-hook 'term-exec-hook 'oleh-term-exec-hook)
 
 
+;; (use-package ag)
+;; (setq ag-highlight-search t)
+;; (setq ag-reuse-window 't)
+;; (setq ag-arguments "--scala")
+
+;; (use-package helm-ag
+;;   :init (custom-set-variables ('helm-ag-command-option "--scala")))
+;; (global-set-key (kbd "\C-c psa") 'helm-ag-project-root)
+
 ;; Integrate dired with ansi-term
 (require 'dired-x)
 (global-set-key (kbd"\C-c \C-t") 'dired-jump)
@@ -1728,19 +1737,6 @@ tabbar.el v1.7."
 ;; From https://raw.githubusercontent.com/bsvingen/sql-indent/master/sql-indent.el
 (eval-after-load "sql"
   '(load-library "sql-indent"))
-
-
-;; Jira
-
-(use-package jira-markup-mode
-  :ensure nil
-  :config
-  (add-to-list 'auto-mode-alist '("\\.confluence$" . jira-markup-mode)))
-
-;; also:
-;; https://github.com/echosa/emacs-jira
-;; https://github.com/baohaojun/org-jira
-;; https://www.emacswiki.org/emacs/JiraMode
 
 
 ;; Org mode
