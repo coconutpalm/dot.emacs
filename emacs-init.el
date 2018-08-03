@@ -26,7 +26,16 @@
 ;;
 ;; Make sure the following is in the environment to enable 256 colors in terminals:
 ;; TERM=xterm-256color
-(setq macos-copy-from-env-list '("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "PATH" "JAVA_HOME" "TERM"))
+(setq macos-copy-from-env-list
+      '("AWS_ACCESS_KEY_ID"
+        "AWS_SECRET_ACCESS_KEY"
+        "PATH"
+        "JAVA_HOME"
+        "TERM"
+        "PERL5LIB"                      ; Needed for edbi
+        "PERL_LOCAL_LIB_ROOT"
+        "PERL_MB_OPT"
+        "PERL_MM_OPT"))
 
 ;; My minor mode
 (require 'modi-mode)
@@ -741,6 +750,11 @@ of FILE in the current directory, suitable for creation"
 ;; Textmate emulation
 (unless (package-installed-p 'textmate)
   (package-install 'textmate))
+
+
+;; Database support
+(use-package edbi)
+(global-set-key (kbd "C-c C-d") 'edbi:open-db-viewer)
 
 
 ;; Magit - Git support
