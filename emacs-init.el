@@ -29,6 +29,8 @@
 (setq macos-copy-from-env-list
       '("AWS_ACCESS_KEY_ID"
         "AWS_SECRET_ACCESS_KEY"
+        "SERVICE_LOCATOR_CONVENTION_SCHEME"
+        "SERVICE_LOCATOR_CONVENTION_DNS_PATTERN"
         "PATH"
         "JAVA_HOME"
         "TERM"
@@ -293,9 +295,11 @@ very minimal set."
 (setq-default fill-column 120)
 (setq-default standard-indent 3) ; set standard indent to 3 rather that 4
 (setq-default tab-width 3)
+(pixel-scroll-mode t)                   ;Emacs 26 or later
+(global-display-line-numbers-mode t)    ;Emacs 26 or later
+;; (global-linum-mode t) ; Emacs <= v25
 (setq scroll-step 1)             ; control screen "leaping"
 (setq-default indent-tabs-mode nil) ; spaces instead of tabs by default
-(global-linum-mode t)
 (setq linum-format " %4d ")
 (global-hl-line-mode 1) ; highlight current line, turn it on for all modes by default
 (set-face-background 'hl-line "lightgray")
@@ -1437,6 +1441,9 @@ assuming it is in a maven-style project."
   (package-install 'cider))
 (require 'cider)
 (require 'cider-repl)
+
+(add-hook 'cider-repl-mode-hook #'company-mode)
+(add-hook 'cider-mode-hook #'company-mode)
 
 (setq cider-lein-command lein-path)
 (add-hook 'cider-mode-hook #'eldoc-mode)
