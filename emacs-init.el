@@ -1444,18 +1444,21 @@ assuming it is in a maven-style project."
 
 (add-hook 'cider-repl-mode-hook #'company-mode)
 (add-hook 'cider-mode-hook #'company-mode)
+(add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+(add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
 
 (setq cider-lein-command lein-path)
 (add-hook 'cider-mode-hook #'eldoc-mode)
 
 (setq cider-repl-use-clojure-font-lock t)
+(global-set-key (kbd "TAB") #'company-indent-or-complete-common)
 
 ;; Abbreviate the REPL prompt if it gets long
 (setq cider-repl-prompt-function
       '(lambda (namespace)
-        (if (> (length namespace) 20)
-            (cider-repl-prompt-abbreviated namespace)
-            (cider-repl-prompt-default namespace))))
+         (if (> (length namespace) 20)
+             (cider-repl-prompt-abbreviated namespace)
+           (cider-repl-prompt-default namespace))))
 
 
 ;; From: https://raw.githubusercontent.com/vspinu/cider/79f828b60963747d87f898487912aa0b5fb802d2/nrepl-client.el
