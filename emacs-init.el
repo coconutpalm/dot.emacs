@@ -1451,7 +1451,7 @@ assuming it is in a maven-style project."
 (add-hook 'cider-mode-hook #'eldoc-mode)
 
 (setq cider-repl-use-clojure-font-lock t)
-(global-set-key (kbd "TAB") #'company-indent-or-complete-common)
+;; (global-set-key (kbd "TAB") #'company-indent-or-complete-common)
 
 ;; Abbreviate the REPL prompt if it gets long
 (setq cider-repl-prompt-function
