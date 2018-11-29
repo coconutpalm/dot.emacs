@@ -295,9 +295,9 @@ very minimal set."
 (setq-default fill-column 120)
 (setq-default standard-indent 3) ; set standard indent to 3 rather that 4
 (setq-default tab-width 3)
-(pixel-scroll-mode t)                   ;Emacs 26 or later
-(global-display-line-numbers-mode t)    ;Emacs 26 or later
-;; (global-linum-mode t) ; Emacs <= v25
+;;(pixel-scroll-mode t)                   ;Emacs 26 or later
+;;(global-display-line-numbers-mode t)    ;Emacs 26 or later
+(global-linum-mode t) ; Emacs <= v25
 (setq scroll-step 1)             ; control screen "leaping"
 (setq-default indent-tabs-mode nil) ; spaces instead of tabs by default
 (setq linum-format " %4d ")
@@ -344,17 +344,6 @@ very minimal set."
   (exec-path-from-shell-copy-envs macos-copy-from-env-list)
   (exec-path-from-shell-initialize))
 
-
-;; Prettify the UI
-;; (use-package sublimity
-;;   :init
-;;   (require 'sublimity)
-;;   (require 'sublimity-scroll)
-;;   (setq sublimity-scroll-drift-length 1)
-;;   ;; (require 'sublimity-map) ;; experimental
-;;   ;; (require 'sublimity-attractive)
-
-;;   (sublimity-mode 1))
 
 (use-package spinner)
 
@@ -2079,10 +2068,10 @@ With ARG, do this that many times."
 (global-set-key [s-up] 'windmove-up)              ; move to upper window
 (global-set-key [s-down] 'windmove-down)          ; move to lower window
 
-(global-set-key [A-left] 'windmove-left)   ; move to left window
-(global-set-key [A-right] 'windmove-right)        ; move to right window
-(global-set-key [A-up] 'windmove-up)              ; move to upper window
-(global-set-key [A-down] 'windmove-down)          ; move to lower window
+(global-set-key [C-M-left] 'windmove-left)   ; move to left window
+(global-set-key [C-M-right] 'windmove-right)        ; move to right window
+(global-set-key [C-M-up] 'windmove-up)              ; move to upper window
+(global-set-key [C-M-down] 'windmove-down)          ; move to lower window
 
 (find-file (concat (file-name-as-directory "~/") "TIME.org" ))
 
