@@ -761,7 +761,8 @@ of FILE in the current directory, suitable for creation"
   :commands magit-status magit-blame magit-refresh-all
   :init (setq
          magit-revert-buffers nil)
-  :bind (("s-g" . magit-status)
+  :bind (("M-l" . magit-log-current)    ;; See git-timemachine bindings below
+         ("s-g" . magit-status)
          ("s-b" . magit-blame)))
 
 (setq magit-revert-buffers 0.5)
@@ -775,6 +776,7 @@ of FILE in the current directory, suitable for creation"
 
 (use-package git-timemachine
   :commands git-timemachine
+  :bind ("C-M-l" . git-timemachine)     ;; See magit bindings above
   :init (setq
          git-timemachine-abbreviation-length 4))
 
