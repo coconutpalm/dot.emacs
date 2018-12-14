@@ -882,6 +882,9 @@ of FILE in the current directory, suitable for creation"
 (require 'helm-projectile)
 
 (projectile-global-mode)
+(projectile-mode +1)
+(define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map)
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
 (setq projectile-switch-project-action 'project-explorer-open)
 (setq projectile-enable-caching t)
