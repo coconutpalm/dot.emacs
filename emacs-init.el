@@ -50,6 +50,11 @@
             (t nil)))
 
 
+;; Use Git to provide local history
+(require 'localhistory)
+(global-set-key [C-H] 'local-history-check-changes)
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Package manager init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -295,14 +300,19 @@ very minimal set."
 (setq-default fill-column 120)
 (setq-default standard-indent 3) ; set standard indent to 3 rather that 4
 (setq-default tab-width 3)
-;;(pixel-scroll-mode t)                   ;Emacs 26 or later
-;;(global-display-line-numbers-mode t)    ;Emacs 26 or later
-(global-linum-mode t) ; Emacs <= v25
+;;(pixel-scroll-mode t)                    ;Emacs 26 or later, but it can be slow so commented
+
+(if (fboundp 'global-display-line-numbers-mode)
+    (global-display-line-numbers-mode t) ;Emacs 26 or later
+  (global-linnum-mode))
+(setq linum-format " %4d ")
+
 (setq scroll-step 1)             ; control screen "leaping"
 (setq-default indent-tabs-mode nil) ; spaces instead of tabs by default
-(setq linum-format " %4d ")
+
 (global-hl-line-mode 1) ; highlight current line, turn it on for all modes by default
 (set-face-background 'hl-line "lightgray")
+
 (setq column-number-mode t)
 (global-prettify-symbols-mode)
 
