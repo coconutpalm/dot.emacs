@@ -14,6 +14,15 @@
 ;;;
 
 (setq debug-on-error t)
+
+;; Line numbering
+;(if (fboundp 'global-display-line-numbers-mode)
+;    (global-display-line-numbers-mode t) ;Emacs 26 or later
+;  (require 'linum)
+;  (global-linnum-mode))
+(setq linum-format " %4d ")
+
+
 (add-to-list 'load-path "~/.emacs.d/elisp")
 
 (setq nodejs-path "/usr/local/bin/node")
@@ -39,6 +48,7 @@
         "PERL_MB_OPT"
         "PERL_MM_OPT"))
 
+
 ;; My minor mode
 (require 'modi-mode)
 
@@ -48,11 +58,6 @@
       (cond ((>= (length s) (length begins))
              (string-equal (substring s 0 (length begins)) begins))
             (t nil)))
-
-
-;; Use Git to provide local history
-(require 'localhistory)
-(global-set-key [C-H] 'local-history-check-changes)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -305,11 +310,6 @@ very minimal set."
 (setq-default tab-width 3)
 ;;(pixel-scroll-mode t)                    ;Emacs 26 or later, but it can be slow so commented
 
-(if (fboundp 'global-display-line-numbers-mode)
-    (global-display-line-numbers-mode t) ;Emacs 26 or later
-  (global-linnum-mode))
-(setq linum-format " %4d ")
-
 (setq scroll-step 1)             ; control screen "leaping"
 (setq-default indent-tabs-mode nil) ; spaces instead of tabs by default
 
@@ -453,13 +453,22 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; shell-mode
 (custom-set-variables
- '(comint-scroll-to-bottom-on-input t)  ; always insert at the bottom
- '(comint-scroll-to-bottom-on-output t) ; always add output at the bottom
- '(comint-scroll-show-maximum-output t) ; scroll to show max possible output
- '(comint-completion-autolist t)        ; show completion list when ambiguous
- '(comint-input-ignoredups t)           ; no duplicates in command history
- '(comint-completion-addsuffix t)       ; insert space/slash after file completion
- )
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(comint-completion-addsuffix t)
+ '(comint-completion-autolist t)
+ '(comint-input-ignoredups t)
+ '(comint-move-point-for-output t)
+ '(comint-scroll-show-maximum-output t)
+ '(comint-scroll-to-bottom-on-input t)
+ '(help-at-pt-display-when-idle (quote (flymake-overlay)) nil (help-at-pt))
+ '(help-at-pt-timer-delay 0.9)
+ '(package-selected-packages
+   (quote
+    (tabbar tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils nov markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter flymake-jslint exec-path-from-shell etags-select ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
+ '(tabbar-separator (quote (0.5))))
 
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
@@ -627,9 +636,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;             (lintnode-hook)))
 
 ;; Put messages in the mini-buffer
-(custom-set-variables
-     '(help-at-pt-timer-delay 0.9)
-     '(help-at-pt-display-when-idle '(flymake-overlay)))
+
 
 ;; General Javascript
 (add-hook 'js-mode-hook
@@ -786,6 +793,12 @@ of FILE in the current directory, suitable for creation"
 (global-set-key (kbd "C-x G") 'magit-diff-unstaged)
 (global-set-key (kbd "C-x C-G") 'magit-diff-unstaged)
 (add-hook 'after-save-hook 'magit-refresh-all)
+
+
+;; Use Git to provide local history
+(require 'local-history)
+(global-set-key [C-H] 'local-history-check-changes)
+
 
 (use-package git-timemachine
   :commands git-timemachine
@@ -1611,10 +1624,6 @@ buffer's."
   (yas-global-mode 1))
 
 
-(unless (package-installed-p 'rainbow-mode)
-  (package-install 'rainbow-mode))
-(require 'rainbow-mode)
-
 ;; Dependencies / misc
 
 (unless (package-installed-p 'dash)
@@ -1834,41 +1843,18 @@ tabbar.el v1.7."
 ;;   :commands flycheck-cask-setup
 ;;   :config (add-hook 'emacs-lisp-mode-hook (flycheck-cask-setup)))
 
-; Malabar Mode (for Java)
-;; (unless (package-installed-p 'malabar-mode)
-;;   (package-install 'malabar-mode))
-
 (unless (package-installed-p 'cedet)
   (package-install 'cedet))
 
 (unless (package-installed-p 'semantic)
   (package-install 'semantic))
 
-; Java / Malabar mode
 (require 'cedet)
 (require 'semantic)
 ;(require 'semantic/semanticdb-javap)
 (require 'semantic/ia)
 (load "semantic/loaddefs.el")
 (semantic-mode 1);;
-;(require 'malabar-mode)
-;(add-to-list 'auto-mode-alist '("\\.java\\'" . malabar-mode))
-
-                                        ; tab bar
-;; (defun my-java-malabar-mode-hook ()
-;;   ;; IDEA default for jump to source
-;;   (define-key c-mode-base-map "\C-\M-g" 'malabar-jump-to-thing)
-;;   (global-set-key "\M-n" 'semantic-ia-complete-symbol)
-;;   )
-;; (add-hook 'c-mode-common-hook 'my-java-malabar-mode-hook)
-
-
-;; Compiling the file on save makes malabar display the errors in the
-;; Java source code.
-;; (add-hook 'malabar-mode-hook
-;;           (lambda ()
-;;             (add-hook 'after-save-hook 'malabar-compile-file-silently
-;;                       nil t)))
 
 (require 'compile)
 (setq compilation-error-regexp-alist
@@ -2101,3 +2087,9 @@ With ARG, do this that many times."
 
 ;;; (provide 'emacs-init)
 ;;; emacs-init.el ends here
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
