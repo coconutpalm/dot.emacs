@@ -93,6 +93,9 @@
 ;; (package-utils-upgrade-all)
 
 
+(unless (package-installed-p 'which-key)
+  (package-install 'which-key))
+(which-key-mode)
 
 ;;;
 ;;; Generic utilities
@@ -923,12 +926,16 @@ of FILE in the current directory, suitable for creation"
 
 ;; Visual undo tree
 (use-package undo-tree
-  :diminish undo-tree-mode
-  :config (global-undo-tree-mode)
-  :init
-  (add-hook 'undo-tree-mode-hook (lambda () (unbind-key "C-/" undo-tree-map)))
+  ;; :diminish undo-tree-mode
+  :config
+  (global-undo-tree-mode 1)
+  (defalias 'redo 'undo-tree-redo)
   (setq undo-tree-visualizer-timestamps t)
-  :bind ("C-_" . undo-tree-visualize))
+  :bind
+  ("C-_" . undo)
+  ("C-z" . undo)
+  ("M-_" . redo)
+  ("C-S-z" . redo))
 
 
 ;; Spell checking: from https://raw.githubusercontent.com/kaushalmodi/.emacs.d/master/setup-files/setup-spell.el
