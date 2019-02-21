@@ -668,6 +668,12 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (unless (package-installed-p 'markdown-mode)
   (package-install 'markdown-mode))
 (require 'markdown-mode)
+(add-hook 'markdown-mode-hook
+          (lambda ()
+            (visual-line-mode 1)))
+
+(add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
+(setq markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
 
 ;; Temporarily unavailable
 ;(unless (package-installed-p 'markdown-mode+)
