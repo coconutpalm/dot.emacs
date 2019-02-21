@@ -6,7 +6,6 @@ HERE=`pwd`
 
 mkdir -p ~/bin
 ln -s ~/.emacs.d/dot.sbt ~/.sbt
-ln -s ~/.emacs.d/dot.emacs ~/.emacs
 #ln -s ~/.emacs.d/dot.vimrc ~/.vimrc
 
 # Ammonite Scala shell
