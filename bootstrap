@@ -14,7 +14,7 @@ mkdir ~/.ammonite
 ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
 
 cd ~/bin && unzip $HERE/sbt-launcher.zip
-cat > ~/bin/sbt <<EOF
+cd ~/bin && cat > ~/bin/sbt <<EOF
 #!/bin/bash
 sbt-launcher/sbt $@
 EOF
@@ -30,7 +30,7 @@ chmod 755 ~/bin/lein
 cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
 cd ~/bin && tar -xzvf maven-latest.tgz
 cd ~/bin && ln -s apache-maven* maven
-cat > ~/bin/mvn <<EOF
+cd ~/bin && cat > ~/bin/mvn <<EOF
 #!/bin/bash
 export MAVEN_HOME=`pwd`/maven
 export M2_HOME=`pwd`/maven
