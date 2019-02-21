@@ -1,0 +1,5 @@
+#!/bin/bash
+# This is intended to called by the install script
+echo "Installing font: $1"
+cp $@ ~/.fonts
+exit 0

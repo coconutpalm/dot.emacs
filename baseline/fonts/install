@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "Installing fonts into ~/.fonts (the correct place on Linux)"
+mkdir ~/.fonts
+unzip -o '*.zip'
+find . | grep .ttf$ | xargs ./install_ttf
