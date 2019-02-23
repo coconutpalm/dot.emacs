@@ -39,7 +39,7 @@
 See help of `format-time-string' for possible replacements")
 
 
-;; Initialize local git repo just once 
+;; Initialize local git repo just once
 (defun local-history-init ()
   (let* ((local-history-dir "~/.localhistory-emacs" ) (local-history-git (concat local-history-dir "/.git") ) )
     (if (file-exists-p local-history-git) (message "Not creating already exists")
@@ -62,16 +62,18 @@ See help of `format-time-string' for possible replacements")
       (setq default-directory "~/.localhistory-emacs/")
       (magit-stage-file new-file)
       (magit-call-git  "commit" (concat "-m " "\""  (format-time-string current-date-time-format (current-time)) "\"" ) new-file)
-      )))
+      (setq default-directory saved-default-directory))))
 
 
 (defun local-history-check-changes ()
   (interactive )
+  (setq saved-default-directory default-directory)
   (setq default-directory "~/.localhistory-emacs/")
   (magit-diff-setup nil (list "--no-index")
                     nil (list (expand-file-name (buffer-file-name (current-buffer)) )
                               (expand-file-name
-                               (concat "~/.localhistory-emacs/" (first (last (split-string (buffer-file-name (current-buffer))   "/"))))))))
+                               (concat "~/.localhistory-emacs/" (first (last (split-string (buffer-file-name (current-buffer))   "/")))))))
+  (setq default-directory saved-default-directory))
 
 
 ;;;###autoload
