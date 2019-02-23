@@ -674,6 +674,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
 (setq markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
+(setq markdown-preview-stylesheets (list))
 
 ;; Temporarily unavailable
 ;(unless (package-installed-p 'markdown-mode+)
