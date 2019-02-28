@@ -337,8 +337,8 @@ very minimal set."
   (set-frame-size (selected-frame) 120 37)
 
   ;; default Latin font (e.g. Consolas)
-  (set-default-font "Mononoki 12")
-  (set-face-attribute 'region nil :background "#666" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
+  (set-default-font "NotoMono 12")
+  (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
 
   ;; use specific font for Korean charset.
   ;; if you want to use different font size for specific charset,
