@@ -377,6 +377,10 @@ very minimal set."
 ;; No trailing whitespace, please...
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+;; Word-wrap text buffers
+(add-hook 'text-mode-hook
+          (lambda () (visual-line-mode 1)))
+
 ;; backup
 (setq make-backup-files nil) ; stop making backup ~ files
 (setq backup-inhibited t) ; disable backup for a per-file basis, not to be used by major modes
