@@ -15,7 +15,7 @@ ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
 cd ~/bin && unzip $HERE/sbt-launcher.zip
 cd ~/bin && cat > ~/bin/sbt <<EOF
 #!/bin/bash
-sbt-launcher/sbt $@
+$HOME/bin/sbt-launcher/sbt $@
 EOF
 chmod 755 ~/bin/sbt
 
