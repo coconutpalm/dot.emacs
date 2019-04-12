@@ -12,6 +12,7 @@ ln -s ~/.emacs.d/dot.sbt ~/.sbt
 mkdir ~/.ammonite
 ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
 
+# SBT and coursier
 cd ~/bin && unzip $HERE/sbt-launcher.zip
 cd ~/bin && cat > ~/bin/sbt <<EOF
 #!/bin/bash
@@ -19,6 +20,28 @@ $HOME/bin/sbt-launcher/sbt $@
 EOF
 chmod 755 ~/bin/sbt
 
+curl -L -o ~/bin/coursier https://git.io/coursier
+chmod 755 ~/bin/coursier
+
+# Scala Markdown code notebook w/ ```scala mdoc
+cat > ~/bin/notebook <<EOF
+#!/bin/bash
+#
+# See https://scalameta.org/mdoc
+
+SCALA=2.11
+MDOC=1.2.10
+
+IN=.
+OUT=/tmp/notebook-$RANDOM
+
+mkdir -p $IN
+mkdir -p $OUT
+
+coursier launch "org.scalameta:mdoc_$SCALA:$MDOC" $@ -- --in $IN --out $OUT --watch
+EOF
+
+# Clojure boot/lein
 curl -fsSLo ~/bin/boot https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
 chmod 755 ~/bin/boot
 
