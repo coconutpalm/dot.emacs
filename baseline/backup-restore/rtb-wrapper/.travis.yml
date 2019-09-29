@@ -1,0 +1,24 @@
+language: bash
+
+sudo: false
+
+addons:
+  apt:
+    sources:
+    - debian-buster # Grab shellcheck from the Debian repo
+    packages:
+    - shellcheck
+
+services:
+  - docker
+
+script:
+  - ./run-tests.sh
+  - bash -c 'shopt -s globstar; shellcheck -x **/*.sh'
+
+jobs:
+  include:
+    - stage: test
+      script: ./run-tests.sh
+    - stage: analyze
+      script: bash -c 'shopt -s globstar; shellcheck -x **/*.sh'

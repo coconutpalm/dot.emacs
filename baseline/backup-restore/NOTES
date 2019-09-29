@@ -1,0 +1,4 @@
+git@github.com:laurent22/rsync-time-backup.git
+git@github.com:thomas-mc-work/rtb-wrapper.git
+
+notify-send - Can send desktop notifications

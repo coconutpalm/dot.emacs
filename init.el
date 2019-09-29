@@ -1275,12 +1275,10 @@ assuming it is in a maven-style project."
 
 (add-hook 'java-mode-hook
           (lambda ()
-            (whitespace-mode-with-local-variables)
             (show-paren-mode t)
             (yas-minor-mode t)
             (git-gutter-mode t)
-            (company-mode t)
-            (ensime-mode t)))
+            (company-mode t)))
 
 
 ;;..............................................................................
