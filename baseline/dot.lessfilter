@@ -1,0 +1,24 @@
+#!/bin/bash
+
+mdless() { 
+	if [ -n "$1" ] ; then 
+		if [ -f "$1" ] ; then 
+			cat <(echo ".TH $1 7 `date --iso-8601` Dr.Markdown") <(pandoc -t man $1) | \
+			       	groff -K utf8 -t -T utf8 -man 2>/dev/null ; 
+		fi
+	fi
+}
+
+
+case "$1" in
+  *.md)
+	mdless "$1"
+    ;;
+
+  *)
+    # We don't handle this
+    exit 1
+esac
+
+exit 0
+
