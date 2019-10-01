@@ -27,19 +27,61 @@ chmod 755 ~/bin/coursier
 cat > ~/bin/notebook <<EOF
 #!/bin/bash
 #
-# See https://scalameta.org/mdoc
+# == This script assumes it's installed in ~/bin and that ~/bin is on the path ==
+#
+# Launch a Scala Markdown notebook server on localhost:4000 serving
+# *.md in the current directory.
+#
+# More useful than a repl.  Just write GFM format Markdown files in the
+# current directory and use ```scala mdoc``` as the fenced code block type.
+#
+# Scala results (in the web page) automatically refresh on save.
+#
+# You can add any library dependencies you need at the command line.
+#   See https://scalameta.org/mdoc for details.
+#
+# Compatible with Linux and MacOS.
 
+# Install coursier dependency if it's not already
+[ -f ~/bin/coursier ] || curl -L -o ~/bin/coursier https://git.io/coursier && chmod 755 ~/bin/coursier
+
+
+# Launch the notebook server
 SCALA=2.11
 MDOC=1.2.10
 
 IN=.
 OUT=/tmp/notebook-$RANDOM
 
-mkdir -p $IN
+mkdir -p $IN   # in case someone changes $IN to something else
 mkdir -p $OUT
 
-coursier launch "org.scalameta:mdoc_$SCALA:$MDOC" $@ -- --in $IN --out $OUT --watch
+set -m # enable job control inside script
+coursier launch "org.scalameta:mdoc_$SCALA:$MDOC" $@ -- --in $IN --out $OUT --watch > notebook.log 2>&1 &
+
+# Open the user's web browser to the notebook web page once the server has started
+( tail -f -n0 notebook.log & ) | grep -q "Waiting for file changes"
+
+WEBPAGE='http://localhost:4000'
+command xdg-open $WEBPAGE || open $WEBPAGE
+
+# Bring the notebook server back to the foreground
+echo "*****************************************"
+echo "*** Press <enter> to stop the server. ***"
+echo "*****************************************"
+fg
 EOF
+
+#
+# Note: Can't work around hard-coded version numbers for Mill or Bloop. :-(
+#
+
+# Scala/Mill
+sh -c '(echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.3.6/0.3.6) > ~/bin/mill && chmod +x ~/bin/mill'
+
+# Scala/Bloop
+curl -L https://github.com/scalacenter/bloop/releases/download/v1.2.5/install.py | python
+
 
 # Clojure boot/lein
 curl -fsSLo ~/bin/boot https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
@@ -63,9 +105,18 @@ chmod 755 ~/bin/mvn
 # Ammonite Scala shell
 curl -L -o ~/bin/amm https://git.io/vo4w5 && chmod +x ~/bin/amm
 
+
+# Put all the things on the path
 cat >> ~/.bashrc <<EOF
 
-export PATH="$PATH:~/bin"
+export PATH="$PATH:~/bin:~/.bloop"
+EOF
+
+
+# Add shell completions
+cat >> ~/.profile <<EOF
+
+. $HOME/.bloop/bash/bloop
 EOF
 
 
