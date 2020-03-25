@@ -58,17 +58,17 @@
 ;; Package manager init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Initialize the package manager with the MELPA archive
-
+; Initialize the package manager...
 
 (require 'package)
+;(setq package-check-signature nil)
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
 			 ("gnu" . "http://elpa.gnu.org/packages/")
-			 ("org" . "http://orgmode.org/elpa/")
-			;("elpa" . "http://tromy.com/elpa/")
-			 ("marmalade" . "http://marmalade-repo.org/packages/")))
+			 ("org" . "http://orgmode.org/elpa/")))
 
 (package-initialize)
+
+;(package-install 'gnu-elpa-keyring-update)
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -471,7 +471,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
    (quote
-    (impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tabbar tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils nov markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell etags-select ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
+    (impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tabbar tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
  '(tabbar-separator (quote (0.5))))
 
 ; interpret and use ansi color codes in shell output windows
@@ -837,10 +837,6 @@ of FILE in the current directory, suitable for creation"
   :init (setq
          git-timemachine-abbreviation-length 4))
 
-(use-package etags-select
-  :commands etags-select-find-tag)
-
-
 
 ;;
 ;; Projectile / Helm
@@ -1046,10 +1042,6 @@ of FILE in the current directory, suitable for creation"
   :ensure t)
 
 
-(use-package etags-select
-  :commands etags-select-find-tag)
-
-
 (use-package highlight-symbol
   :diminish highlight-symbol-mode
   :commands highlight-symbol
@@ -1137,17 +1129,6 @@ of FILE in the current directory, suitable for creation"
      ("a" smerge-keep-mine)
      ("b" smerge-keep-other))))
 (add-hook 'smerge-mode-hook (lambda () (hydra-smerge/body)))
-
-
-
-;; EPub
-
-(use-package nov
-  :init
-  (setq show-trailing-whitespace nil)
-  :config
-  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
-
 
 
 
