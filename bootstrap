@@ -4,6 +4,14 @@ echo "This script assumes that curl is installed"
 
 HERE=`pwd`
 
+# Emacs configuration/boilerplate
+echo "sudo apt install git"
+sudo apt install git
+mkdir -p ~/.localhistory-emacs
+cd ~/.localhistory-emacs && git init
+mkdir -p ~/.snippets
+
+
 mkdir -p ~/bin
 ln -s ~/.emacs.d/dot.sbt ~/.sbt
 #ln -s ~/.emacs.d/dot.vimrc ~/.vimrc
