@@ -87,7 +87,7 @@
 
 (use-package base16-theme
   :ensure t)
-  
+
 (load-theme 'base16-default-dark t)
 
 ;; TODO magit colors
@@ -332,7 +332,7 @@ very minimal set."
 (setq-default indent-tabs-mode nil) ; spaces instead of tabs by default
 
 (global-hl-line-mode 1) ; highlight current line, turn it on for all modes by default
-(set-face-background 'hl-line "lightgray")
+(set-face-background 'hl-line "black")
 
 (setq column-number-mode t)
 (global-prettify-symbols-mode)
@@ -355,15 +355,8 @@ very minimal set."
   (set-frame-size (selected-frame) 120 37)
 
   ;; default Latin font (e.g. Consolas)
-  (set-default-font "NotoMono 12")
+  (set-default-font "Noto Mono 12")
   (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
-
-  ;; use specific font for Korean charset.
-  ;; if you want to use different font size for specific charset,
-  ;; add :size POINT-SIZE in the font-spec.
-  (set-fontset-font t 'hangul (font-spec :name "NanumGothicCoding"))
-
-  ;; you may want to add different for other charset in this way.
   )
 
 
@@ -1836,7 +1829,7 @@ buffer's."
   ;; tabbar coloring code...
   (set-face-attribute
    'tabbar-default nil
-   :background "white")                 ; "gray60"
+   :background "charcoal")                 ; "gray60"
   (set-face-attribute
    'tabbar-unselected nil
    :background "gray85"
