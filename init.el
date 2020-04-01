@@ -477,7 +477,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
    (quote
-    (impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tabbar tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
+    (base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tabbar tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
  '(tabbar-separator (quote (0.5))))
 
 ; interpret and use ansi color codes in shell output windows
@@ -1160,13 +1160,6 @@ assuming it is in a maven-style project."
        nil 'literal))))
 
 
-(defun scala-mode-newline-comments ()
-  "Custom newline appropriate for `scala-mode'."
-  ;; shouldn't this be in a post-insert hook?
-  (interactive)
-  (newline-and-indent)
-  (scala-indent:insert-asterisk-on-multiline-comment))
-
 (defun c-mode-newline-comments ()
   "Newline with indent and preserve multiline comments."
   ;; TODO: annoyingly preserve single line comments, I don't want that
@@ -1195,7 +1188,7 @@ assuming it is in a maven-style project."
    scala-indent:align-parameters t)
 
   :bind
-  (("RET"     . scala-mode-newline-comments) ; Or: reindent-then-newline-and-indent
+  (("RET"     . reindent-then-newline-and-indent)
    ("C-<tab>" . dabbrev-expand)              ; ???? Do I still want this?
    ("C-c c"   . 'sbt-hydra)
    ("C-c e"   . 'next-error))
