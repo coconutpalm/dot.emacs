@@ -56,19 +56,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Package manager init
+;;
+;; NOTE-When receiving an out-of-date certificate error, uncomment
+;;      (setq package-check-signature nil)               and
+;;      (package-install 'gnu-elpa-keyring-update)       and reload
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Initialize the package manager...
-
 (require 'package)
-;(setq package-check-signature nil)
+;;(setq package-check-signature nil)
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
 			 ("gnu" . "http://elpa.gnu.org/packages/")
 			 ("org" . "http://orgmode.org/elpa/")))
 
-(package-initialize)
 
-;(package-install 'gnu-elpa-keyring-update)
+(package-initialize)
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -81,6 +82,9 @@
 (require 'use-package)
 (setq use-package-always-ensure t
       use-packate-always-defer t)
+
+
+;;(package-install 'gnu-elpa-keyring-update)
 
 
 ;; Color theme
