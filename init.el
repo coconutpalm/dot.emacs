@@ -86,11 +86,9 @@
 ;; Color theme
 
 (use-package base16-theme
-  :ensure t
-  :config
-  :demand t
-  (load-theme 'base16-default-dark t))
-
+  :ensure t)
+  
+(load-theme 'base16-default-dark t)
 
 ;; TODO magit colors
 ;; (magit-file-header ((t (:foreground "violet"))))
