@@ -83,6 +83,12 @@
       use-packate-always-defer t)
 
 
+(use-package base16-theme
+  :ensure t
+  :config
+  :demand t
+  (load-theme 'base16-default-dark t))
+
 ;;
 ;; Upgrade packages automatically on startup
 ;;  If you don't want this, comment out package-utils-upgrade-all
