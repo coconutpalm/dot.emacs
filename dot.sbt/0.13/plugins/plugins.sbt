@@ -2,9 +2,8 @@
 resolvers += "Sonatype releases" at
 "https://oss.sonatype.org/content/repositories/releases"
 
-// addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-RC8")
-addSbtPlugin("org.ensime" % "sbt-ensime" % "2.6.1")
-
+//addSbtPlugin("ch.epfl.scala" % "sbt-bloop" % "1.4.0-RC1-76-1488031d")
+addSbtPlugin("ch.epfl.scala" % "sbt-bloop" % "1.4.0-RC1-69-693de22a")
 
 // allows creating dependency graphs
 //
