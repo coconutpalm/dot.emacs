@@ -83,11 +83,24 @@
       use-packate-always-defer t)
 
 
+;; Color theme
+
 (use-package base16-theme
   :ensure t
   :config
   :demand t
   (load-theme 'base16-default-dark t))
+
+
+;; TODO magit colors
+;; (magit-file-header ((t (:foreground "violet"))))
+;; (magit-hunk-header ((t (:foreground "blue"))))
+;; (magit-header ((t (:foreground "cyan"))))
+;; (magit-tag-label ((t (:background "blue" :foreground "orange"))))
+;; (magit-diff-add ((t (:foreground "MediumSlateBlue"))))
+;; (magit-diff-del ((t (:foreground "maroon"))))
+;; (magit-item-highlight ((t (:background "#000012"))))
+
 
 ;;
 ;; Upgrade packages automatically on startup
