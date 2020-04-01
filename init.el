@@ -1194,6 +1194,7 @@ assuming it is in a maven-style project."
   (setq
    ;; scala-indent:use-javadoc-style t
    scala-indent:align-parameters t)
+  (subword-mode t)
 
   :bind
   (("RET"     . reindent-then-newline-and-indent)
