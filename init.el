@@ -381,7 +381,7 @@ very minimal set."
 
 (defun unclutter-window ()
   (interactive)
-  (scroll-bar-mode -1)
+  (menu-bar-mode -1)
   (set-face-foreground 'vertical-border (face-background 'default))
   (set-face-background 'fringe (face-background 'default))
   (set-face-foreground 'fringe (face-background 'default)))
@@ -485,8 +485,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
    (quote
-    (base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tabbar tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
- '(tabbar-separator (quote (0.5))))
+    (centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode))))
 
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
@@ -1821,127 +1820,6 @@ buffer's."
   (package-install 'tree-mode))
 (require 'tree-mode)
 
-;; We don't want tabbar in aquamacs
-(unless (boundp 'aquamacs-version)
-  (use-package tabbar
-    :commands ensime ensime-mode)
-
-  ;; enable tabbar minor mode
-  (tabbar-mode 1)
-  (global-set-key [M-left] 'tabbar-backward-tab)
-  (global-set-key [M-right] 'tabbar-forward-tab)
-
-  ;; tabbar coloring code...
-  (set-face-attribute
-   'tabbar-default nil
-   :background "charcoal")                 ; "gray60"
-  (set-face-attribute
-   'tabbar-unselected nil
-   :background "gray85"
-   :foreground "gray30"
-   :box nil)
-  (set-face-attribute
-   'tabbar-selected nil
-   :background "#f2f2f6"
-   :foreground "blue"
-   :box nil)
-  (set-face-attribute
-   'tabbar-button nil
-   :box nil)                            ; '(:line-width 1 :color "gray72" :style released-button)
-  (set-face-attribute
-   'tabbar-separator nil
-   :height 1.0)
-
-  ;; Change padding of the tabs
-  ;; we also need to set separator to avoid overlapping tabs by highlighted tabs
-  (custom-set-variables
-   '(tabbar-separator (quote (0.5))))
-
-  ;; adding spaces
-  (defun tabbar-buffer-tab-label (tab)
-    "Return a label for TAB.  That is, a string used to represent it on the tab bar."
-    (let ((label  (if tabbar--buffer-show-groups
-                      (format "[%s]  " (tabbar-tab-tabset tab))
-                    (format "%s  " (tabbar-tab-value tab)))))
-      ;; Unless the tab bar auto scrolls to keep the selected tab
-      ;; visible, shorten the tab label to keep as many tabs as possible
-      ;; in the visible area of the tab bar.
-      (if tabbar-auto-scroll-flag
-          label
-        (tabbar-shorten
-         label (max 1 (/ (window-width)
-                         (length (tabbar-view
-                                  (tabbar-current-tabset)))))))))
-
-  (dolist (func '(tabbar-mode tabbar-forward-tab tabbar-forward-group tabbar-backward-tab tabbar-backward-group))
-    (autoload func "tabbar" "Tabs at the top of buffers and easy control-tab navigation"))
-
-  (defmacro defun-prefix-alt (name on-no-prefix on-prefix &optional do-always)
-    `(defun ,name (arg)
-       (interactive "P")
-       ,do-always
-       (if (equal nil arg)
-           ,on-no-prefix
-         ,on-prefix)))
-
-  (defun-prefix-alt shk-tabbar-next (tabbar-forward-tab) (tabbar-forward-group) (tabbar-mode 1))
-  (defun-prefix-alt shk-tabbar-prev (tabbar-backward-tab) (tabbar-backward-group) (tabbar-mode 1))
-  (global-set-key [(control tab)] 'shk-tabbar-next)
-  (global-set-key [(control shift tab)] 'shk-tabbar-prev)
-
-  ;; Add a buffer modification state indicator in the tab label, and place a
-  ;; space around the label to make it looks less crowd.
-  (defadvice tabbar-buffer-tab-label (after fixup_tab_label_space_and_flag activate)
-    (setq ad-return-value
-          (if (and (buffer-modified-p (tabbar-tab-value tab))
-                   (buffer-file-name (tabbar-tab-value tab)))
-              (concat " + " (concat ad-return-value " "))
-            (concat " " (concat ad-return-value " ")))))
-
-  ;; Called each time the modification state of the buffer changed.
-  (defun ztl-modification-state-change ()
-    (tabbar-set-template tabbar-current-tabset nil)
-    (tabbar-display-update))
-
-  ;; First-change-hook is called BEFORE the change is made.
-  (defun ztl-on-buffer-modification ()
-    (set-buffer-modified-p t)
-    (ztl-modification-state-change))
-
-  (add-hook 'after-save-hook 'ztl-modification-state-change)
-  ;; This doesn't work for revert, I don't know.
-  ;;(add-hook 'after-revert-hook 'ztl-modification-state-change)
-  (add-hook 'first-change-hook 'ztl-on-buffer-modification)
-
-  (setq tabbar-cycle-scope 'tabs)
-
-
-  (setq tabbar-buffer-groups-function
-        (lambda ()
-          "Return the name of the tab group names the current buffer belongs to.
-There are two groups: Emacs buffers (those whose name starts with '*', plus
-dired buffers), and the rest.  This works at least with Emacs v24.2 using
-tabbar.el v1.7."
-          (list (cond ((starts-with "*sbt*" (buffer-name)) "system")
-                      ((starts-with "*terminal" (buffer-name)) "system")
-                      ((eq major-mode 'org-mode) "system")
-                      ((eq major-mode 'clojure-mode) "clojure")
-                      ((eq major-mode 'clojurescript-mode) "clojure")
-                      ((starts-with "TAGS" (buffer-name)) "emacs")
-                      ((starts-with "*cider-error" (buffer-name)) "emacs")
-                      ((starts-with "*cider" (buffer-name)) "user")
-                      ((starts-with "*nrepl-server" (buffer-name)) "user")
-                      ((string-equal "*eshell*" (buffer-name)) "user")
-                      ((starts-with "*term" (buffer-name)) "user")
-                      ((string-equal "*scratch*" (buffer-name)) "lisp")
-                      ((eq major-mode 'emacs-lisp-mode) "lisp")
-                      ((starts-with "magit" (buffer-name)) "magit")
-                      ((starts-with "*magit" (buffer-name)) "magit")
-                      ((starts-with "*helm" (buffer-name)) "helm")
-                      ((starts-with "*Helm" (buffer-name)) "helm")
-                      ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
-                      ((eq major-mode 'dired-mode) "emacs")
-                      (t "user"))))))
 
 ;;SQL
 
@@ -2189,6 +2067,62 @@ With ARG, do this that many times."
 ;; and no tool bar; I never use it
 (tool-bar-mode 0)
 
+;; We don't want extra tabs in aquamacs
+(unless (boundp 'aquamacs-version)
+
+  (use-package centaur-tabs
+    :demand
+    :config
+    (centaur-tabs-mode t)
+    (setq centaur-tabs-height 60
+          centaur-tabs-set-icons t
+          centaur-tabs-set-modified-marker t
+          centaur-tabs-style "rounded"
+          ;; centaur-tabs-set-bar 'under
+          ;; x-underline-at-descent-line t
+          centaur-tabs-show-navigation-buttons t
+          centaur-tabs-gray-out-icons 'buffer
+          uniquify-separator "/"
+          uniquify-buffer-name-style 'forward)
+    (centaur-tabs-change-fonts "Noto Sans" 140)
+    (centaur-tabs-headline-match)
+
+    :hook
+    (dashboard-mode . centaur-tabs-local-mode)
+    (calender-mode . centaur-tabs-local-mode)
+    (helpful-mode . centaur-tabs-local-mode)
+
+    :bind
+    ("C-c t s" . centaur-tabs-counsel-switch-group)
+    ("C-c t p" . centaur-tabs-group-by-projectile-project)
+    ("C-c t g" . centaur-tabs-group-buffer-groups)
+    ("M-<left>" . centaur-tabs-backward)
+    ("M-<right>" . centaur-tabs-forward))
+
+  (defun centaur-tabs-buffer-groups ()
+    "Return the name of the tab group names the current buffer belongs to."
+    (list (cond ((starts-with "*sbt*" (buffer-name)) "System")
+                ((starts-with "*terminal" (buffer-name)) "System")
+                ((eq major-mode 'org-mode) "Notes")
+                ((eq major-mode 'clojure-mode) "Clojure")
+                ((eq major-mode 'clojurescript-mode) "Clojure")
+                ((starts-with "TAGS" (buffer-name)) "Emacs")
+                ((starts-with "*cider-error" (buffer-name)) "Emacs")
+                ((starts-with "*cider" (buffer-name)) "User")
+                ((starts-with "*nrepl-server" (buffer-name)) "User")
+                ((string-equal "*eshell*" (buffer-name)) "User")
+                ((starts-with "*term" (buffer-name)) "User")
+                ((string-equal "*scratch*" (buffer-name)) "ELisp")
+                ((eq major-mode 'emacs-lisp-mode) "ELisp")
+                ((starts-with "magit" (buffer-name)) "Magit")
+                ((starts-with "*magit" (buffer-name)) "Magit")
+                ((starts-with "*helm" (buffer-name)) "Helm")
+                ((starts-with "*Helm" (buffer-name)) "Helm")
+                ((string-equal "*" (substring (buffer-name) 0 1)) "Emacs")
+                ((derived-mode-p 'dired-mode) "DirEd")
+                (t (centaur-tabs-get-group-name (current-buffer))))))
+  )
+
 
 (global-set-key [f1] 'terminal)
 (global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
@@ -2237,10 +2171,3 @@ With ARG, do this that many times."
 
 ;;; (provide 'emacs-init)
 ;;; emacs-init.el ends here
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-(put 'downcase-region 'disabled nil)
