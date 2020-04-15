@@ -1,0 +1,31 @@
+1)
+
+sudo apt install apt-clone
+
+sudo apt-clone clone /path/to/clone.tar.gz
+#or
+sudo apt-clone clone path-to/apt-clone-state-ubuntu-$(lsb_release -sr)-$(date +%F).tar.gz
+
+
+sudo apt-clone restore path-to/apt-clone-state-ubuntu.tar.gz
+#or for newer release
+sudo apt-clone restore-new-distro path-to/apt-clone-state-ubuntu.tar.gz $(lsb_release -sc)
+
+
+----
+2)
+
+dpkg --get-selections > ~/Package.list
+sudo cp -R /etc/apt/sources.list* ~/
+sudo apt-key exportall > ~/Repo.keys
+rsync --progress /home/`whoami` /path/to/user/profile/backup/here
+
+
+rsync --progress /path/to/user/profile/backup/here /home/`whoami`
+sudo apt-key add ~/Repo.keys
+sudo cp -R ~/sources.list* /etc/apt/
+sudo apt-get update
+sudo apt-get install dselect
+sudo dpkg --set-selections < ~/Package.list
+sudo apt-get dselect-upgrade -y
+
