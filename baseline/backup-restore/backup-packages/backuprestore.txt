@@ -1,3 +1,65 @@
+
+Before the examples: https://blog.sleeplessbeastie.eu/2013/09/25/how-to-backup-and-restore-installed-packages/
+
+How to backup and restore installed packages
+by Milosz Galazka on September 25, 2013 and tagged with Debian, System management, Package management
+
+If you ever wondered about how to backup list of installed packages and then restore it on another machine then you need to know that it does not require anything more then three basic utilities - dpkg to import/export list of packages, apt-get to install selected packages and apt-mark to restore extended package states.
+
+Backup and restore installed packages
+
+Export list of the installed packages on the local machine to packages.list file.
+
+local$ dpkg --get-selections > packages.list
+
+On the remote machine you need to select packages exported in the previous step.
+
+remote$ sudo dpkg --set-selections < packages.list
+
+Execute update action on the remote machine.
+
+remote$ sudo apt-get update
+
+I assume that local machine is up to date.
+Install earlier selected packages.
+
+remote$ sudo apt-get -u dselect-upgrade
+
+Backup and restore extended package states
+
+Read apt-mark manual page to learn more about extended package states.
+Export list of automatically installed packages.
+
+local$ apt-mark showauto > package.states.auto.list
+
+Export list of manually installed packages.
+
+local$ apt-mark showmanual > package.states.manual.list
+
+Export list of packages on hold.
+
+local$ apt-mark showhold > package.states.hold.list
+
+The last step on the remote machine is to import states exported a moment ago.
+
+remote$ sudo apt-mark auto $(cat package.states.auto.list)
+remote$ sudo apt-mark manual $(cat package.states.manual.list)
+remote$ sudo apt-mark manual $(cat package.states.auto.list)
+
+
+0) (for just packages)
+
+So we create these two files:
+
+$ apt-mark showauto > pkgs_auto.lst
+$ apt-mark showmanual > pkgs_manual.lst
+
+Then we restore the files in the target machine:
+
+$ sudo apt-mark auto $(cat pkgs_auto.lst)
+$ sudo apt-mark manual $(cat pkgs_manual.lst)
+
+
 1)
 
 sudo apt install apt-clone
