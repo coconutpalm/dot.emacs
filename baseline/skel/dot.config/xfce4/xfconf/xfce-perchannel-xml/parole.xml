@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<channel name="parole" version="1.0">
+  <property name="video" type="empty">
+    <property name="videosink" type="empty"/>
+  </property>
+  <property name="parole" type="empty">
+    <property name="plugins" type="string" value="parole-mpris2.so;/usr/lib/x86_64-linux-gnu/parole-0/parole-notify.so;/usr/lib/x86_64-linux-gnu/parole-0/tray-icon.so"/>
+  </property>
+  <property name="subtitles" type="empty">
+    <property name="font" type="string" value="Sans Bold 20"/>
+    <property name="enabled" type="bool" value="false"/>
+  </property>
+  <property name="window" type="empty">
+    <property name="maximized" type="bool" value="false"/>
+    <property name="width" type="int" value="1354"/>
+    <property name="height" type="int" value="584"/>
+  </property>
+  <property name="audio" type="empty">
+    <property name="volume" type="int" value="50"/>
+  </property>
+  <property name="playlist" type="empty">
+    <property name="show-playlist" type="bool" value="false"/>
+  </property>
+  <property name="plugins" type="empty">
+    <property name="tray" type="empty">
+      <property name="remember-quit-action" type="bool" value="true"/>
+      <property name="minimize-to-tray" type="bool" value="true"/>
+    </property>
+  </property>
+  <property name="folders" type="empty">
+    <property name="last-used-media" type="string" value="/home/djo"/>
+  </property>
+</channel>
