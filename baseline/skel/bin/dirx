@@ -1,0 +1,34 @@
+#!/usr/bin/perl
+#
+# Run a command in all subdirectories of the current subdirectory
+#
+
+use List::Util qw(reduce);
+use Term::ANSIColor;
+
+
+sub in_subs {
+    my $dir = shift;
+    my $args = shift;
+
+    print colored("$dir\n", "bold reverse");
+    chdir "$dir";
+    print "$args\n";
+    $output = `$args`;
+    $exitcode = $? >> 0;
+    print $output;
+    if ($exitcode) {
+        die "Command exited with error status: $exitcode"
+    }
+}
+
+
+@dirs = grep(/\/$/, `ls -F`);
+$args = reduce { $a . " " . $b } @ARGV;
+$here = `pwd`;
+chomp($here);
+
+foreach $dir (@dirs) {
+    chomp $dir;
+    in_subs("$here/$dir", $args);
+}

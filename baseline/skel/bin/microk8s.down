@@ -1,0 +1,4 @@
+#!/bin/bash
+microk8s.disable coredns ingress storage istio dashboard
+microk8s.stop
+microk8s.status
