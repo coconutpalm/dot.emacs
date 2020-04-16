@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# == This script assumes it's installed in a writeable path ==
+#
+# Launch a Scala Markdown notebook server on localhost:4000 serving
+# *.md in the current directory.
+#
+# More useful than a repl.  Just write GFM format Markdown files in the
+# current directory and use ```scala mdoc``` as the fenced code block type.
+#
+# Scala results (in the web page) automatically refresh on save.
+#
+# You can add any library dependencies you need at the command line.
+#   See https://scalameta.org/mdoc for details.
+#
+# Compatible with Linux and MacOS.
+
+# Install coursier dependency if it's not already
+HERE=`dirname $0`
+command coursier --help > /dev/null 2>&1 || curl -L -o $HERE/coursier https://git.io/coursier && chmod 755 $HERE/coursier
+
+
+# Launch the notebook server
+SCALA=2.11
+MDOC=2.0.3
+
+IN=.
+OUT=/tmp/notebook-$RANDOM
+LOGFILE=$OUT/log/notebook.log
+
+echo "Output is being placed in [$OUT]"
+
+mkdir -p $IN   # in case someone changes $IN to something else
+mkdir -p $OUT/log
+touch $LOGFILE
+
+set -m # enable job control inside script
+
+coursier launch "org.scalameta:mdoc_$SCALA:$MDOC" $@ -- \
+  --in $IN --out $OUT \
+  --exclude .git \
+  --exclude .metals \
+  --exclude .idea \
+  --exclude .bloop \
+  --watch \
+    > $LOGFILE 2>&1 &
+
+# Display the logs
+tail -f -n +0 $LOGFILE &
+PID=$!   # Keep track of tail's process ID so we can kill it later
+
+# Open the user's web browser to the notebook web page once the server has started
+( tail -f -n +0 $LOGFILE & ) | grep -q "Waiting for file changes"
+
+WEBPAGE='http://localhost:4000'
+command xdg-open $WEBPAGE || open $WEBPAGE
+
+# Bring the notebook server back to the foreground
+echo "*****************************************"
+echo "*** Press <enter> to stop the server. ***"
+echo "*****************************************"
+
+fg coursier # Blocks until user hits <enter>
+kill $PID   # Kill the background tail
