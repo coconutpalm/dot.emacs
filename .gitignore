@@ -19,3 +19,6 @@ build.sbt
 idea.sbt
 preloaded
 network-security.data
+.cache
+transient
+bookmarks
