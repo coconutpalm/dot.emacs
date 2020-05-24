@@ -15,15 +15,9 @@
 
 (setq debug-on-error t)
 
-;; Line numbering
-;(if (fboundp 'global-display-line-numbers-mode)
-;    (global-display-line-numbers-mode t) ;Emacs 26 or later
-;  (require 'linum)
-;  (global-linnum-mode))
-(setq linum-format " %4d ")
-
 
 (add-to-list 'load-path "~/.emacs.d/elisp")
+(setq exec-path (append exec-path (list "/usr/bin")))
 
 (setq nodejs-path "/usr/local/bin/node")
 (setq lein-path "~/bin/lein")
@@ -50,7 +44,7 @@
 
 
 ;; My minor mode
-(require 'modi-mode)
+;(require 'modi-mode)
 
 
 (defun starts-with (begins s)
@@ -62,17 +56,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Package manager init
+;;
+;; NOTE-When receiving an out-of-date certificate error, uncomment
+;;      (setq package-check-signature nil)               and
+;;      (package-install 'gnu-elpa-keyring-update)       and reload
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Initialize the package manager with the MELPA archive
-
-
 (require 'package)
+;;(setq package-check-signature nil)
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
 			 ("gnu" . "http://elpa.gnu.org/packages/")
-			 ("org" . "http://orgmode.org/elpa/")
-			;("elpa" . "http://tromy.com/elpa/")
-			 ("marmalade" . "http://marmalade-repo.org/packages/")))
+			 ("org" . "http://orgmode.org/elpa/")))
+
 
 (package-initialize)
 
@@ -85,7 +80,28 @@
   (package-install 'use-package))
 
 (require 'use-package)
-(setq use-package-always-ensure t)
+(setq use-package-always-ensure t
+      use-packate-always-defer t)
+
+
+;;(package-install 'gnu-elpa-keyring-update)
+
+
+;; Color theme
+
+(use-package base16-theme
+  :ensure t)
+
+(load-theme 'base16-default-dark t)
+
+;; TODO magit colors
+;; (magit-file-header ((t (:foreground "violet"))))
+;; (magit-hunk-header ((t (:foreground "blue"))))
+;; (magit-header ((t (:foreground "cyan"))))
+;; (magit-tag-label ((t (:background "blue" :foreground "orange"))))
+;; (magit-diff-add ((t (:foreground "MediumSlateBlue"))))
+;; (magit-diff-del ((t (:foreground "maroon"))))
+;; (magit-item-highlight ((t (:background "#000012"))))
 
 
 ;;
@@ -93,19 +109,28 @@
 ;;  If you don't want this, comment out package-utils-upgrade-all
 ;;
 
-(unless (package-installed-p 'epl)
-  (package-install 'epl))
-(require 'epl)
 
-(unless (package-installed-p 'package-utils)
-  (package-install 'package-utils))
-(require 'package-utils)
+;; Line numbering
+                                        ;
+(use-package linum
+  :ensure t
+  :config
+  (global-linum-mode t)
+  (setq linum-format " %4d "))
+
+
+(use-package subword
+  :ensure nil
+  :diminish subword-mode
+  :config (global-subword-mode t))
+
+(use-package epl)
+(use-package package-utils)
 ;; (package-utils-upgrade-all)
 
+(use-package which-key)
+(which-key-mode 1)
 
-(unless (package-installed-p 'which-key)
-  (package-install 'which-key))
-(which-key-mode)
 
 ;;;
 ;;; Generic utilities
@@ -120,11 +145,11 @@
 
 
 (defun ends-with? (s ending)
-      "Return non-nil if string S ends with ENDING."
-      (cond ((>= (length s) (length ending))
-             (let ((elength (length ending)))
-               (string= (substring s (- 0 elength)) ending)))
-            (t nil)))
+  "Return non-nil if string S ends with ENDING."
+  (cond ((>= (length s) (length ending))
+         (let ((elength (length ending)))
+           (string= (substring s (- 0 elength)) ending)))
+        (t nil)))
 
 
 (defun starts-with? (s begins)
@@ -150,9 +175,6 @@
 (use-package ibuffer
   :ensure nil
   :bind ("C-x C-b". ibuffer))
-
-(use-package ivy
-  :ensure nil)
 
 (use-package subword
   :ensure nil
@@ -314,7 +336,7 @@ very minimal set."
 (setq-default indent-tabs-mode nil) ; spaces instead of tabs by default
 
 (global-hl-line-mode 1) ; highlight current line, turn it on for all modes by default
-(set-face-background 'hl-line "lightgray")
+(set-face-background 'hl-line "black")
 
 (setq column-number-mode t)
 (global-prettify-symbols-mode)
@@ -337,15 +359,8 @@ very minimal set."
   (set-frame-size (selected-frame) 120 37)
 
   ;; default Latin font (e.g. Consolas)
-  (set-default-font "NotoMono 12")
+  (set-default-font "Noto Mono 12")
   (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
-
-  ;; use specific font for Korean charset.
-  ;; if you want to use different font size for specific charset,
-  ;; add :size POINT-SIZE in the font-spec.
-  (set-fontset-font t 'hangul (font-spec :name "NanumGothicCoding"))
-
-  ;; you may want to add different for other charset in this way.
   )
 
 
@@ -366,7 +381,7 @@ very minimal set."
 
 (defun unclutter-window ()
   (interactive)
-  (scroll-bar-mode -1)
+  (menu-bar-mode -1)
   (set-face-foreground 'vertical-border (face-background 'default))
   (set-face-background 'fringe (face-background 'default))
   (set-face-foreground 'fringe (face-background 'default)))
@@ -467,12 +482,10 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(comint-move-point-for-output t)
  '(comint-scroll-show-maximum-output t)
  '(comint-scroll-to-bottom-on-input t)
- '(help-at-pt-display-when-idle (quote (flymake-overlay)) nil (help-at-pt))
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
    (quote
-    (tabbar tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils nov markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter flymake-jslint exec-path-from-shell etags-select ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
- '(tabbar-separator (quote (0.5))))
+    (centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode))))
 
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
@@ -626,9 +639,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;             (make-local-variable 'ac-ignores)
 ;;             (add-to-list 'ac-ignores "end")))
 
-;; flymake-jslint
-(use-package flymake-jslint)
-
 
 ;; (use-package lintnode)
 
@@ -668,38 +678,61 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; Markdown / AsciiDoc
 
-;; Markdown
-(unless (package-installed-p 'markdown-mode)
-  (package-install 'markdown-mode))
-(require 'markdown-mode)
-(add-hook 'markdown-mode-hook
-          (lambda ()
-            (visual-line-mode 1)))
+;; Impatient-mode
+(use-package simple-httpd)
+(use-package impatient-mode)
 
-(add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
-(setq markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
-(setq markdown-preview-stylesheets (list))
 
-;; Temporarily unavailable
-;(unless (package-installed-p 'markdown-mode+)
-;  (package-install 'markdown-mode+))
-;(require 'markdown-mode+)
+(defun markdown-html (buffer)
+  (princ (with-current-buffer buffer
+           (format "<!DOCTYPE html><html><script src=\"https://cdnjs.cloudflare.com/ajax/libs/he/1.1.1/he.js\"></script><link rel=\"stylesheet\" href=\"https://assets-cdn.github.com/assets/github-e6bb18b320358b77abe040d2eb46b547.css\"><link rel=\"stylesheet\" href=\"https://assets-cdn.github.com/assets/frameworks-95aff0b550d3fe338b645a4deebdcb1b.css\"><title>Impatient Markdown</title><div id=\"markdown-content\" style=\"display:none\">%s</div><div class=\"markdown-body\" style=\"max-width:968px;margin:0 auto;\"></div><script>fetch('https://api.github.com/markdown', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ \"text\": document.getElementById('markdown-content').innerHTML, \"mode\": \"gfm\", \"context\": \"knit-pk/homepage-nuxtjs\"}) }).then(response => response.text()).then(response => {document.querySelector('.markdown-body').innerHTML = he.decode(response)}).then(() => { fetch(\"https://gist.githubusercontent.com/FieryCod/b6938b29531b6ec72de25c76fa978b2c/raw/\").then(response => response.text()).then(eval)});</script></html>"
+                   (buffer-substring-no-properties (point-min) (point-max))))
+         (current-buffer)))
 
-(unless (package-installed-p 'markdown-preview-mode)
-  (package-install 'markdown-preview-mode))
-(require 'markdown-preview-mode)
+;; Function which enables the impatient mode and automatically sets the imp-user-filter to markdown-html.
+
+(defun markdown-preview! ()
+  (interactive)
+  (impatient-mode 1)
+  (setq imp-user-filter #'markdown-html)
+  (cl-incf imp-last-state)
+  (imp--notify-clients))
+
+;; How to use:
+
+(setq httpd-port 8000)
+;; (httpd-start)
+
+;; (defun markdown-preview-live-start ()
+;;   (interactive)
+;;   (http-start)
+;;   (markdown-preview!))
+;; Then: http://localhost:8080/imp/
+
+(use-package markdown-mode
+  :ensure t
+
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . gfm-mode)
+         ("\\.markdown\\'" . gfm-mode))
+
+  :init
+  (setq markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
+  (setq markdown-fontify-code-blocks-natively t))
 
 ;; Generate a TOC from a markdown file: M-x markdown-toc-generate-toc
 ;; This will compute the TOC at insert it at current position.
 ;; Update existing TOC: C-u M-x markdown-toc-generate-toc
-(unless (package-installed-p 'markdown-toc)
-  (package-install 'markdown-toc))
-(require 'markdown-toc)
+(use-package markdown-toc)
 
-(autoload 'markdown-preview-mode "markdown-preview-mode"
-  "Major mode for editing Markdown files with preview" t)
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-preview-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-preview-mode))
+
+;; See functions above for MD preview; may bring this back someday?
+
+;; (autoload 'markdown-preview-mode "markdown-preview-mode"
+  ;; "Major mode for editing Markdown files with preview" t)
+;; (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-preview-mode))
+;; (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-preview-mode))
+
 
 ;; AsciiDoc
 
@@ -817,10 +850,6 @@ of FILE in the current directory, suitable for creation"
   :init (setq
          git-timemachine-abbreviation-length 4))
 
-(use-package etags-select
-  :commands etags-select-find-tag)
-
-
 
 ;;
 ;; Projectile / Helm
@@ -845,12 +874,6 @@ of FILE in the current directory, suitable for creation"
 (helm-descbinds-mode)
 (global-set-key (kbd "C-h h") 'describe-bindings)
 
-(unless (package-installed-p 'project-explorer)
-  (package-install 'project-explorer))
-(global-set-key "\C-\\" 'project-explorer-toggle)
-(global-set-key "\C-\M-\\" 'project-explorer-helm)
-(setq pe/omit-gitignore t)
-(setq pe/width 65)
 (setq
     helm-boring-buffer-regexp-list '("^diary$")
     helm-boring-file-regexp-list
@@ -925,7 +948,7 @@ of FILE in the current directory, suitable for creation"
 (define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map)
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
-(setq projectile-switch-project-action 'project-explorer-open)
+(setq projectile-switch-project-action 'treemacs)
 (setq projectile-enable-caching t)
 (setq projectile-completion-system 'helm)
 (setq projectile-indexing-method 'native)
@@ -940,9 +963,96 @@ of FILE in the current directory, suitable for creation"
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
 
+;; (unless (package-installed-p 'project-explorer)
+;;   (package-install 'project-explorer))
+;; (global-set-key "\C-\\" 'project-explorer-toggle)
+;; (global-set-key "\C-\M-\\" 'project-explorer-helm)
+;; (setq pe/omit-gitignore t)
+;; (setq pe/width 65)
 
-(use-package etags-select
-  :commands etags-select-find-tag)
+
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay      0.5
+          treemacs-display-in-side-window        t
+          treemacs-eldoc-display                 t
+          treemacs-file-event-delay              5000
+          treemacs-file-follow-delay             0.2
+          treemacs-follow-after-init             t
+          treemacs-git-command-pipe              ""
+          treemacs-goto-tag-strategy             'refetch-index
+          treemacs-indentation                   2
+          treemacs-indentation-string            " "
+          treemacs-is-never-other-window         nil
+          treemacs-max-git-entries               5000
+          treemacs-missing-project-action        'ask
+          treemacs-no-png-images                 nil
+          treemacs-no-delete-other-windows       t
+          treemacs-project-follow-cleanup        nil
+          treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                      'left
+          treemacs-recenter-distance             0.1
+          treemacs-recenter-after-file-follow    nil
+          treemacs-recenter-after-tag-follow     nil
+          treemacs-recenter-after-project-jump   'always
+          treemacs-recenter-after-project-expand 'on-distance
+          treemacs-show-cursor                   nil
+          treemacs-show-hidden-files             t
+          treemacs-silent-filewatch              nil
+          treemacs-silent-refresh                nil
+          treemacs-sorting                       'alphabetic-desc
+          treemacs-space-between-root-nodes      t
+          treemacs-tag-follow-cleanup            t
+          treemacs-tag-follow-delay              1.5
+          treemacs-width                         35)
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode t)
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple))))
+
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-\\"      . treemacs)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
+
+;; (use-package treemacs-evil
+;;   :after treemacs evil
+;;   :ensure t)
+
+(use-package treemacs-projectile
+  :after treemacs projectile
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :after treemacs dired
+  :ensure t
+  :config (treemacs-icons-dired-mode))
+
+(use-package treemacs-magit
+  :after treemacs magit
+  :ensure t)
 
 
 (use-package highlight-symbol
@@ -964,17 +1074,17 @@ of FILE in the current directory, suitable for creation"
 
 
 ;; Visual undo tree
-(use-package undo-tree
-  ;; :diminish undo-tree-mode
-  :config
-  (global-undo-tree-mode 1)
-  (defalias 'redo 'undo-tree-redo)
-  (setq undo-tree-visualizer-timestamps t)
-  :bind
-  ("C-_" . undo)
-  ("C-z" . undo)
-  ("M-_" . redo)
-  ("C-S-z" . redo))
+;; (use-package undo-tree
+;;   ;; :diminish undo-tree-mode
+;;   :config
+;;   (global-undo-tree-mode 1)
+;;   (defalias 'redo 'undo-tree-redo)
+;;   (setq undo-tree-visualizer-timestamps t)
+;;   :bind
+;;   ("C-_" . undo)
+;;   ("C-z" . undo)
+;;   ("M-_" . redo)
+;;   ("C-S-z" . redo))
 
 
 ;; Spell checking: from https://raw.githubusercontent.com/kaushalmodi/.emacs.d/master/setup-files/setup-spell.el
@@ -1034,6 +1144,7 @@ of FILE in the current directory, suitable for creation"
 (add-hook 'smerge-mode-hook (lambda () (hydra-smerge/body)))
 
 
+
 ;;
 ;; Scala/ensime
 ;;
@@ -1056,26 +1167,12 @@ assuming it is in a maven-style project."
        nil 'literal))))
 
 
-(defun scala-mode-newline-comments ()
-  "Custom newline appropriate for `scala-mode'."
-  ;; shouldn't this be in a post-insert hook?
-  (interactive)
-  (newline-and-indent)
-  (scala-indent:insert-asterisk-on-multiline-comment))
-
 (defun c-mode-newline-comments ()
   "Newline with indent and preserve multiline comments."
   ;; TODO: annoyingly preserve single line comments, I don't want that
   (interactive)
   (c-indent-new-comment-line)
   (indent-according-to-mode))
-
-
-(use-package nov
-  :init
-  (setq show-trailing-whitespace nil)
-  :config
-  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
 
 
 (use-package play-routes-mode
@@ -1086,141 +1183,57 @@ assuming it is in a maven-style project."
 
 (use-package scala-mode
   :pin melpa
+
   :interpreter
-  ("scala" . scala-mode)
+  ("drydoc" . scala-mode) ;; Since the 'scala' command is deprecated
+
+  :mode "\\.s\\(cala\\|bt\\)$"
+
   :init
   (setq
-   scala-indent:use-javadoc-style t
+   ;; scala-indent:use-javadoc-style t
    scala-indent:align-parameters t)
-  :config
+  (subword-mode t)
 
-  (bind-key "RET" 'scala-mode-newline-comments scala-mode-map) ; Or: reindent-then-newline-and-indent
+  :bind
+  (("RET"     . reindent-then-newline-and-indent)
+   ("C-<tab>" . dabbrev-expand)              ; ???? Do I still want this?
+   ("C-c c"   . 'sbt-hydra)
+   ("C-c e"   . 'next-error))
+
+  ;; Old stuff....
+
   ;; BUG https://github.com/Fuco1/smartparens/issues/468
   ;; backwards/next not working particularly well
 
-  (bind-key "C-c C-e e" 'ensime scala-mode-map)
-  (bind-key "C-c C-e d" 'ensime-db-attach scala-mode-map)
-  (bind-key "C-c C-e b" 'ensime-db-set-break scala-mode-map)
-  (bind-key "C-c C-e B" 'ensime-db-clear-break scala-mode-map)
-  (bind-key "C-c C-e i" 'ensime-db-inspect-value-at-point scala-mode-map)
-  (bind-key "C-c C-e t" 'ensime-db-backtrace scala-mode-map)
-  (bind-key [f1] 'ensime-sbt scala-mode-map)
-  (bind-key [f3] 'ensime-edit-definition-of-thing-at-point scala-mode-map)
-  (bind-key [f7] 'ensime-db-step scala-mode-map)
-  (bind-key [f8] 'ensime-db-step-out scala-mode-map)
-  (bind-key [f9] 'ensime-db-continue scala-mode-map)
-  (bind-key "C-c C-s" 'ensime-helm-search scala-mode-map)
-  (bind-key "C-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
-  (bind-key "C-M-T" 'ensime-show-hierarchy-of-type-at-point scala-mode-map)
-  (bind-key "M-R" 'ensime-refactor-diff-rename scala-mode-map)
-  (bind-key "M-M" 'ensime-refactor-diff-extract-method scala-mode-map)
-  (bind-key "M-L" 'ensime-refactor-diff-extract-local scala-mode-map)
-  (bind-key "M-I" 'ensime-refactor-diff-inline-local scala-mode-map)
-  (bind-key "M-T" 'ensime-refactor-add-type-annotation scala-mode-map)
-  (bind-key "C-O" 'ensime-refactor-diff-organize-imports scala-mode-map)
-  (bind-key "M-<return>" 'ensime-import-type-at-point scala-mode-map)
-  (bind-key "C-M-j" 'join-line scala-mode-map)
-  (bind-key "<backtab>" 'scala-indent:indent-with-reluctant-strategy scala-mode-map)
-  (bind-key "s-n" 'ensime-search scala-mode-map)
-  (bind-key "s-t" 'ensime-print-type-at-point scala-mode-map)
-  (bind-key "M-." 'ensime-edit-definition-with-fallback scala-mode-map)
+  ;; (bind-key "C-c C-e e" 'ensime scala-mode-map)
+  ;; (bind-key "C-c C-e d" 'ensime-db-attach scala-mode-map)
+  ;; (bind-key "C-c C-e b" 'ensime-db-set-break scala-mode-map)
+  ;; (bind-key "C-c C-e B" 'ensime-db-clear-break scala-mode-map)
+  ;; (bind-key "C-c C-e i" 'ensime-db-inspect-value-at-point scala-mode-map)
+  ;; (bind-key "C-c C-e t" 'ensime-db-backtrace scala-mode-map)
+  ;; (bind-key [f1] 'ensime-sbt scala-mode-map)
+  ;; (bind-key [f3] 'ensime-edit-definition-of-thing-at-point scala-mode-map)
+  ;; (bind-key [f7] 'ensime-db-step scala-mode-map)
+  ;; (bind-key [f8] 'ensime-db-step-out scala-mode-map)
+  ;; (bind-key [f9] 'ensime-db-continue scala-mode-map)
+  ;; (bind-key "C-c C-s" 'ensime-helm-search scala-mode-map)
+  ;; (bind-key "C-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
+  ;; (bind-key "C-M-T" 'ensime-show-hierarchy-of-type-at-point scala-mode-map)
+  ;; (bind-key "M-R" 'ensime-refactor-diff-rename scala-mode-map)
+  ;; (bind-key "M-M" 'ensime-refactor-diff-extract-method scala-mode-map)
+  ;; (bind-key "M-L" 'ensime-refactor-diff-extract-local scala-mode-map)
+  ;; (bind-key "M-I" 'ensime-refactor-diff-inline-local scala-mode-map)
+  ;; (bind-key "M-T" 'ensime-refactor-add-type-annotation scala-mode-map)
+  ;; (bind-key "C-O" 'ensime-refactor-diff-organize-imports scala-mode-map)
+  ;; (bind-key "M-<return>" 'ensime-import-type-at-point scala-mode-map)
+  ;; (bind-key "C-M-j" 'join-line scala-mode-map)
+  ;; (bind-key "<backtab>" 'scala-indent:indent-with-reluctant-strategy scala-mode-map)
+  ;; (bind-key "s-n" 'ensime-search scala-mode-map)
+  ;; (bind-key "s-t" 'ensime-print-type-at-point scala-mode-map)
+  ;; (bind-key "M-." 'ensime-edit-definition-with-fallback scala-mode-map)
 
-  ;; i.e. bypass company-mode
-  (bind-key "C-<tab>" 'dabbrev-expand scala-mode-map)
-
-  (bind-key "C-c c" 'sbt-hydra scala-mode-map)
-  (bind-key "C-c e" 'next-error scala-mode-map))
-
-;; (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
-
-
-(defun ensime-edit-definition-with-fallback ()
-  "Variant of `ensime-edit-definition' with ctags if ENSIME is not available."
-  (interactive)
-  (unless (and (ensime-connection-or-nil)
-               (ensime-edit-definition))
-    (projectile-find-tag)))
-
-
-(use-package ensime
-  :ensure t
-  :pin melpa
-  :commands ensime ensime-mode
-  :init
-  (put 'ensime-auto-generate-config 'safe-local-variable #'booleanp)
-  (setq
-   ensime-default-buffer-prefix "ENSIME-"
-   ensime-prefer-noninteractive t
-   ensime-refactor-preview t
-   ensime-refactor-preview-override-hunk 10
-   ensime-startup-snapshot-notification nil
-   ensime-startup-notification nil
-   ensime-implicit-gutter-icons t
-   scala-indent:step 2)
-  :config
-  (subword-mode)
-
-  (require 'ensime-helm)
-  (add-hook 'git-timemachine-mode-hook (lambda () (ensime-mode 0)))
-
-  (setq ensime-sbt-command "/usr/local/bin/sbt"
-        ensime-search-interface 'helm
-        ;ensime-goto-test-config-defaults
-;        (plist-merge ensime-goto-test-config-defaults
-;                     '(:test-class-suffixes ("Spec" "Test" "Check"))
-;                     '(:test-template-fn ensime-goto-test--test-template-scalatest-flatspec))
-        ))
-
-
-;; This should be done by Ensime, but:
-;;    https://github.com/ensime/ensime-server/issues/61
-(defcustom ensime-mode-key-prefix [?\C-c ?\C-e]
-  "The prefix key for ensime-mode commands."
-  :group 'ensime-mode
-  :type 'sexp)
-
-(require 'ensime)
-
-(define-key ensime-mode-map (kbd "C-<return>") 'ensime-print-errors-at-point)
-
-;; (require 'ensime-vars)
-(require 'ensime-company)
-;; (require 'ensime-notes)
-
-(setq exec-path (append exec-path (list "/usr/bin")))
-
-;; (setq ensime-sem-high-faces   ;; This is currently buggy
-;;   '(
-;;    (var . (:foreground "#ff2222"))
-;;    (val . (:foreground "#1111ff"))
-;;    (varField . (:foreground "#ff3333"))
-;;    (valField . (:foreground "#dd11ff"))
-;;    (functionCall . (:foreground "#84BEE3"))
-;;    (param . (:foreground "#111111"))
-;;    (class . font-lock-type-face)
-;;    (trait . (:foreground "#084EA8"))
-;;    (object . (:foreground "#026DF7"))
-;;    (package . font-lock-preprocessor-face)
-;;    ))
-
-
-(use-package sbt-mode
-  :pin melpa
-  :interpreter
-  ("sbt" . sbt-mode)
-  :commands sbt-start sbt-command
-  :init (setq sbt:prefer-nested-projects t)
-  :config
-  ;; WORKAROUND: https://github.com/hvesalai/sbt-mode/issues/31
-  ;; allows using SPACE when in the minibuffer
-  (substitute-key-definition
-   'minibuffer-complete-word
-   'self-insert-command
-   minibuffer-local-completion-map)
-
-  (bind-key "C-c c" 'sbt-hydra sbt:mode-map)
-  (bind-key "C-c s" 'sbt-command sbt:mode-map)
-  (bind-key "C-c e" 'next-error sbt:mode-map))
+  )
 
 (defcustom
   scala-mode-prettify-symbols
@@ -1241,17 +1254,149 @@ assuming it is in a maven-style project."
             (yas-minor-mode t)
             (git-gutter-mode t)
             (company-mode t)
-            (ensime-mode t)
+            ;; (ensime-mode t)
             (setq prettify-symbols-alist scala-mode-prettify-symbols)
             (prettify-symbols-mode t)
             (scala-mode:goto-start-of-code)))
 
-(add-hook 'ensime-mode-hook
-          (lambda ()
-            (company-mode t)
-            (setq ensime-sbt-command "/usr/local/bin/sbt")
-            (let ((backends (company-backends-for-buffer)))
-              (setq company-backends (push 'ensime-company backends)))))
+
+(use-package sbt-mode
+  :pin melpa
+
+  :interpreter
+  ("sbt" . sbt-mode)
+
+  :commands sbt-start sbt-command
+
+  :init
+  (setq sbt:prefer-nested-projects t)
+
+  :config
+  ;; WORKAROUND: https://github.com/hvesalai/sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
+
+  (bind-key "C-c c" 'sbt-hydra sbt:mode-map)
+  (bind-key "C-c s" 'sbt-command sbt:mode-map)
+  (bind-key "C-c e" 'next-error sbt:mode-map))
+
+
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+
+(use-package flycheck-color-mode-line)
+(use-package flycheck-pos-tip)
+(use-package flycheck-status-emoji)
+
+(use-package flycheck-cask              ;ELisp support
+  :commands flycheck-cask-setup
+  :config (add-hook 'emacs-lisp-mode-hook (flycheck-cask-setup)))
+
+
+;; Use Scala's Metals / lanuage server protocol backend
+
+(use-package lsp-mode
+  :hook (scala-mode . lsp)
+  :commands lsp
+  :config (setq lsp-prefer-flymake nil))
+
+
+(use-package lsp-ui
+  :bind
+  (:map lsp-ui-mode-map
+        ("C-G" . lsp-ui-peek-find-references))
+
+  :config
+  (setq lsp-ui-sideline-enable t
+        lsp-ui-doc-enable t
+        lsp-ui-flycheck-enable t
+        lsp-ui-imenu-enable t
+        lsp-ui-sideline-ignore-duplicate t))
+
+(use-package company-lsp)
+;; (use-package company-box                ;Icons for company-mode (Emacs >=26)
+;;   :hook (company-mode . company-box-mode))
+(use-package dap-mode)                  ;Debug server protocol support
+
+;; (defun ensime-edit-definition-with-fallback ()
+;;   "Variant of `ensime-edit-definition' with ctags if ENSIME is not available."
+;;   (interactive)
+;;   (unless (and (ensime-connection-or-nil)
+;;                (ensime-edit-definition))
+;;     (projectile-find-tag)))
+
+
+;; (use-package ensime
+;;   :ensure t
+;;   :pin melpa
+;;   :commands ensime ensime-mode
+;;   :init
+;;   (put 'ensime-auto-generate-config 'safe-local-variable #'booleanp)
+;;   (setq
+;;    ensime-default-buffer-prefix "ENSIME-"
+;;    ensime-prefer-noninteractive t
+;;    ensime-refactor-preview t
+;;    ensime-refactor-preview-override-hunk 10
+;;    ensime-startup-snapshot-notification nil
+;;    ensime-startup-notification nil
+;;    ensime-implicit-gutter-icons t
+;;    scala-indent:step 2)
+;;   :config
+;;   (subword-mode)
+
+;;   (require 'ensime-helm)
+;;   (add-hook 'git-timemachine-mode-hook (lambda () (ensime-mode 0)))
+
+;;   (setq ensime-sbt-command "/usr/local/bin/sbt"
+;;         ensime-search-interface 'helm
+;;         ;ensime-goto-test-config-defaults
+;; ;        (plist-merge ensime-goto-test-config-defaults
+;; ;                     '(:test-class-suffixes ("Spec" "Test" "Check"))
+;; ;                     '(:test-template-fn ensime-goto-test--test-template-scalatest-flatspec))
+;;         ))
+
+
+;; ;; This should be done by Ensime, but:
+;; ;;    https://github.com/ensime/ensime-server/issues/61
+;; (defcustom ensime-mode-key-prefix [?\C-c ?\C-e]
+;;   "The prefix key for ensime-mode commands."
+;;   :group 'ensime-mode
+;;   :type 'sexp)
+
+;; (require 'ensime)
+
+;; (define-key ensime-mode-map (kbd "C-<return>") 'ensime-print-errors-at-point)
+
+;; (require 'ensime-vars)
+;; (require 'ensime-company)
+;; (require 'ensime-notes)
+
+;; (setq ensime-sem-high-faces   ;; This is currently buggy
+;;   '(
+;;    (var . (:foreground "#ff2222"))
+;;    (val . (:foreground "#1111ff"))
+;;    (varField . (:foreground "#ff3333"))
+;;    (valField . (:foreground "#dd11ff"))
+;;    (functionCall . (:foreground "#84BEE3"))
+;;    (param . (:foreground "#111111"))
+;;    (class . font-lock-type-face)
+;;    (trait . (:foreground "#084EA8"))
+;;    (object . (:foreground "#026DF7"))
+;;    (package . font-lock-preprocessor-face)
+;;    ))
+
+;; (add-hook 'ensime-mode-hook
+;;           (lambda ()
+;;             (company-mode t)
+;;             (setq ensime-sbt-command "/usr/local/bin/sbt")
+;;             (let ((backends (company-backends-for-buffer)))
+;;               (setq company-backends (push 'ensime-company backends)))))
+
+
 
 
 ;;..............................................................................
@@ -1311,40 +1456,51 @@ assuming it is in a maven-style project."
 ;;
 
 (use-package smartparens
+  :after (scala-mode)
   :diminish smartparens-mode
+
   :commands
   smartparens-strict-mode
   smartparens-mode
   sp-restrict-to-pairs-interactive
   sp-local-pair
-  :init
-  (smartparens-global-mode)
-  (setq sp-interactive-dwim t)
-  (show-smartparens-global-mode t)
+
+  :preface
+  (defun sp-restrict-c (sym)
+    "Smartparens restriction on `SYM' for C-derived parenthesis."
+    (sp-restrict-to-pairs-interactive "{([" sym))
+
   :config
   (require 'smartparens-config)
   ;; (sp-use-smartparens-bindings)
 
   (sp-pair "(" ")" :wrap "C-(")
   (sp-pair "[" "]" :wrap "s-[")
-  (sp-pair "{" "}" :wrap "C-{"))
+  (sp-pair "{" "}" :wrap "C-{")
 
-(sp-local-pair 'scala-mode "(" nil :post-handlers '(("||\n[i]" "RET")))
-(sp-local-pair 'scala-mode "{" nil :post-handlers '(("||\n[i]" "RET") ("| " "SPC")))
+  (sp-local-pair 'scala-mode "(" nil :post-handlers '(("||\n[i]" "RET")))
+  (sp-local-pair 'scala-mode "{" nil :post-handlers '(("||\n[i]" "RET") ("| " "SPC")))
 
-(defun sp-restrict-c (sym)
-  "Smartparens restriction on `SYM' for C-derived parenthesis."
-  (sp-restrict-to-pairs-interactive "{([" sym))
+  :init
+  (smartparens-global-mode)
+  (setq sp-interactive-dwim t)
+  (show-smartparens-global-mode t)
 
-(bind-key "s-<delete>" (sp-restrict-c 'sp-kill-sexp) scala-mode-map)
-(bind-key "s-<backspace>" (sp-restrict-c 'sp-backward-kill-sexp) scala-mode-map)
-(bind-key "s-<home>" (sp-restrict-c 'sp-beginning-of-sexp) scala-mode-map)
-(bind-key "s-<end>" (sp-restrict-c 'sp-end-of-sexp) scala-mode-map)
-(bind-key "s-{" 'sp-rewrap-sexp smartparens-mode-map)
+  (define-key clojure-mode-map (kbd "s-<return>") 'init-ns)
+  (define-key clojure-mode-map (kbd "C-s-<return>") 'cider-eval-expression-at-point-in-repl)
+  (define-key clojure-mode-map (kbd "M-s-<return>") 'cider-eval-defun-at-point-in-repl)
 
-(unless (package-installed-p 'paredit)
-  (package-install 'paredit))
-(require 'paredit)
+  (define-key scala-mode-map (kbd "s-<delete>") (sp-restrict-c 'sp-kill-sexp))
+  (define-key scala-mode-map (kbd "s-<backspace>") (sp-restrict-c 'sp-backward-kill-sexp))
+  (define-key scala-mode-map (kbd "s-<home>") (sp-restrict-c 'sp-beginning-of-sexp))
+  (define-key scala-mode-map (kbd "s-<end>") (sp-restrict-c 'sp-end-of-sexp))
+
+  :bind
+  (:map smartparens-mode-map
+        ("s-{" . 'sp-rewrap-sexp)))
+
+
+(use-package paredit)
 
 ;; Paredit normally takes over key bindings like ctrl-left/right
 ;; which in sane editors means to move a word left/right.  Fix that.
@@ -1664,127 +1820,6 @@ buffer's."
   (package-install 'tree-mode))
 (require 'tree-mode)
 
-;; We don't want tabbar in aquamacs
-(unless (boundp 'aquamacs-version)
-  (use-package tabbar
-    :commands ensime ensime-mode)
-
-  ;; enable tabbar minor mode
-  (tabbar-mode 1)
-  (global-set-key [M-left] 'tabbar-backward-tab)
-  (global-set-key [M-right] 'tabbar-forward-tab)
-
-  ;; tabbar coloring code...
-  (set-face-attribute
-   'tabbar-default nil
-   :background "white")                 ; "gray60"
-  (set-face-attribute
-   'tabbar-unselected nil
-   :background "gray85"
-   :foreground "gray30"
-   :box nil)
-  (set-face-attribute
-   'tabbar-selected nil
-   :background "#f2f2f6"
-   :foreground "blue"
-   :box nil)
-  (set-face-attribute
-   'tabbar-button nil
-   :box nil)                            ; '(:line-width 1 :color "gray72" :style released-button)
-  (set-face-attribute
-   'tabbar-separator nil
-   :height 1.0)
-
-  ;; Change padding of the tabs
-  ;; we also need to set separator to avoid overlapping tabs by highlighted tabs
-  (custom-set-variables
-   '(tabbar-separator (quote (0.5))))
-
-  ;; adding spaces
-  (defun tabbar-buffer-tab-label (tab)
-    "Return a label for TAB.  That is, a string used to represent it on the tab bar."
-    (let ((label  (if tabbar--buffer-show-groups
-                      (format "[%s]  " (tabbar-tab-tabset tab))
-                    (format "%s  " (tabbar-tab-value tab)))))
-      ;; Unless the tab bar auto scrolls to keep the selected tab
-      ;; visible, shorten the tab label to keep as many tabs as possible
-      ;; in the visible area of the tab bar.
-      (if tabbar-auto-scroll-flag
-          label
-        (tabbar-shorten
-         label (max 1 (/ (window-width)
-                         (length (tabbar-view
-                                  (tabbar-current-tabset)))))))))
-
-  (dolist (func '(tabbar-mode tabbar-forward-tab tabbar-forward-group tabbar-backward-tab tabbar-backward-group))
-    (autoload func "tabbar" "Tabs at the top of buffers and easy control-tab navigation"))
-
-  (defmacro defun-prefix-alt (name on-no-prefix on-prefix &optional do-always)
-    `(defun ,name (arg)
-       (interactive "P")
-       ,do-always
-       (if (equal nil arg)
-           ,on-no-prefix
-         ,on-prefix)))
-
-  (defun-prefix-alt shk-tabbar-next (tabbar-forward-tab) (tabbar-forward-group) (tabbar-mode 1))
-  (defun-prefix-alt shk-tabbar-prev (tabbar-backward-tab) (tabbar-backward-group) (tabbar-mode 1))
-  (global-set-key [(control tab)] 'shk-tabbar-next)
-  (global-set-key [(control shift tab)] 'shk-tabbar-prev)
-
-  ;; Add a buffer modification state indicator in the tab label, and place a
-  ;; space around the label to make it looks less crowd.
-  (defadvice tabbar-buffer-tab-label (after fixup_tab_label_space_and_flag activate)
-    (setq ad-return-value
-          (if (and (buffer-modified-p (tabbar-tab-value tab))
-                   (buffer-file-name (tabbar-tab-value tab)))
-              (concat " + " (concat ad-return-value " "))
-            (concat " " (concat ad-return-value " ")))))
-
-  ;; Called each time the modification state of the buffer changed.
-  (defun ztl-modification-state-change ()
-    (tabbar-set-template tabbar-current-tabset nil)
-    (tabbar-display-update))
-
-  ;; First-change-hook is called BEFORE the change is made.
-  (defun ztl-on-buffer-modification ()
-    (set-buffer-modified-p t)
-    (ztl-modification-state-change))
-
-  (add-hook 'after-save-hook 'ztl-modification-state-change)
-  ;; This doesn't work for revert, I don't know.
-  ;;(add-hook 'after-revert-hook 'ztl-modification-state-change)
-  (add-hook 'first-change-hook 'ztl-on-buffer-modification)
-
-  (setq tabbar-cycle-scope 'tabs)
-
-
-  (setq tabbar-buffer-groups-function
-        (lambda ()
-          "Return the name of the tab group names the current buffer belongs to.
-There are two groups: Emacs buffers (those whose name starts with '*', plus
-dired buffers), and the rest.  This works at least with Emacs v24.2 using
-tabbar.el v1.7."
-          (list (cond ((starts-with "*sbt*" (buffer-name)) "system")
-                      ((starts-with "*terminal" (buffer-name)) "system")
-                      ((eq major-mode 'org-mode) "system")
-                      ((eq major-mode 'clojure-mode) "clojure")
-                      ((eq major-mode 'clojurescript-mode) "clojure")
-                      ((starts-with "TAGS" (buffer-name)) "emacs")
-                      ((starts-with "*cider-error" (buffer-name)) "emacs")
-                      ((starts-with "*cider" (buffer-name)) "user")
-                      ((starts-with "*nrepl-server" (buffer-name)) "user")
-                      ((string-equal "*eshell*" (buffer-name)) "user")
-                      ((starts-with "*term" (buffer-name)) "user")
-                      ((string-equal "*scratch*" (buffer-name)) "lisp")
-                      ((eq major-mode 'emacs-lisp-mode) "lisp")
-                      ((starts-with "magit" (buffer-name)) "magit")
-                      ((starts-with "*magit" (buffer-name)) "magit")
-                      ((starts-with "*helm" (buffer-name)) "helm")
-                      ((starts-with "*Helm" (buffer-name)) "helm")
-                      ((string-equal "*" (substring (buffer-name) 0 1)) "emacs")
-                      ((eq major-mode 'dired-mode) "emacs")
-                      (t "user"))))))
 
 ;;SQL
 
@@ -1835,22 +1870,6 @@ tabbar.el v1.7."
           (lambda ()
             (org-indent-mode t)) t)
 
-; Flycheck
-;; (unless (package-installed-p 'flycheck)
-  ;; (package-install 'flycheck))
-
-;; (add-hook 'after-init-hook #'global-flycheck-mode)
-
-; Flycheck-tip
-;; (unless (package-installed-p 'flycheck-tip)
-;;   (package-install 'flycheck-tip))
-
-;; (require 'flycheck-tip)
-;; (global-set-key (kbd "C-c C-n") 'flycheck-tip-cycle)
-
-;; (use-package flycheck-cask
-;;   :commands flycheck-cask-setup
-;;   :config (add-hook 'emacs-lisp-mode-hook (flycheck-cask-setup)))
 
 (unless (package-installed-p 'cedet)
   (package-install 'cedet))
@@ -2048,6 +2067,62 @@ With ARG, do this that many times."
 ;; and no tool bar; I never use it
 (tool-bar-mode 0)
 
+;; We don't want extra tabs in aquamacs
+(unless (boundp 'aquamacs-version)
+
+  (use-package centaur-tabs
+    :demand
+    :config
+    (centaur-tabs-mode t)
+    (setq centaur-tabs-height 60
+          centaur-tabs-set-icons t
+          centaur-tabs-set-modified-marker t
+          centaur-tabs-style "rounded"
+          ;; centaur-tabs-set-bar 'under
+          ;; x-underline-at-descent-line t
+          centaur-tabs-show-navigation-buttons t
+          centaur-tabs-gray-out-icons 'buffer
+          uniquify-separator "/"
+          uniquify-buffer-name-style 'forward)
+    (centaur-tabs-change-fonts "Noto Sans" 140)
+    (centaur-tabs-headline-match)
+
+    :hook
+    (dashboard-mode . centaur-tabs-local-mode)
+    (calender-mode . centaur-tabs-local-mode)
+    (helpful-mode . centaur-tabs-local-mode)
+
+    :bind
+    ("C-c t s" . centaur-tabs-counsel-switch-group)
+    ("C-c t p" . centaur-tabs-group-by-projectile-project)
+    ("C-c t g" . centaur-tabs-group-buffer-groups)
+    ("M-<left>" . centaur-tabs-backward)
+    ("M-<right>" . centaur-tabs-forward))
+
+  (defun centaur-tabs-buffer-groups ()
+    "Return the name of the tab group names the current buffer belongs to."
+    (list (cond ((starts-with "*sbt*" (buffer-name)) "System")
+                ((starts-with "*terminal" (buffer-name)) "System")
+                ((eq major-mode 'org-mode) "Notes")
+                ((eq major-mode 'clojure-mode) "Clojure")
+                ((eq major-mode 'clojurescript-mode) "Clojure")
+                ((starts-with "TAGS" (buffer-name)) "Emacs")
+                ((starts-with "*cider-error" (buffer-name)) "Emacs")
+                ((starts-with "*cider" (buffer-name)) "User")
+                ((starts-with "*nrepl-server" (buffer-name)) "User")
+                ((string-equal "*eshell*" (buffer-name)) "User")
+                ((starts-with "*term" (buffer-name)) "User")
+                ((string-equal "*scratch*" (buffer-name)) "ELisp")
+                ((eq major-mode 'emacs-lisp-mode) "ELisp")
+                ((starts-with "magit" (buffer-name)) "Magit")
+                ((starts-with "*magit" (buffer-name)) "Magit")
+                ((starts-with "*helm" (buffer-name)) "Helm")
+                ((starts-with "*Helm" (buffer-name)) "Helm")
+                ((string-equal "*" (substring (buffer-name) 0 1)) "Emacs")
+                ((derived-mode-p 'dired-mode) "DirEd")
+                (t (centaur-tabs-get-group-name (current-buffer))))))
+  )
+
 
 (global-set-key [f1] 'terminal)
 (global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
@@ -2096,9 +2171,3 @@ With ARG, do this that many times."
 
 ;;; (provide 'emacs-init)
 ;;; emacs-init.el ends here
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )

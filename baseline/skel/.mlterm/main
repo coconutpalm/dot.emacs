@@ -1,0 +1,11 @@
+bg_color = #000000000000
+logsize = 1024
+mod_meta_mode = esc
+bel_mode = visual
+use_combining = false
+blink_cursor = true
+use_extended_scroll_shortcut = true
+regard_uri_as_word = true
+scrollbar_mode = right
+scrollbar_view_name = mozmodern
+fg_color = #eeeeeeeeecec

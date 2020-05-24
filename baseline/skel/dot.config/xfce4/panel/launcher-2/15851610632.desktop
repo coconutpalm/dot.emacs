@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=FreePlane
+Comment=Mind map
+Exec=/home/djo/bin/freeplane/freeplane.sh
+Icon=/home/djo/bin/freeplane/freeplane.svg
+Path=/home/djo/mindmaps
+Terminal=false
+StartupNotify=false

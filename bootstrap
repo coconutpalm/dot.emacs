@@ -1,45 +1,53 @@
 #!/bin/bash
 
-echo "This script assumes that curl is installed"
-
 HERE=`pwd`
+set -exuo pipefail    # Print trace and do not keep running if something fails!
 
-mkdir -p ~/bin
+
+# Install dependencies
+sudo apt -y install \
+	curl \         # for installing latest of other things
+	git \          # Emacs uses this for local history
+	imagemagick \  # for lsix, catimg
+	pandoc groff   # for less <something>.md
+
+
+# Emacs configuration boilerplate
+mkdir -p ~/.localhistory-emacs
+cd ~/.localhistory-emacs && git init
+mkdir -p ~/.snippets
+touch ~/TIME.org
+
+# Set up minimal ~/bin
+cp -R $HERE/baseline/skel/bin ~
+PATH="$HOME/bin:$PATH"
+
+# ...and ~/$(dotfiles)
+mkdir -p ~/.config
+cp -R $HERE/baseline/skel/dot.config/. ~/.config
 ln -s ~/.emacs.d/dot.sbt ~/.sbt
-#ln -s ~/.emacs.d/dot.vimrc ~/.vimrc
+cp $HERE/baseline/skel/dot.lessfilter ~/.lessfilter
 
 # Ammonite Scala shell
 mkdir ~/.ammonite
 ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
 
 # SBT and coursier
-cd ~/bin && unzip $HERE/sbt-launcher.zip
-cd ~/bin && cat > ~/bin/sbt <<EOF
-#!/bin/bash
-$HOME/bin/sbt-launcher/sbt $@
-EOF
-chmod 755 ~/bin/sbt
-
+curl -L -o ~/bin/sbt https://git.io/sbt
 curl -L -o ~/bin/coursier https://git.io/coursier
-chmod 755 ~/bin/coursier
+chmod 755 ~/bin/sbt ~/bin/coursier
 
-# Scala Markdown code notebook w/ ```scala mdoc
-cat > ~/bin/notebook <<EOF
-#!/bin/bash
-#
-# See https://scalameta.org/mdoc
+# Scala/Mill
+MILL_REPO=https://github.com/lihaoyi/mill
+MILL_VERSION=`latest-release $MILL_REPO`
+curl -L $MILL_REPO/releases/download/$MILL_VERSION/$MILL_VERSION > ~/bin/mill 
+chmod +x ~/bin/mill
 
-SCALA=2.11
-MDOC=1.2.10
+# Scala/Bloop
+BLOOP_REPO=https://github.com/scalacenter/bloop
+BLOOP_LATEST=`latest-release $BLOOP_REPO`
+curl -L $BLOOP_REPO/releases/download/$BLOOP_LATEST/install.py | python
 
-IN=.
-OUT=/tmp/notebook-$RANDOM
-
-mkdir -p $IN
-mkdir -p $OUT
-
-coursier launch "org.scalameta:mdoc_$SCALA:$MDOC" $@ -- --in $IN --out $OUT --watch
-EOF
 
 # Clojure boot/lein
 curl -fsSLo ~/bin/boot https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
@@ -48,8 +56,8 @@ chmod 755 ~/bin/boot
 curl -fsSLo ~/bin/lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
 chmod 755 ~/bin/lein
 
-# Note: no 'latest' link in Maven's repo; have to upgrade this manually
-cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+# Note: no 'latest' link on Maven's dl page; have to upgrade this manually
+cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
 cd ~/bin && tar -xzvf maven-latest.tgz
 cd ~/bin && ln -s apache-maven* maven
 cd ~/bin && cat > ~/bin/mvn <<EOF
@@ -61,12 +69,25 @@ EOF
 chmod 755 ~/bin/mvn
 
 # Ammonite Scala shell
-curl -L -o ~/bin/amm https://git.io/vo4w5 && chmod +x ~/bin/amm
+AMMONITE_REPO=https://github.com/lihaoyi/Ammonite
+AMMONITE_VER=`latest-release $MILL_REPO`
+curl -L -o ~/bin/amm $AMMONITE_REPO/releases/download/$AMMONITE_VER/2.13-$AMMONITE_VER
+chmod +x ~/bin/amm
 
+
+# Put all the things on the path
 cat >> ~/.bashrc <<EOF
 
-export PATH="$PATH:~/bin"
+export PATH="$PATH:~/bin:~/.bloop"
+EOF
+
+
+# Add shell completions
+cat >> ~/.profile <<EOF
+
+. $HOME/.bloop/bash/bloop
 EOF
 
 
 echo "See the 'baseline' folder for common apps"
+
