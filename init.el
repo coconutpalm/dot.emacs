@@ -980,6 +980,7 @@ of FILE in the current directory, suitable for creation"
   :ensure t
   :defer t
   :init
+  (linum-mode nil)
   (with-eval-after-load 'winum
     (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
   :config
