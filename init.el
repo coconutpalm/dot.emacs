@@ -94,7 +94,7 @@
 (use-package base16-theme
   :ensure t)
 
-(load-theme 'base16-default-dark t)
+(load-theme 'base16-embers t)
 
 ;; TODO magit colors
 ;; (magit-file-header ((t (:foreground "violet"))))
@@ -1809,8 +1809,9 @@ buffer's."
   (package-install 'smart-mode-line))
 (require 'smart-mode-line)
 (setq sml/no-confirm-load-theme t)
-(setq sml/theme 'light)
+(setq sml/theme 'dark)
 (sml/setup)
+(smart-mode-line-enable)
 
 ;; Only works well with dark themes
 ;; Like VIM's modeline hack
