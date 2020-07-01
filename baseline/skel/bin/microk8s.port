@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # define our new port number
 API_PORT=$1 || 8080
 

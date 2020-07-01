@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # @see https://github.com/mislav/hub-api-utils/blob/master/bin/hub-repos
 

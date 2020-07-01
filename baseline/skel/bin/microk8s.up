@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 microk8s.start
 microk8s.enable RBAC     # role-based access control
 microk8s.enable ingress 

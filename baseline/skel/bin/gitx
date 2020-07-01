@@ -23,7 +23,7 @@ sub git {
 }
 
 
-@dirs = grep(/\/$/, `ls -F`);
+@dirs = sort grep(/\/$/, `ls -F`);
 $args = reduce { $a . " " . $b } @ARGV;
 $here = `pwd`;
 chomp($here);

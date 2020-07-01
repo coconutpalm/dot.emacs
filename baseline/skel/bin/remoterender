@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Optimize environment for X Windows over the network
 export XCURSOR_SIZE=16;

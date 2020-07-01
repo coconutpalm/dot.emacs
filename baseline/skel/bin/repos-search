@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Usage: hub-search-repos [<N>] <QUERY>
 #
 # List N repositories (default: 10) and their stars count that match <QUERY>.
