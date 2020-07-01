@@ -1307,6 +1307,7 @@ assuming it is in a maven-style project."
 
 (use-package lsp-mode
   :hook (scala-mode . lsp)
+        (scala-mode . lsp)
   :commands lsp
   :config (setq lsp-prefer-flymake nil))
 
@@ -1326,84 +1327,22 @@ assuming it is in a maven-style project."
 (use-package company-lsp)
 ;; (use-package company-box                ;Icons for company-mode (Emacs >=26)
 ;;   :hook (company-mode . company-box-mode))
-(use-package dap-mode)                  ;Debug server protocol support
-
-;; (defun ensime-edit-definition-with-fallback ()
-;;   "Variant of `ensime-edit-definition' with ctags if ENSIME is not available."
-;;   (interactive)
-;;   (unless (and (ensime-connection-or-nil)
-;;                (ensime-edit-definition))
-;;     (projectile-find-tag)))
 
 
-;; (use-package ensime
-;;   :ensure t
-;;   :pin melpa
-;;   :commands ensime ensime-mode
-;;   :init
-;;   (put 'ensime-auto-generate-config 'safe-local-variable #'booleanp)
-;;   (setq
-;;    ensime-default-buffer-prefix "ENSIME-"
-;;    ensime-prefer-noninteractive t
-;;    ensime-refactor-preview t
-;;    ensime-refactor-preview-override-hunk 10
-;;    ensime-startup-snapshot-notification nil
-;;    ensime-startup-notification nil
-;;    ensime-implicit-gutter-icons t
-;;    scala-indent:step 2)
-;;   :config
-;;   (subword-mode)
+;(use-package posframe                  ;Popup tool
+;  )
 
-;;   (require 'ensime-helm)
-;;   (add-hook 'git-timemachine-mode-hook (lambda () (ensime-mode 0)))
+(use-package dap-mode                   ;Debug server protocol support
+  :hook
+  (lsp-mode . dap-mode)
+  (lsp-mode . dap-ui-mode)
+  )
 
-;;   (setq ensime-sbt-command "/usr/local/bin/sbt"
-;;         ensime-search-interface 'helm
-;;         ;ensime-goto-test-config-defaults
-;; ;        (plist-merge ensime-goto-test-config-defaults
-;; ;                     '(:test-class-suffixes ("Spec" "Test" "Check"))
-;; ;                     '(:test-template-fn ensime-goto-test--test-template-scalatest-flatspec))
-;;         ))
-
-
-;; ;; This should be done by Ensime, but:
-;; ;;    https://github.com/ensime/ensime-server/issues/61
-;; (defcustom ensime-mode-key-prefix [?\C-c ?\C-e]
-;;   "The prefix key for ensime-mode commands."
-;;   :group 'ensime-mode
-;;   :type 'sexp)
-
-;; (require 'ensime)
-
-;; (define-key ensime-mode-map (kbd "C-<return>") 'ensime-print-errors-at-point)
-
-;; (require 'ensime-vars)
-;; (require 'ensime-company)
-;; (require 'ensime-notes)
-
-;; (setq ensime-sem-high-faces   ;; This is currently buggy
-;;   '(
-;;    (var . (:foreground "#ff2222"))
-;;    (val . (:foreground "#1111ff"))
-;;    (varField . (:foreground "#ff3333"))
-;;    (valField . (:foreground "#dd11ff"))
-;;    (functionCall . (:foreground "#84BEE3"))
-;;    (param . (:foreground "#111111"))
-;;    (class . font-lock-type-face)
-;;    (trait . (:foreground "#084EA8"))
-;;    (object . (:foreground "#026DF7"))
-;;    (package . font-lock-preprocessor-face)
-;;    ))
-
-;; (add-hook 'ensime-mode-hook
-;;           (lambda ()
-;;             (company-mode t)
-;;             (setq ensime-sbt-command "/usr/local/bin/sbt")
-;;             (let ((backends (company-backends-for-buffer)))
-;;               (setq company-backends (push 'ensime-company backends)))))
-
-
-
+(use-package lsp-treemacs
+  :config
+  (lsp-metals-treeview-enable t)
+  (setq lsp-metals-treeview-show-when-views-received t)
+  )
 
 ;;..............................................................................
 ;; YAML
@@ -2178,3 +2117,9 @@ With ARG, do this that many times."
 
 ;;; (provide 'emacs-init)
 ;;; emacs-init.el ends here
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
