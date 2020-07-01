@@ -17,4 +17,4 @@ def addDebugTest(p: Project) =
   )
 
 
-libraryDependencies ++= Seq("com.lihaoyi" %% "pprint" % "0.5.3")
+libraryDependencies ++= Seq("com.lihaoyi" %% "pprint" % "0.5.3" % "test")

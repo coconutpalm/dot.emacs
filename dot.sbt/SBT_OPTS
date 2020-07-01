@@ -1,0 +1,3 @@
+-XX:+UseConcMarkSweepGC
+-XX:+CMSClassUnloadingEnabled
+-Xmx9g
