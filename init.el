@@ -63,7 +63,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'package)
-;;(setq package-check-signature nil)
+(setq package-check-signature nil)
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
 			 ("gnu" . "http://elpa.gnu.org/packages/")
 			 ("org" . "http://orgmode.org/elpa/")))
@@ -81,10 +81,12 @@
 
 (require 'use-package)
 (setq use-package-always-ensure t
-      use-packate-always-defer t)
+      use-packate-always-defer t
+      backup-directory-alist `((".*" . ,temporary-file-directory))
+      auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
 
 
-;;(package-install 'gnu-elpa-keyring-update)
+(package-install 'gnu-elpa-keyring-update)
 
 
 ;; Color theme
