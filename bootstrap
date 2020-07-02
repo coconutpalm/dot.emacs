@@ -1,41 +1,173 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 HERE=`pwd`
 set -exuo pipefail    # Print trace and do not keep running if something fails!
 
+mkdir -p ~/bin
+export PATH="$HOME/bin:$PATH"
 
-# Install dependencies
-sudo apt -y install \
-	curl \         # for installing latest of other things
-	git \          # Emacs uses this for local history
-	imagemagick \  # for lsix, catimg
-	pandoc groff   # for less <something>.md
+# Platform-specific configuration
 
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+	 # assume Debian-flavored Linux; may need to eventually support `pamac` or `pacman` too
+    sudo apt update && sudo apt -y upgrade
+	 sudo apt -y install \
+         software-properties-common \
+         apt-transport-https \
+         wget \
+		   curl \         # for installing latest of other things
+	      git \          # Emacs uses this for local history
+		   imagemagick \  # for lsix, catimg
+		   ffmpeg \       # for cli YouTube
+		   tidy \         # for less <something>.html
+		   pandoc groff   # for less <something>.md
+
+    # Install vscode
+    wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"     
+    sudo apt -y install code
+    
+	 # use brew too
+	 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+	 brew update
+    brew tap caskroom/cask
+    brew cask install visual-studio-code
+      
+	 brew install \
+		fd fzf \                   # Fast cli search/autocomplete
+		pre-commit \               # Git pre-commit support
+		gpatch patchelf pkg-config # Misc build tools
+	   
+
+    # Standard XFCE configuration
+    mkdir -p ~/.config
+    cp -R $HERE/baseline/skel/dot.config/. ~/.config
+
+    # Install Scala's Coursier native launcher
+    curl -fLo ~/bin/cs https://git.io/coursier-cli-linux && chmod +x ~/bin/cs
+
+    ;  
+
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+
+    xcode-select --install        # Make sure xcode cli tools are there
+    
+	 # Install Homebrew; comment this if you have already installed it
+	 # /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+
+	 brew update
+    brew tap caskroom/cask
+
+    brew cask install visual-studio-code
+    brew cask install emacs
+    
+	 brew install bash \                # Upgrade Mac's BASH to latest
+		gpatch patchelf pkg-config \ # Misc build tools
+		pre-commit \               # Git pre-commit hook support
+		fzf fd \                   # fast cli search and autocomplete
+		graphviz \
+		imagemagick \              # for lsix, catimg
+		libvpx \
+		ubuntu/microk8s/microk8s \
+		node \
+		the_silver_searcher \      # `ag` fast source code search
+		tidy-html5 \               # for `less <something>.html`
+		pandoc groff \             # for `less <something>.md`
+		hub \                      # Github on the command line
+      aws-okta                   # For AWS SSO using Okta
+      
+	 # Huge workaround for installing ffmpeg
+	 echo <<-EOF > "$HERE/install-ffmpeg"
+		#!/usr/bin/env bash
+      
+      # Copied from https://gist.github.com/Piasy/b5dfd5c048eb69d1b91719988c0325d8#gistcomment-3314991
+
+		# start clean. make sure you have xcode installed and all the other basics such as brew.
+      brew uninstall --force ffmpeg chromaprint amiaopensource/amiaos/decklinksdk
+
+      # installs ffmpeg vanilla as dependency
+      brew install chromaprint amiaopensource/amiaos/decklinksdk
+      
+      # let's neuter that shit
+      brew unlink ffmpeg
+      
+      # install dependencies to cook our own
+      brew install automake fdk-aac git lame libass libtool libvorbis libvpx opus \ 
+            sdl shtool texi2html theora wget x264 x265 xvid nasm
+      # and we're done brewing. Lay off the beer for now.
+      
+      # clone head
+      # if you ever want to update or customize FFmpeg at any point 
+      # just delete the binary (/usr/local/bin/ffmpeg in this case)
+      # and start again from this step.
+      git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+      cd ffmpeg
+      
+      # at this point, ChromaPrint has to be installed, else this step will fail.
+      # sample compilation command. Customize this to your needs
+      # the flags are different from the brew version LDO. RTFM.
+      ./configure  --prefix=/usr/local --enable-gpl --enable-nonfree --enable-libass \
+            --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame \
+            --enable-libtheora --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 \ 
+            --enable-libopus --enable-libxvid --enable-chromaprint --enable-decklink --samples=fate-suite/
+      
+      # the actual install once you're done configuring
+      make && make install
+      
+      # ffmpeg should install to /usr/local/bin/ffmpeg. Test this out
+      which ffmpeg
+      ffmpeg -version
+EOF
+    chmod +x $HERE/install-ffmpeg
+    echo "**** Placed a script to install-ffmpeg in $HERE ****"
+
+    # Make new BASH the default shell
+	 sudo echo "/usr/local/bin/bash" >> /etc/shells  # Allow new bash as a login shell
+	 sudo chsh -s /usr/local/bin/bash   # For consistency across platforms
+
+    # Install Scala's Coursier native launcher for Mac
+    curl -fLo ~/bin/cs https://git.io/coursier-cli-macos &&
+        chmod +x ~/bin/cs &&
+        (xattr -d com.apple.quarantine ~/bin/cs || true) 
+
+    ;
+
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+        # POSIX compatibility layer and Linux environment emulation for Windows
+elif [[ "$OSTYPE" == "msys" ]]; then
+        # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+elif [[ "$OSTYPE" == "win32" ]]; then
+        # I'm not sure this can happen.
+elif [[ "$OSTYPE" == "freebsd"* ]]; then
+        # ...
+else
+	 echo "Unknown operating system: $OSTYPE"
+	 exit 1
+fi
+
+# Install fonts
+cd baseline/fonts && ./install
+
+# Install Java and standard Scala tools using Coursier
+cs setup
 
 # Emacs configuration boilerplate
 mkdir -p ~/.localhistory-emacs
 cd ~/.localhistory-emacs && git init
 mkdir -p ~/.snippets
-touch ~/TIME.org
+cp $HERE/TIME.org ~
 
 # Set up minimal ~/bin
 cp -R $HERE/baseline/skel/bin ~
 PATH="$HOME/bin:$PATH"
 
 # ...and ~/$(dotfiles)
-mkdir -p ~/.config
-cp -R $HERE/baseline/skel/dot.config/. ~/.config
 ln -s ~/.emacs.d/dot.sbt ~/.sbt
 cp $HERE/baseline/skel/dot.lessfilter ~/.lessfilter
 
-# Ammonite Scala shell
-mkdir ~/.ammonite
+# Ammonite config
 ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
 
-# SBT and coursier
-curl -L -o ~/bin/sbt https://git.io/sbt
-curl -L -o ~/bin/coursier https://git.io/coursier
-chmod 755 ~/bin/sbt ~/bin/coursier
 
 # Scala/Mill
 MILL_REPO=https://github.com/lihaoyi/mill
@@ -47,6 +179,7 @@ chmod +x ~/bin/mill
 BLOOP_REPO=https://github.com/scalacenter/bloop
 BLOOP_LATEST=`latest-release $BLOOP_REPO`
 curl -L $BLOOP_REPO/releases/download/$BLOOP_LATEST/install.py | python
+
 
 
 # Clojure boot/lein
@@ -75,18 +208,14 @@ curl -L -o ~/bin/amm $AMMONITE_REPO/releases/download/$AMMONITE_VER/2.13-$AMMONI
 chmod +x ~/bin/amm
 
 
-# Put all the things on the path
+# Put all the bloopy things on the path
 cat >> ~/.bashrc <<EOF
 
 export PATH="$PATH:~/bin:~/.bloop"
-EOF
-
-
-# Add shell completions
-cat >> ~/.profile <<EOF
 
 . $HOME/.bloop/bash/bloop
 EOF
+
 
 
 echo "See the 'baseline' folder for common apps"

@@ -1,6 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
 echo "Installing fonts into ~/.fonts (the correct place on Linux)"
-mkdir ~/.fonts
+
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    export FONT_DIR=~/.fonts
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    export FONT_DIR=~/Library/Fonts
+fi
+
+
+mkdir -p $FONT_DIR
 mkdir f
 cd f && unzip -o '../*.zip' && cd ..
 find . | grep .ttf$ | xargs ./install_ttf
