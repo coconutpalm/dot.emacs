@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-echo "Installing fonts into ~/.fonts (the correct place on Linux)"
-
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     export FONT_DIR=~/.fonts
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     export FONT_DIR=~/Library/Fonts
 fi
+
+echo "Installing fonts into $FONT_DIR"
 
 
 mkdir -p $FONT_DIR
