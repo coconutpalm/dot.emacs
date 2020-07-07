@@ -1150,6 +1150,14 @@ of FILE in the current directory, suitable for creation"
 (add-hook 'smerge-mode-hook (lambda () (hydra-smerge/body)))
 
 
+;;
+;; Docker
+;;
+
+(use-package dockerfile-mode
+  :init
+  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+
 
 ;;
 ;; Scala/ensime
@@ -1338,11 +1346,9 @@ assuming it is in a maven-style project."
   (lsp-mode . dap-ui-mode)
   )
 
-(use-package lsp-treemacs
-  :config
-  (lsp-metals-treeview-enable t)
-  (setq lsp-metals-treeview-show-when-views-received t)
-  )
+;(use-package lsp-treemacs
+;  :config
+;  )
 
 ;;..............................................................................
 ;; YAML
@@ -2020,7 +2026,7 @@ With ARG, do this that many times."
     :demand
     :config
     (centaur-tabs-mode t)
-    (setq centaur-tabs-height 60
+    (setq centaur-tabs-height 40
           centaur-tabs-set-icons t
           centaur-tabs-set-modified-marker t
           centaur-tabs-style "rounded"
