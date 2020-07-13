@@ -43,15 +43,58 @@
         "PERL_MM_OPT"))
 
 
-;; My minor mode
-;(require 'modi-mode)
+
+;;; Misc display settings
+
+;; Set the selection color; but doesn't work well with syntax highlight
+;; (set-face-attribute 'region nil :background "#5555ff" :foreground "#ffffff")
+
+(setq inhibit-splash-screen t)
+(setq x-select-enable-clipboard t)      ; enable use of system clipboard across emacs and applications
+(setq-default fill-column 120)
+(setq-default standard-indent 3) ; set standard indent to 3 rather that 4
+(setq-default tab-width 3)
+;;(pixel-scroll-mode t)                    ;Emacs 26 or later, but it can be slow so commented
+
+(setq scroll-step 1)             ; control screen "leaping"
+(setq-default indent-tabs-mode nil) ; spaces instead of tabs by default
+
+(global-hl-line-mode 1) ; highlight current line, turn it on for all modes by default
+(set-face-background 'hl-line "black")
+
+(setq mouse-autoselect-window t)        ; Focus follows mouse inside Emacs please
+
+(setq column-number-mode t)
+(global-prettify-symbols-mode)
+
+(setq display-time-day-and-date t
+      display-time-24hr-format nil)
+(display-time)
+(setq frame-title-format (concat  "%b - emacs@" (system-name))) ;; default to better frame titles
+
+(set-face-background 'fringe "white") ; Hide the fringe mark on the left
+(setq-default indicate-empty-lines t)
+(setq-default highlight-changes-mode 1)
+(setq-default indicate-buffer-boundaries 'right)
+
+(delete-selection-mode 1) ; typing with the mark active will overwrite the marked region
+(transient-mark-mode 1) ; enable visual feedback on selections, default since v23
+
+(when window-system
+  (global-unset-key "\C-z")
+  (set-frame-size (selected-frame) 120 37)
+
+  ;; default Latin font (e.g. Consolas)
+  (set-default-font "Noto Mono 12")
+  (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
+  )
 
 
 (defun starts-with (begins s)
-      "Return non-nil if string S starts with BEGINS."
-      (cond ((>= (length s) (length begins))
-             (string-equal (substring s 0 (length begins)) begins))
-            (t nil)))
+  "Return non-nil if string S starts with BEGINS."
+  (cond ((>= (length s) (length begins))
+         (string-equal (substring s 0 (length begins)) begins))
+        (t nil)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -178,15 +221,10 @@
   :ensure nil
   :bind ("C-x C-b". ibuffer))
 
-(use-package subword
-  :ensure nil
-  :diminish subword-mode
-  :config (global-subword-mode t))
-
 (use-package dired
   :ensure nil
   :config
-  (setq dired-dwim-target t)            ; If two dired windows are open, "copy" and "move" target the other window's path
+  (setq dired-dwim-target t)           ; If two dired windows are open, "copy" and "move" target the other window's path
   ;; a workflow optimisation too far?
   (bind-key "C-c c" 'sbt-hydra dired-mode-map)
   (bind-key "C-c e" 'next-error dired-mode-map))
@@ -320,50 +358,6 @@ very minimal set."
         (define-key map key nil)
         (message  "%s unbound for %s" key keymap))))
 
-
-
-;;; Misc display settings
-
-;; Set the selection color; but doesn't work well with syntax highlight
-;; (set-face-attribute 'region nil :background "#5555ff" :foreground "#ffffff")
-
-(setq inhibit-splash-screen t)
-(setq x-select-enable-clipboard t)      ; enable use of system clipboard across emacs and applications
-(setq-default fill-column 120)
-(setq-default standard-indent 3) ; set standard indent to 3 rather that 4
-(setq-default tab-width 3)
-;;(pixel-scroll-mode t)                    ;Emacs 26 or later, but it can be slow so commented
-
-(setq scroll-step 1)             ; control screen "leaping"
-(setq-default indent-tabs-mode nil) ; spaces instead of tabs by default
-
-(global-hl-line-mode 1) ; highlight current line, turn it on for all modes by default
-(set-face-background 'hl-line "black")
-
-(setq column-number-mode t)
-(global-prettify-symbols-mode)
-
-(setq display-time-day-and-date t
-      display-time-24hr-format nil)
-(display-time)
-(setq frame-title-format (concat  "%b - emacs@" (system-name))) ;; default to better frame titles
-
-(set-face-background 'fringe "white") ; Hide the fringe mark on the left
-(setq-default indicate-empty-lines t)
-(setq-default highlight-changes-mode 1)
-(setq-default indicate-buffer-boundaries 'right)
-
-(delete-selection-mode 1) ; typing with the mark active will overwrite the marked region
-(transient-mark-mode 1) ; enable visual feedback on selections, default since v23
-
-(when window-system
-  (global-unset-key "\C-z")
-  (set-frame-size (selected-frame) 120 37)
-
-  ;; default Latin font (e.g. Consolas)
-  (set-default-font "Noto Mono 12")
-  (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
-  )
 
 
 ;;
