@@ -490,7 +490,12 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
    (quote
-    (centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode))))
+    (dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
+ '(safe-local-variable-values
+   (quote
+    ((dockerfile-image-name . "connect-devenv-base")
+     (dockerfile-image-name . "connect-devenv")
+     (dockerfile-image-name . "connect-ubuntu")))))
 
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
