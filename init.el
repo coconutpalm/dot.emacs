@@ -2117,7 +2117,7 @@ With ARG, do this that many times."
 (global-set-key [C-M-up] 'windmove-up)              ; move to upper window
 (global-set-key [C-M-down] 'windmove-down)          ; move to lower window
 
-(find-file (concat (file-name-as-directory "~/") "TIME.org" ))
+(find-file (concat (file-name-as-directory "~/") "TIME.md" ))
 
 
 ;;; (provide 'emacs-init)
