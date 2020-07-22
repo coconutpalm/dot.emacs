@@ -137,7 +137,7 @@
 (use-package base16-theme
   :ensure t)
 
-(load-theme 'base16-chalk t)
+(load-theme 'base16-embers t)
 
 ;; TODO magit colors
 ;; (magit-file-header ((t (:foreground "violet"))))
