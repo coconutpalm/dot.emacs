@@ -50,15 +50,8 @@
 ;; Set the selection color; but doesn't work well with syntax highlight
 ;; (set-face-attribute 'region nil :background "#5555ff" :foreground "#ffffff")
 
-(defun unclutter-window ()
-  (menu-bar-mode -1)
-  (tool-bar-mode 0)
-  (set-face-foreground 'vertical-border (face-background 'default))
-  (set-face-background 'fringe (face-background 'default))
-  (set-face-foreground 'fringe (face-background 'default)))
-
-(unclutter-window)
-
+(menu-bar-mode -1)
+(tool-bar-mode 0)
 (setq inhibit-splash-screen t)
 (setq x-select-enable-clipboard t)      ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
@@ -2020,17 +2013,19 @@ With ARG, do this that many times."
     :demand
     :config
     (centaur-tabs-mode t)
-    (setq centaur-tabs-height 40
+    (setq centaur-tabs-height 60
           centaur-tabs-set-icons t
+          centaur-tabs-plain-icons t
           centaur-tabs-set-modified-marker t
+          centaur-tabs-modified-marker "❤"
           centaur-tabs-style "rounded"
-          ;; centaur-tabs-set-bar 'under
-          ;; x-underline-at-descent-line t
+          centaur-tabs-set-bar 'under
+          x-underline-at-descent-line t
           centaur-tabs-show-navigation-buttons t
           centaur-tabs-gray-out-icons 'buffer
           uniquify-separator "/"
           uniquify-buffer-name-style 'forward)
-    (centaur-tabs-change-fonts "Noto Sans" 140)
+    ;; (centaur-tabs-change-fonts "Noto Sans" 140)
     (centaur-tabs-headline-match)
 
     :hook
@@ -2112,11 +2107,21 @@ With ARG, do this that many times."
 (global-set-key [C-M-up] 'windmove-up)              ; move to upper window
 (global-set-key [C-M-down] 'windmove-down)          ; move to lower window
 
+
+(defun unclutter-window ()
+  (interactive)
+  (set-face-foreground 'vertical-border (face-background 'default))
+  (set-face-background 'fringe (face-background 'default))
+  (set-face-foreground 'fringe (face-background 'default)))
+
+(unclutter-window)
+
+
 (find-file (concat (file-name-as-directory "~/") "TIME.md" ))
 
 
-;;; (provide 'emacs-init)
-;;; emacs-init.el ends here
+(provide 'init)
+;;; init.el ends here
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
