@@ -12,6 +12,7 @@
 ;;;
 ;;; Configuration settings
 ;;;
+(set-language-environment "utf-8")
 
 (setq debug-on-error t)
 
@@ -48,6 +49,15 @@
 
 ;; Set the selection color; but doesn't work well with syntax highlight
 ;; (set-face-attribute 'region nil :background "#5555ff" :foreground "#ffffff")
+
+(defun unclutter-window ()
+  (menu-bar-mode -1)
+  (tool-bar-mode 0)
+  (set-face-foreground 'vertical-border (face-background 'default))
+  (set-face-background 'fringe (face-background 'default))
+  (set-face-foreground 'fringe (face-background 'default)))
+
+(unclutter-window)
 
 (setq inhibit-splash-screen t)
 (setq x-select-enable-clipboard t)      ; enable use of system clipboard across emacs and applications
@@ -137,7 +147,7 @@
 (use-package base16-theme
   :ensure t)
 
-(load-theme 'base16-embers t)
+(load-theme 'base16-chalk t)
 
 ;; TODO magit colors
 ;; (magit-file-header ((t (:foreground "violet"))))
@@ -375,15 +385,6 @@ very minimal set."
 ;; Horizontal scrolling, please
 (setq-default truncate-lines t)
 
-(defun unclutter-window ()
-  (interactive)
-  (menu-bar-mode -1)
-  (set-face-foreground 'vertical-border (face-background 'default))
-  (set-face-background 'fringe (face-background 'default))
-  (set-face-foreground 'fringe (face-background 'default)))
-
-(unclutter-window)
-
 
 ;; No trailing whitespace, please...
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
@@ -484,12 +485,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
    (quote
-    (dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
- '(safe-local-variable-values
-   (quote
-    ((dockerfile-image-name . "connect-devenv-base")
-     (dockerfile-image-name . "connect-devenv")
-     (dockerfile-image-name . "connect-ubuntu")))))
+    (all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode))))
 
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
@@ -2015,8 +2011,7 @@ With ARG, do this that many times."
   (ding))
 
 
-;; and no tool bar; I never use it
-(tool-bar-mode 0)
+(use-package all-the-icons)
 
 ;; We don't want extra tabs in aquamacs
 (unless (boundp 'aquamacs-version)
