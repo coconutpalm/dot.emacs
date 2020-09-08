@@ -37,12 +37,6 @@ implicit def relpath2str(p : RelPath) : String = {
 }
 
 
-val beetl=root/'Users/'dorme/'shopsmart/"beetl-deps"/'beetl
-val dim=root/'Users/'dorme/'dev/'datainmotion/"datainmotion-server"
-
-val dill="djo@dill.local"
-val sage="dorme@sage.local"
-
 def pwd=wd
 
 def ssh(host : String) = { %ssh("-X", host) }
