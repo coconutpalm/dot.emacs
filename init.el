@@ -13,9 +13,11 @@
 ;;; Configuration settings
 ;;;
 (set-language-environment "utf-8")
+(require 'cl-lib)   ;; Common Lisp compatibility layer
 
 (setq debug-on-error t)
 
+(setq exec-path-from-shell-check-startup-files nil)
 
 (add-to-list 'load-path "~/.emacs.d/elisp")
 (setq exec-path (append exec-path (list "/usr/bin")))
@@ -88,7 +90,7 @@
   (set-frame-size (selected-frame) 120 37)
 
   ;; default Latin font (e.g. Consolas)
-  (set-default-font "Noto Mono 12")
+  ;(set-default-font "Noto Mono 12")
   (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
   )
 
@@ -473,12 +475,10 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(comint-scroll-show-maximum-output t)
  '(comint-scroll-to-bottom-on-input t)
  '(custom-safe-themes
-   (quote
-    ("f5f3a6fb685fe5e1587bafd07db3bf25a0655f3ddc579ed9d331b6b19827ea46" "73ad471d5ae9355a7fa28675014ae45a0589c14492f52c32a4e9b393fcc333fd" "fc7fd2530b82a722ceb5b211f9e732d15ad41d5306c011253a0ba43aaf93dccc" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" default)))
+   '("f5f3a6fb685fe5e1587bafd07db3bf25a0655f3ddc579ed9d331b6b19827ea46" "73ad471d5ae9355a7fa28675014ae45a0589c14492f52c32a4e9b393fcc333fd" "fc7fd2530b82a722ceb5b211f9e732d15ad41d5306c011253a0ba43aaf93dccc" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" default))
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
-   (quote
-    (all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode))))
+   '(swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
 
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
@@ -534,15 +534,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (add-hook 'term-exec-hook 'oleh-term-exec-hook)
 
-
-;; (use-package ag)
-;; (setq ag-highlight-search t)
-;; (setq ag-reuse-window 't)
-;; (setq ag-arguments "--scala")
-
-;; (use-package helm-ag
-;;   :init (custom-set-variables ('helm-ag-command-option "--scala")))
-;; (global-set-key (kbd "\C-c psa") 'helm-ag-project-root)
 
 ;; Integrate dired with ansi-term
 (require 'dired-x)
@@ -735,73 +726,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (add-to-list 'auto-mode-alist '("\\.asciidoc\\'" . adoc-mode))
   (add-to-list 'auto-mode-alist '("\\.txt\\'" . adoc-mode)))
 
-;;
-;; Ruby
-;;
-;(unless (package-installed-p 'enh-ruby-mode)
-;  (package-install 'enh-ruby-mode))
-
-;(autoload 'enh-ruby-mode "enh-ruby-mode" "Major mode for ruby files" t)
-;(add-to-list 'auto-mode-alist '("\\.rb$" . enh-ruby-mode))
-;(add-to-list 'auto-mode-alist '("\\.rake$" . enh-ruby-mode))
-;(add-to-list 'auto-mode-alist '("Rakefile$" . enh-ruby-mode))
-;(add-to-list 'auto-mode-alist '("\\.gemspec$" . enh-ruby-mode))
-;(add-to-list 'auto-mode-alist '("\\.ru$" . enh-ruby-mode))
-;(add-to-list 'auto-mode-alist '("Gemfile$" . enh-ruby-mode))
-
-;(add-to-list 'interpreter-mode-alist '("ruby" . enh-ruby-mode))
-;; (setq enh-ruby-program "(path-to-ruby1.9)/bin/ruby") ; so that still works if ruby points to ruby1.8
-;
-;(setq enh-ruby-bounce-deep-indent t)
-;(setq enh-ruby-hanging-brace-indent-level 2)
-;
-;
-
-
-(use-package cl)
-
-;; (require 'cl) ; If you don't have it already
-
-
-(defun* get-closest-gemfile-root (&optional (file "Gemfile"))
-  "Determine the pathname of the first instance of FILE starting from the current directory towards root.
-This may not do the correct thing in presence of links. If it does not find FILE, then it shall return the name
-of FILE in the current directory, suitable for creation"
-  (let ((root (expand-file-name "/"))) ; the win32 builds should translate this correctly
-    (loop
-     for d = default-directory then (expand-file-name ".." d)
-     if (file-exists-p (expand-file-name file d))
-     return d
-     if (equal d root)
-     return nil)))
-
-(require 'compile)
-
-(defun rspec-compile-file ()
-  (interactive)
-  (compile (format "cd %s;bundle exec rspec %s"
-                   (get-closest-gemfile-root)
-                   (file-relative-name (buffer-file-name) (get-closest-gemfile-root))
-                   ) t))
-
-(defun rspec-compile-on-line ()
-  (interactive)
-  (compile (format "cd %s;bundle exec rspec %s -l %s"
-                   (get-closest-gemfile-root)
-                   (file-relative-name (buffer-file-name) (get-closest-gemfile-root))
-                   (line-number-at-pos)
-                   ) t))
-
-;; Robe mode makes Emacs into a Ruby IDE
-(unless (package-installed-p 'robe)
-  (package-install 'robe))
-
-(add-hook 'ruby-mode-hook 'robe-mode)
-
-;; Textmate emulation
-(unless (package-installed-p 'textmate)
-  (package-install 'textmate))
-
 
 ;; Database support
 (use-package edbi)
@@ -852,7 +776,6 @@ of FILE in the current directory, suitable for creation"
 (unless (package-installed-p 'helm)
   (package-install 'helm))
 
-
 (require 'helm-config)
 (require 'helm-buffers)
 (require 'helm-locate)
@@ -894,7 +817,6 @@ of FILE in the current directory, suitable for creation"
                                       helm-source-recentf
                                       helm-source-files-in-current-dir)))))
 
-(require 'cl-lib)
 
 ;; Sort Helm's switch buffer list
 (add-hook 'ido-make-buffer-list-hook
