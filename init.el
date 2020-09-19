@@ -134,7 +134,7 @@
       auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
 
 
-(package-install 'gnu-elpa-keyring-update)
+;(package-install 'gnu-elpa-keyring-update)
 
 
 ;; Color theme
