@@ -3,7 +3,7 @@
 ;;; Commentary:
 ;;;  None.
 
-;;; Code:
+;;; Code:f
 
 ;;; General settings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -22,7 +22,11 @@
 (add-to-list 'load-path "~/.emacs.d/elisp")
 (setq exec-path (append exec-path (list "/usr/bin")))
 
-(setq nodejs-path "/usr/local/bin/node")
+;; Yeah, Mach paths are different
+(if (memq window-system '(mac ns))
+    (setq nodejs-path "/Users/david.orme/.nvm/versions/node/v10.22.0/bin/node")
+  (setq nodejs-path "/usr/local/bin/node"))
+
 (setq lein-path "~/bin/lein")
 
 ;; In Clojure, Cmd-enter inserts the contents of this file into the current repl
@@ -178,9 +182,6 @@
 (use-package package-utils)
 ;; (package-utils-upgrade-all)
 
-(use-package which-key)
-(which-key-mode 1)
-
 
 ;;;
 ;;; Generic utilities
@@ -306,25 +307,6 @@ Approximates the rules of `clean-buffer-list'."
     (and (buffer-find clean-buffer-list-kill-regexps)
          (not (or (buffer-find clean-buffer-list-kill-never-regexps)
                   (buffer-find ido-buffer-whitelist))))))
-
-(defun company-or-dabbrev-complete ()
-  "Force a `company-complete', falling back to `dabbrev-expand'."
-  (interactive)
-  (if company-mode
-      (company-complete)
-    (call-interactively 'dabbrev-expand)))
-
-
-(defun company-backends-for-buffer ()
-  "Calculate appropriate `company-backends' for the buffer.
-For small projects, use TAGS for completions, otherwise use a
-very minimal set."
-  (projectile-visit-project-tags-table)
-  (cl-flet ((size () (buffer-size (get-file-buffer tags-file-name))))
-    (let ((base '(company-keywords company-dabbrev-code company-yasnippet)))
-      (if (and tags-file-name (<= 20000000 (size)))
-          (list (push 'company-etags base))
-        (list base)))))
 
 
 (defun plist-merge (&rest plists)
@@ -475,11 +457,10 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(comint-scroll-show-maximum-output t)
  '(comint-scroll-to-bottom-on-input t)
  '(custom-safe-themes
-   (quote
-    ("12670281275ea7c1b42d0a548a584e23b9c4e1d2dabb747fd5e2d692bcd0d39b" "e1498b2416922aa561076edc5c9b0ad7b34d8ff849f335c13364c8f4276904f0" "f5f3a6fb685fe5e1587bafd07db3bf25a0655f3ddc579ed9d331b6b19827ea46" "73ad471d5ae9355a7fa28675014ae45a0589c14492f52c32a4e9b393fcc333fd" "fc7fd2530b82a722ceb5b211f9e732d15ad41d5306c011253a0ba43aaf93dccc" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" default)))
+   '("12670281275ea7c1b42d0a548a584e23b9c4e1d2dabb747fd5e2d692bcd0d39b" "e1498b2416922aa561076edc5c9b0ad7b34d8ff849f335c13364c8f4276904f0" "f5f3a6fb685fe5e1587bafd07db3bf25a0655f3ddc579ed9d331b6b19827ea46" "73ad471d5ae9355a7fa28675014ae45a0589c14492f52c32a4e9b393fcc333fd" "fc7fd2530b82a722ceb5b211f9e732d15ad41d5306c011253a0ba43aaf93dccc" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" default))
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
-   '(swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
+   '(dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
 
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
@@ -610,19 +591,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (add-hook 'css-mode-hook
   (lambda ()
-     ;; (make-local-variable 'ac-ignores)
-     ;; (add-to-list 'ac-ignores ";")
-     ;; (add-to-list 'ac-ignores ":")
-     ;; (add-to-list 'ac-ignores "{")
      (define-key (current-local-map) (kbd ";") 'my-semicolon)
      (define-key (current-local-map) (kbd ":") 'my-colon)
      (define-key (current-local-map) (kbd "}") 'my-closebrace)
      (define-key (current-local-map) (kbd "{") 'my-brace) ))
 
-;; (add-hook 'ruby-mode-hook
-;;           (lambda ()
-;;             (make-local-variable 'ac-ignores)
-;;             (add-to-list 'ac-ignores "end")))
 
 
 ;; (use-package lintnode)
@@ -928,7 +901,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
           treemacs-space-between-root-nodes      t
           treemacs-tag-follow-cleanup            t
           treemacs-tag-follow-delay              1.5
-          treemacs-width                         35)
+          treemacs-width                         45)
 
     ;; The default width and height of the icons is 22 pixels. If you are
     ;; using a Hi-DPI display, uncomment this to double the icon size.
@@ -1012,10 +985,15 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; (define-key flyspell-mode-map (kbd "C-;") 'helm-flyspell-correct)
 
 
+
+;; Comp(lete)any mode
+
 (use-package company
   :diminish company-mode
   :commands company-mode
   :init
+  (global-company-mode)
+  (define-key company-active-map (kbd "C-c h") #'company-quickhelp-manual-begin)
   (setq
    company-dabbrev-ignore-case nil
    company-dabbrev-code-ignore-case nil
@@ -1023,11 +1001,55 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    company-idle-delay 0
    company-minimum-prefix-length 4)
   :config
-  ;; dabbrev is too slow, use C-TAB explicitly
-  (delete 'company-dabbrev company-backends)
-  ;; disables TAB in company-mode, freeing it for yasnippet
-  (define-key company-active-map [tab] nil)
-  (define-key company-active-map (kbd "TAB") nil))
+  ;; dabbrev is too slow
+  (delete 'company-dabbrev company-backends))
+
+(use-package company-quickhelp
+  :init
+  (company-quickhelp-mode))
+
+;; Icons in content help menus
+(use-package company-box
+  :hook (company-mode . company-box-mode))
+
+;; Resolve conflicts with indenting, completion, and yasnippets
+
+(defun check-expansion ()
+  "Return 't if the prior characters should be expanded and nil otherwise."
+  (save-excursion
+    (if (looking-at "\\_>") t
+      (backward-char 1)
+      (if (looking-at "\\.") t
+        (backward-char 1)
+        (if (looking-at "->") t nil)))))
+
+(defun do-yas-expand ()
+  "Expand snippet or return null."
+  (let ((yas/fallback-behavior 'return-nil))
+    (yas/expand)))
+
+(defun company-tab-indent-or-complete ()
+  "If focus is in the minibuffer then autocomplete else try to expand/tab using (or yasnippet company indent)."
+  (interactive)
+  (if (minibufferp)
+      (minibuffer-complete)
+    (if (or (not yas/minor-mode)
+            (null (do-yas-expand)))
+        (if (check-expansion)
+            (company-complete-common)
+          (indent-for-tab-command)))))
+
+
+;; Company colors
+(require 'color)
+
+(let ((bg (face-attribute 'default :background)))
+  (custom-set-faces
+   `(company-tooltip ((t (:inherit default :background ,(color-lighten-name bg 2)))))
+   `(company-scrollbar-bg ((t (:background ,(color-lighten-name bg 10)))))
+   `(company-scrollbar-fg ((t (:background ,(color-lighten-name bg 5)))))
+   `(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
+   `(company-tooltip-common ((t (:inherit font-lock-constant-face))))))
 
 
 
@@ -1179,7 +1201,6 @@ assuming it is in a maven-style project."
             (yas-minor-mode t)
             (git-gutter-mode t)
             (company-mode t)
-            ;; (ensime-mode t)
             (setq prettify-symbols-alist scala-mode-prettify-symbols)
             (prettify-symbols-mode t)
             (scala-mode:goto-start-of-code)))
@@ -1204,6 +1225,8 @@ assuming it is in a maven-style project."
    'self-insert-command
    minibuffer-local-completion-map)
 
+  (setq sbt:program-options '("-Dsbt.supershell=false"))
+
   (bind-key "C-c c" 'sbt-hydra sbt:mode-map)
   (bind-key "C-c s" 'sbt-command sbt:mode-map)
   (bind-key "C-c e" 'next-error sbt:mode-map))
@@ -1224,42 +1247,73 @@ assuming it is in a maven-style project."
 
 ;; Use Scala's Metals / lanuage server protocol backend
 
+;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+(setq lsp-keymap-prefix "C-L")
+
 (use-package lsp-mode
-  :hook (scala-mode . lsp)
-        (scala-mode . lsp)
-  :commands lsp
-  :config (setq lsp-prefer-flymake nil))
+  :hook
+  (lsp-mode . lsp-enable-which-key-integration)
+  (lsp-mode . lsp-lens-mode)
+  (java-mode . lsp)
+  (scala-mode . lsp)
+  (sbt-mode . lsp)
+  (javascript-mode . lsp)
+  (typescript-mode . lsp)
+  (clojure-mode . lsp)
 
+  :commands lsp lsp-deferred)
 
-(use-package lsp-ui
-  :bind
-  (:map lsp-ui-mode-map
-        ("C-G" . lsp-ui-peek-find-references))
+(use-package lsp-metals)
 
-  :config
-  (setq lsp-ui-sideline-enable t
-        lsp-ui-doc-enable t
-        lsp-ui-flycheck-enable t
-        lsp-ui-imenu-enable t
-        lsp-ui-sideline-ignore-duplicate t))
+;; optionally
+(use-package lsp-ui :commands lsp-ui-mode)
+;; if you are helm user
+;; (use-package helm-lsp :commands helm-lsp-workspace-symbol)
+(use-package lsp-treemacs :commands lsp-treemacs-errors-list)
 
-(use-package company-lsp)
-;; (use-package company-box                ;Icons for company-mode (Emacs >=26)
-;;   :hook (company-mode . company-box-mode))
+(use-package posframe)                  ; Popups for debug mode
 
-
-;(use-package posframe                  ;Popup tool
-;  )
-
-(use-package dap-mode                   ;Debug server protocol support
+;; optionally if you want to use debugger
+(use-package dap-mode
   :hook
   (lsp-mode . dap-mode)
-  (lsp-mode . dap-ui-mode)
-  )
+  (lsp-mode . dap-ui-mode))
 
-;(use-package lsp-treemacs
-;  :config
-;  )
+;; optional if you want which-key integration
+(use-package which-key
+  :config
+  (which-key-mode))
+
+
+;; Old, but maybe still useful
+;;
+;; (use-package lsp-mode
+;;   :hook (scala-mode . lsp)
+;;   (scala-mode . lsp)
+;;   :commands lsp
+;;   :config (setq lsp-prefer-flymake nil))
+
+
+;; (use-package lsp-ui
+;;   :bind
+;;   (:map lsp-ui-mode-map
+;;         ("C-G" . lsp-ui-peek-find-references))
+
+;;   :config
+;;   (setq lsp-ui-sideline-enable t
+;;         lsp-ui-doc-enable t
+;;         lsp-ui-flycheck-enable t
+;;         lsp-ui-imenu-enable t
+;;         lsp-ui-sideline-ignore-duplicate t))
+
+;; (use-package lsp-treemacs)
+
+;; (use-package dap-mode                   ;Debug server protocol support
+;;   :hook
+;;   (lsp-mode . dap-mode)
+;;   (lsp-mode . dap-ui-mode)
+;;   )
+
 
 ;;..............................................................................
 ;; YAML
@@ -1503,7 +1557,6 @@ assuming it is in a maven-style project."
 (add-hook 'cider-mode-hook #'eldoc-mode)
 
 (setq cider-repl-use-clojure-font-lock t)
-;; (global-set-key (kbd "TAB") #'company-indent-or-complete-common)
 
 ;; Abbreviate the REPL prompt if it gets long
 (setq cider-repl-prompt-function
@@ -1727,7 +1780,6 @@ buffer's."
 ;; turn on soft wrapping mode for org mode
 (add-hook 'org-mode-hook
           (lambda () (setq truncate-lines nil)))
-(setq org-completion-use-ido t)
 (setq org-src-fontify-natively t)
 (add-hook 'org-mode-hook
           (lambda ()
@@ -1988,6 +2040,8 @@ With ARG, do this that many times."
   )
 
 
+(global-set-key [tab] 'company-tab-indent-or-complete)
+
 (global-set-key [f1] 'terminal)
 (global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
 (global-set-key [f6] 'helm-buffers-list)
@@ -2050,4 +2104,8 @@ With ARG, do this that many times."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(company-scrollbar-bg ((t (:background "#2eae2eae2eae"))))
+ '(company-scrollbar-fg ((t (:background "#21e121e121e1"))))
+ '(company-tooltip ((t (:inherit default :background "#1a331a331a33"))))
+ '(company-tooltip-common ((t (:inherit font-lock-constant-face))))
+ '(company-tooltip-selection ((t (:inherit font-lock-function-name-face)))))
