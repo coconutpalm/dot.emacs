@@ -22,7 +22,7 @@ command coursier --help > /dev/null 2>&1 || curl -L -o $HERE/coursier https://gi
 
 # Launch the notebook server
 SCALA=2.11
-MDOC=2.0.3
+MDOC=2.2.9
 
 IN=.
 OUT=/tmp/notebook-$RANDOM

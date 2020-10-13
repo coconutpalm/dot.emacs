@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# tmux example
+#
+
+UI=~/code/ui
+cd $UI
+
+tmux new-session -d
+tmux split-window -v 'npm run storybook'
+tmux split-window -v 'docker run -p 9001:9000 -e JAVA_OPTS_WHATEVER=-Dproxy.includes.rules.dev.target=https://integration.in docker.in/playproxy'
+tmux split-window -h 'npm run serve:localProxy'
+tmux select-pane -t 0
+#tmux new-window 'mutt'
+tmux -2 attach-session -d
