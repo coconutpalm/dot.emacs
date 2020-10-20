@@ -19,6 +19,8 @@ launchers
 *.swp
 *~
 .lsp-session-*
+.metals
+.vscode
 
 build.sbt
 idea.sbt
