@@ -50,7 +50,6 @@
         "PERL_MM_OPT"))
 
 
-
 ;;; Misc display settings
 
 ;; Set the selection color; but doesn't work well with syntax highlight
@@ -59,7 +58,7 @@
 (menu-bar-mode -1)
 (tool-bar-mode 0)
 (setq inhibit-splash-screen t)
-(setq x-select-enable-clipboard t)      ; enable use of system clipboard across emacs and applications
+(setq select-enable-clipboard t)      ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
 (setq-default standard-indent 3) ; set standard indent to 3 rather that 4
 (setq-default tab-width 3)
@@ -718,12 +717,12 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :commands magit-status magit-blame magit-refresh-all
   :init (setq
          magit-revert-buffers nil)
-  :bind (("M-l" . magit-log-current)    ;; See git-timemachine bindings below
+  :bind (("M-l" . magit-log-current) ;; See git-timemachine bindings below
+         ("<TAB>" . magit-section-toggle-children)
          ("s-g" . magit-status)
          ("s-b" . magit-blame)))
 
 (setq magit-revert-buffers 0.5)
-(setq magit-push-always-verify nil)
 (global-set-key (kbd "C-x g") 'magit-status)
 (global-set-key (kbd "C-x C-g") 'magit-status)
 (global-set-key (kbd "C-c C-g") 'magit-status)
@@ -2096,7 +2095,7 @@ With ARG, do this that many times."
 (unclutter-window)
 
 
-(find-file (concat (file-name-as-directory "~/") "TIME.md" ))
+(find-file (concat (file-name-as-directory "~/_NOTES") "TIME.md" ))
 
 
 (provide 'init)
