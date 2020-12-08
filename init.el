@@ -393,6 +393,20 @@ Approximates the rules of `clean-buffer-list'."
           (lambda () (not (member (buffer-name) '("*scratch*" "scratch.el")))))
 
 
+;; Content-assist package
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+
+(use-package flycheck-color-mode-line)
+(use-package flycheck-pos-tip)
+(use-package flycheck-status-emoji)
+
+(use-package flycheck-cask              ;ELisp support
+  :commands flycheck-cask-setup
+  :config (add-hook 'emacs-lisp-mode-hook (flycheck-cask-setup)))
+
+
 ;; ansi-term
 (defcustom term-unbind-key-list
   '("C-z" "C-x" "C-c" "C-h" "C-r" "C-s" "C-y" "<ESC>" "<TAB>" "C-[")
@@ -1231,19 +1245,6 @@ assuming it is in a maven-style project."
   (bind-key "C-c c" 'sbt-hydra sbt:mode-map)
   (bind-key "C-c s" 'sbt-command sbt:mode-map)
   (bind-key "C-c e" 'next-error sbt:mode-map))
-
-
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
-
-(use-package flycheck-color-mode-line)
-(use-package flycheck-pos-tip)
-(use-package flycheck-status-emoji)
-
-(use-package flycheck-cask              ;ELisp support
-  :commands flycheck-cask-setup
-  :config (add-hook 'emacs-lisp-mode-hook (flycheck-cask-setup)))
 
 
 ;; Use Scala's Metals / lanuage server protocol backend
