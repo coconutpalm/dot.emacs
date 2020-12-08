@@ -2038,6 +2038,9 @@ With ARG, do this that many times."
     (calender-mode . centaur-tabs-local-mode)
     (helpful-mode . centaur-tabs-local-mode)
 
+    :init
+    (centaur-tabs-group-by-projectile-project)
+
     :bind
     ("C-c t s" . centaur-tabs-counsel-switch-group)
     ("C-c t p" . centaur-tabs-group-by-projectile-project)
