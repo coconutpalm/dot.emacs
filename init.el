@@ -873,6 +873,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (package-install 'perspective))
 (persp-mode)
 
+(require 'persp-projectile)
+(define-key projectile-mode-map (kbd "s-s") 'projectile-persp-switch-project)
+
 (require 'helm-projectile)
 
 (projectile-global-mode)
