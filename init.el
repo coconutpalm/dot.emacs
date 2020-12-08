@@ -569,58 +569,26 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
         (next-line)))
 
 
-;; Web-mode
-(use-package web-mode
-  :config
-  (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode)))
-
-
-
-(defun my-semicolon ()
-  (interactive)
-  (insert ";")
-  (newline-and-indent))
-
-(defun my-colon ()
-  (interactive)
-  (insert ":"))
-
-(defun my-brace ()
-  (interactive)
-  (insert "{")
-  (newline-and-indent))
-
-(defun my-closebrace ()
-  (interactive)
-  (insert "}")
-  (indent-according-to-mode)
-  (newline-and-indent))
-
-(add-hook 'css-mode-hook
-  (lambda ()
-     (define-key (current-local-map) (kbd ";") 'my-semicolon)
-     (define-key (current-local-map) (kbd ":") 'my-colon)
-     (define-key (current-local-map) (kbd "}") 'my-closebrace)
-     (define-key (current-local-map) (kbd "{") 'my-brace) ))
-
+(use-package typescript-mode
+  :hook (typescript-mode .
+                         (lambda ()
+                           (add-to-list
+                            (make-local-variable
+                             'grep-find-ignored-directories) "build")
+                           (electric-indent-mode -1)))
+  :mode (rx ".ts" (? "x") string-end)
+  :init
+  )
 
 (use-package tide)
 
 (defun setup-tide-mode ()
   (interactive)
   (tide-setup)
-  (flycheck-mode +1)
+  (flycheck-mode t)
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode +1)
-  (tide-hl-identifier-mode +1)
+  (eldoc-mode t)
+  (tide-hl-identifier-mode t)
   ;; company is an optional dependency. You have to
   ;; install it separately via package-install
   ;; `M-x package-install [ret] company`
@@ -670,6 +638,48 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;                      (lambda (output)
 ;;                      (replace-regexp-in-string ".*1G.*3G" "> " output)))))
 
+
+;; Web-mode
+(use-package web-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode)))
+
+
+
+(defun my-semicolon ()
+  (interactive)
+  (insert ";")
+  (newline-and-indent))
+
+(defun my-colon ()
+  (interactive)
+  (insert ":"))
+
+(defun my-brace ()
+  (interactive)
+  (insert "{")
+  (newline-and-indent))
+
+(defun my-closebrace ()
+  (interactive)
+  (insert "}")
+  (indent-according-to-mode)
+  (newline-and-indent))
+
+(add-hook 'css-mode-hook
+  (lambda ()
+     (define-key (current-local-map) (kbd ";") 'my-semicolon)
+     (define-key (current-local-map) (kbd ":") 'my-colon)
+     (define-key (current-local-map) (kbd "}") 'my-closebrace)
+     (define-key (current-local-map) (kbd "{") 'my-brace) ))
 
 ;; Markdown / AsciiDoc
 
