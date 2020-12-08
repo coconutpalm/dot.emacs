@@ -883,9 +883,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (package-install 'perspective))
 (persp-mode)
 
-(require 'persp-projectile)
-(define-key projectile-mode-map (kbd "s-s") 'projectile-persp-switch-project)
-
 (require 'helm-projectile)
 
 (projectile-global-mode)
@@ -1415,9 +1412,6 @@ assuming it is in a maven-style project."
 ;;
 
 (use-package smartparens
-  :after (scala-mode)
-  :diminish smartparens-mode
-
   :commands
   smartparens-strict-mode
   smartparens-mode
