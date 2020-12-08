@@ -612,6 +612,28 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
      (define-key (current-local-map) (kbd "{") 'my-brace) ))
 
 
+(use-package tide)
+
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  ;; company is an optional dependency. You have to
+  ;; install it separately via package-install
+  ;; `M-x package-install [ret] company`
+  (company-mode +1))
+
+;; aligns annotation to the right hand side
+(setq company-tooltip-align-annotations t)
+
+;; formats the buffer before saving
+(add-hook 'before-save-hook 'tide-format-before-save)
+
+(add-hook 'typescript-mode-hook #'setup-tide-mode)
+
 
 ;; (use-package lintnode)
 
@@ -622,31 +644,31 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;           (lambda ()
 ;;             (lintnode-hook)))
 
-;; Put messages in the mini-buffer
+
 
 
 ;; General Javascript
-(add-hook 'js-mode-hook
-          (lambda ()
-            ;; Scan the file for nested code blocks
-            (imenu-add-menubar-index)
-            ;; Activate the folding mode
-            (hs-minor-mode t)))
+;; (add-hook 'js-mode-hook
+;;           (lambda ()
+;;             ;; Scan the file for nested code blocks
+;;             (imenu-add-menubar-index)
+;;             ;; Activate the folding mode
+;;             (hs-minor-mode t)))
 
 ;; Javascript REPL
-(use-package js-comint)
+;; (use-package js-comint)
 
 ;; Use node as our repl
-(setq inferior-js-program-command nodejs-path)
+;; (setq inferior-js-program-command nodejs-path)
 
-(setq inferior-js-mode-hook
-      (lambda ()
-        ;; We like nice colors
-        (ansi-color-for-comint-mode-on)
-        ;; Deal with some prompt nonsense
-        (add-to-list 'comint-preoutput-filter-functions
-                     (lambda (output)
-                     (replace-regexp-in-string ".*1G.*3G" "> " output)))))
+;; (setq inferior-js-mode-hook
+;;       (lambda ()
+;;         ;; We like nice colors
+;;         (ansi-color-for-comint-mode-on)
+;;         ;; Deal with some prompt nonsense
+;;         (add-to-list 'comint-preoutput-filter-functions
+;;                      (lambda (output)
+;;                      (replace-regexp-in-string ".*1G.*3G" "> " output)))))
 
 
 ;; Markdown / AsciiDoc
