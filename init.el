@@ -482,9 +482,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (ansi-color-for-comint-mode-on)
 (defun colorize-compilation-buffer ()
-  (toggle-read-only)
+  (read-only-mode)
   (ansi-color-apply-on-region compilation-filter-start (point))
-  (toggle-read-only))
+  (read-only-mode))
 (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
 
 (eval-after-load "ansi-term"
@@ -497,7 +497,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (term-send-string (get-buffer-process "*ansi-term*") "source /etc/profile\n"))
 
 (defun terminal ()
-  "Switch to terminal. Launch if nonexistent."
+  "Switch to terminal.  Launch if nonexistent."
   (interactive)
   (split-window)
   (other-window 1 nil)
@@ -773,8 +773,12 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (helm-mode 1)
 
+(setq helm-autoresize-max-height 80)
+(helm-autoresize-mode 1)
+
 (unless (package-installed-p 'helm-descbinds)
   (package-install 'helm-descbinds))
+
 (require 'helm-descbinds)
 (helm-descbinds-mode)
 (global-set-key (kbd "C-h h") 'describe-bindings)
@@ -794,7 +798,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
     helm-candidate-number-limit 20
     helm-use-standard-keys nil
     helm-locate-case-fold-search t
-    helm-locate-command "locate -e -b %s -r %s")
+    helm-locate-command "fd --type f | fzf -f\"%s\"")
+
+(setq counsel-fzf-cmd "fd --type f | fzf -f\"%s\"")
 
 (global-set-key (kbd "C-x b")
                 (lambda () (interactive)
@@ -825,7 +831,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to autocomplete
 (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
-(define-key helm-map (kbd "C-c a")  'helm-select-action)
+(define-key helm-map (kbd "C-<return>") 'helm-select-action)
 (define-key helm-find-files-map [(control backspace)] #'helm-find-files-up-one-level)
 (define-key helm-read-file-map [(control backspace)] #'helm-find-files-up-one-level)
 
