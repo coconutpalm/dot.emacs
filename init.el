@@ -409,7 +409,7 @@ Approximates the rules of `clean-buffer-list'."
 
 ;; ansi-term
 (defcustom term-unbind-key-list
-  '("C-z" "C-x" "C-c" "C-h" "C-r" "C-s" "C-y" "<ESC>" "<TAB>" "C-[")
+  '("C-z" "C-x" "C-c" "C-h" "C-r" "C-s" "C-y" "<ESC>" "<TAB>" "\t" "C-[")
   "The key list that will need to be unbind."
   :type 'list
   :group 'term)
@@ -764,7 +764,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :init (setq
          magit-revert-buffers nil)
   :bind (("M-l" . magit-log-current) ;; See git-timemachine bindings below
-         ("<TAB>" . magit-section-toggle-children)
+         ("\t" . magit-section-toggle-children)
          ("s-g" . magit-status)
          ("s-b" . magit-blame)))
 
@@ -861,7 +861,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (global-set-key (kbd "C-c h") 'helm-command-prefix) ;; Better Helm activation sequence
 (global-unset-key (kbd "C-x c"))
 
-(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to autocomplete
+(define-key helm-map (kbd "\t") 'helm-execute-persistent-action) ; rebind tab to autocomplete
 (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
 (define-key helm-map (kbd "C-<return>") 'helm-select-action)
 (define-key helm-find-files-map [(control backspace)] #'helm-find-files-up-one-level)
@@ -1200,7 +1200,7 @@ assuming it is in a maven-style project."
 
   :bind
   (("RET"     . reindent-then-newline-and-indent)
-   ("C-<tab>" . dabbrev-expand)              ; ???? Do I still want this?
+   ("C-\t" . dabbrev-expand)              ; ???? Do I still want this?
    ("C-c c"   . 'sbt-hydra)
    ("C-c e"   . 'next-error))
 
