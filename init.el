@@ -8,6 +8,118 @@
 ;;; General settings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;; Code:
+
+;;
+;; NOTE-When receiving an out-of-date certificate error, uncomment
+;;      (setq package-check-signature nil)               and
+;;      (package-install 'gnu-elpa-keyring-update)       and reload
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(require 'package)
+;;(setq package-check-signature nil)
+(setq package-archives '(("melpa" . "http://melpa.org/packages/")
+			 ("gnu" . "http://elpa.gnu.org/packages/")
+			 ("org" . "http://orgmode.org/elpa/")))
+
+
+(package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(when (not package-archive-contents)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t
+      use-package-always-defer t
+      backup-directory-alist `((".*" . ,temporary-file-directory))
+      auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+
+;(package-install 'gnu-elpa-keyring-update)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Some basic keybindings so if we blow up later the editor has some baseline behavior
+
+(use-package subword
+  :ensure nil
+  :diminish subword-mode
+  :config (global-subword-mode t))
+
+;; The default for ctrl-backspace is to delete words backward into the
+;; clipboard, thus destroying whatever was in the clipboard.  This
+;; (plus the keybinding below) fixes that.
+(defun delete-word (arg)
+  "Delete characters forward until encountering the end of a word.
+With ARG, do this that many times."
+  (interactive "p")
+  (delete-region (point) (progn (forward-word arg) (point))))
+
+(defun backward-delete-word (arg)
+  "Delete characters backward until encountering the end of a word.
+With ARG, do this that many times."
+  (interactive "p")
+  (delete-word (- arg)))
+
+(defun contextual-backspace ()
+  "Hungry whitespace or delete word depending on context."
+  (interactive)
+  (if (looking-back "[[:space:]\n]\\{2,\\}" (- (point) 2))
+      (while (looking-back "[[:space:]\n]" (- (point) 1))
+        (delete-char -1))
+    (cond
+     ((and (boundp 'smartparens-strict-mode)
+           smartparens-strict-mode)
+      (sp-backward-kill-word 1))
+     (subword-mode
+      (subword-backward-kill 1))
+     (t
+      (backward-delete-word 1)))))
+
+
+(defun exit-message ()
+  "Define a friendly message to display for the re-bound C-x C-c."
+  (interactive)
+  (message "Type C-x C-q to exit Emacs.  It's waaaay too easy to accidentally hit C-x C-c")
+  (ding))
+
+
+(global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
+(global-set-key [home] 'beginning-of-line)
+(global-set-key [end] 'end-of-line)
+
+(when (boundp 'aquamacs-version)
+  (define-key osx-key-mode-map [home] 'beginning-of-line)
+  (define-key osx-key-mode-map [end] 'end-of-line)
+  (define-key osx-key-mode-map (kbd "C-<left>") 'backward-word)
+  (define-key osx-key-mode-map (kbd "C-<right>") 'forward-word))
+
+(global-set-key "\M-[1;5C"    'forward-word)      ; Ctrl+right   => forward word
+(global-set-key "\M-[1;5D"    'backward-word)     ; Ctrl+left    => backward word
+
+(global-set-key (kbd "C-<left>") 'backward-word)
+(global-set-key (kbd "C-<right>") 'forward-word)
+(global-set-key (kbd "C-<backspace>") 'backward-delete-word) ; NOTE alternative below********
+;; (global-set-key (kbd "C-<backspace>") 'contextual-backspace)
+
+(global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
+(global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
+(global-set-key (kbd "\C-c g") 'goto-line)
+(global-set-key (kbd "\C-F") 'find-file-at-point)
+(global-set-key (kbd "\C-c c") 'compile)
+(global-set-key (kbd "C-x C-c") 'exit-message) ;; It's waaaay too easy to accidentally Ctrl-x Ctrl-c
+(global-set-key (kbd "C-x C-q") 'save-buffers-kill-terminal)
+
+(global-set-key (kbd "M-<up>") 'move-text-up)
+(global-set-key (kbd "M-<down>") 'move-text-down)
+
+
+;;; Load the init file into a buffer so it's easy to get to
+(find-file (concat (file-name-as-directory "~/.emacs.d") "init.el" ))
 
 ;;;
 ;;; Configuration settings
@@ -107,38 +219,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Package manager init
-;;
-;; NOTE-When receiving an out-of-date certificate error, uncomment
-;;      (setq package-check-signature nil)               and
-;;      (package-install 'gnu-elpa-keyring-update)       and reload
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(require 'package)
-(setq package-check-signature nil)
-(setq package-archives '(("melpa" . "http://melpa.org/packages/")
-			 ("gnu" . "http://elpa.gnu.org/packages/")
-			 ("org" . "http://orgmode.org/elpa/")))
-
-
-(package-initialize)
-
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(when (not package-archive-contents)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(require 'use-package)
-(setq use-package-always-ensure t
-      use-packate-always-defer t
-      backup-directory-alist `((".*" . ,temporary-file-directory))
-      auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
-
-
-;(package-install 'gnu-elpa-keyring-update)
-
 
 ;; Color theme
 
@@ -147,20 +227,26 @@
 
 (load-theme 'base16-chalk t)
 
-;; TODO magit colors
-;; (magit-file-header ((t (:foreground "violet"))))
-;; (magit-hunk-header ((t (:foreground "blue"))))
-;; (magit-header ((t (:foreground "cyan"))))
-;; (magit-tag-label ((t (:background "blue" :foreground "orange"))))
-;; (magit-diff-add ((t (:foreground "MediumSlateBlue"))))
-;; (magit-diff-del ((t (:foreground "maroon"))))
-;; (magit-item-highlight ((t (:background "#000012"))))
 
+(use-package epl)
+(use-package package-utils)
 
-;;
 ;; Upgrade packages automatically on startup
 ;;  If you don't want this, comment out package-utils-upgrade-all
 ;;
+;; (package-utils-upgrade-all)
+
+
+;; Multiple cursors
+(use-package multiple-cursors)
+
+(global-set-key (kbd "C-S-l C-S-l") 'mc/edit-lines)
+
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-s->") 'mc/skip-to-next-like-this)
+(global-set-key (kbd "C-s-<") 'mc/skip-to-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
 
 ;; Line numbering
@@ -171,15 +257,6 @@
   (global-linum-mode t)
   (setq linum-format " %4d "))
 
-
-(use-package subword
-  :ensure nil
-  :diminish subword-mode
-  :config (global-subword-mode t))
-
-(use-package epl)
-(use-package package-utils)
-;; (package-utils-upgrade-all)
 
 
 ;;;
@@ -470,12 +547,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(comint-scroll-show-maximum-output t)
  '(comint-scroll-to-bottom-on-input t)
  '(custom-safe-themes
-   (quote
-    ("12670281275ea7c1b42d0a548a584e23b9c4e1d2dabb747fd5e2d692bcd0d39b" "e1498b2416922aa561076edc5c9b0ad7b34d8ff849f335c13364c8f4276904f0" "f5f3a6fb685fe5e1587bafd07db3bf25a0655f3ddc579ed9d331b6b19827ea46" "73ad471d5ae9355a7fa28675014ae45a0589c14492f52c32a4e9b393fcc333fd" "fc7fd2530b82a722ceb5b211f9e732d15ad41d5306c011253a0ba43aaf93dccc" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" default)))
+   '("12670281275ea7c1b42d0a548a584e23b9c4e1d2dabb747fd5e2d692bcd0d39b" "e1498b2416922aa561076edc5c9b0ad7b34d8ff849f335c13364c8f4276904f0" "f5f3a6fb685fe5e1587bafd07db3bf25a0655f3ddc579ed9d331b6b19827ea46" "73ad471d5ae9355a7fa28675014ae45a0589c14492f52c32a4e9b393fcc333fd" "fc7fd2530b82a722ceb5b211f9e732d15ad41d5306c011253a0ba43aaf93dccc" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" default))
+ '(helm-follow-mode-persistent t)
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
-   (quote
-    (dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode))))
+   '(prettier-js multiple-cursors dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
 
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
@@ -581,6 +657,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   )
 
 (use-package tide)
+(setq flycheck-javascript-standard-executable "standardx")
 
 (defun setup-tide-mode ()
   (interactive)
@@ -594,49 +671,34 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   ;; `M-x package-install [ret] company`
   (company-mode +1))
 
+(use-package prettier-js)
+
+(require 'prettier-js)
+
 ;; aligns annotation to the right hand side
 (setq company-tooltip-align-annotations t)
 
 ;; formats the buffer before saving
 (add-hook 'before-save-hook 'tide-format-before-save)
+(add-hook 'js2-mode-hook 'prettier-js-mode)
+(add-hook 'web-mode-hook 'prettier-js-mode)
 
 (add-hook 'typescript-mode-hook #'setup-tide-mode)
 
-
-;; (use-package lintnode)
-
-;; JSLint can be... opinionated
-;; (setq lintnode-jslint-excludes (list 'nomen 'undef 'plusplus 'onevar 'white))
-;; Start the server when we first open a js file and start checking
-;; (add-hook 'js-mode-hook
-;;           (lambda ()
-;;             (lintnode-hook)))
-
-
-
-
-;; General Javascript
-;; (add-hook 'js-mode-hook
-;;           (lambda ()
-;;             ;; Scan the file for nested code blocks
-;;             (imenu-add-menubar-index)
-;;             ;; Activate the folding mode
-;;             (hs-minor-mode t)))
-
 ;; Javascript REPL
-;; (use-package js-comint)
+(use-package js-comint)
 
 ;; Use node as our repl
-;; (setq inferior-js-program-command nodejs-path)
+(setq inferior-js-program-command nodejs-path)
 
-;; (setq inferior-js-mode-hook
-;;       (lambda ()
-;;         ;; We like nice colors
-;;         (ansi-color-for-comint-mode-on)
-;;         ;; Deal with some prompt nonsense
-;;         (add-to-list 'comint-preoutput-filter-functions
-;;                      (lambda (output)
-;;                      (replace-regexp-in-string ".*1G.*3G" "> " output)))))
+(setq inferior-js-mode-hook
+      (lambda ()
+        ;; We like nice colors
+        (ansi-color-for-comint-mode-on)
+        ;; Deal with some prompt nonsense
+        (add-to-list 'comint-preoutput-filter-functions
+                     (lambda (output)
+                     (replace-regexp-in-string ".*1G.*3G" "> " output)))))
 
 
 ;; Web-mode
@@ -803,6 +865,10 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (require 'helm-bookmark)
 (require 'helm-files)
 
+;; Must be set before loading helm-ag
+
+(use-package helm-ag)
+
 (helm-mode 1)
 
 (setq helm-autoresize-max-height 80)
@@ -829,10 +895,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
     helm-quick-update t
     helm-candidate-number-limit 20
     helm-use-standard-keys nil
-    helm-locate-case-fold-search t
-    helm-locate-command "fd --type f | fzf -f\"%s\"")
-
-(setq counsel-fzf-cmd "fd --type f | fzf -f\"%s\"")
+    helm-locate-case-fold-search t)
 
 (global-set-key (kbd "C-x b")
                 (lambda () (interactive)
@@ -917,58 +980,60 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :ensure t
   :defer t
   :init
-  (linum-mode nil)
   (with-eval-after-load 'winum
     (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+
   :config
-  (progn
-    (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
-          treemacs-deferred-git-apply-delay      0.5
-          treemacs-display-in-side-window        t
-          treemacs-eldoc-display                 t
-          treemacs-file-event-delay              5000
-          treemacs-file-follow-delay             0.2
-          treemacs-follow-after-init             t
-          treemacs-git-command-pipe              ""
-          treemacs-goto-tag-strategy             'refetch-index
-          treemacs-indentation                   2
-          treemacs-indentation-string            " "
-          treemacs-is-never-other-window         nil
-          treemacs-max-git-entries               5000
-          treemacs-missing-project-action        'ask
-          treemacs-no-png-images                 nil
-          treemacs-no-delete-other-windows       t
-          treemacs-project-follow-cleanup        nil
-          treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-          treemacs-position                      'left
-          treemacs-recenter-distance             0.1
-          treemacs-recenter-after-file-follow    nil
-          treemacs-recenter-after-tag-follow     nil
-          treemacs-recenter-after-project-jump   'always
-          treemacs-recenter-after-project-expand 'on-distance
-          treemacs-show-cursor                   nil
-          treemacs-show-hidden-files             t
-          treemacs-silent-filewatch              nil
-          treemacs-silent-refresh                nil
-          treemacs-sorting                       'alphabetic-desc
-          treemacs-space-between-root-nodes      t
-          treemacs-tag-follow-cleanup            t
-          treemacs-tag-follow-delay              1.5
-          treemacs-width                         45)
+  (when window-system
+    (progn
+      (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
+            treemacs-deferred-git-apply-delay      0.5
+            treemacs-display-in-side-window        t
+            treemacs-eldoc-display                 t
+            treemacs-file-event-delay              5000
+            treemacs-file-follow-delay             0.2
+            treemacs-follow-after-init             t
+            treemacs-git-command-pipe              ""
+            treemacs-goto-tag-strategy             'refetch-index
+            treemacs-indentation                   2
+            treemacs-indentation-string            " "
+            treemacs-is-never-other-window         nil
+            treemacs-max-git-entries               5000
+            treemacs-missing-project-action        'ask
+            treemacs-no-png-images                 nil
+            treemacs-no-delete-other-windows       t
+            treemacs-project-follow-cleanup        nil
+            treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+            treemacs-position                      'left
+            treemacs-recenter-distance             0.1
+            treemacs-recenter-after-file-follow    nil
+            treemacs-recenter-after-tag-follow     nil
+            treemacs-recenter-after-project-jump   'always
+            treemacs-recenter-after-project-expand 'on-distance
+            treemacs-show-cursor                   nil
+            treemacs-show-hidden-files             t
+            treemacs-silent-filewatch              nil
+            treemacs-silent-refresh                nil
+            treemacs-sorting                       'alphabetic-desc
+            treemacs-space-between-root-nodes      t
+            treemacs-tag-follow-cleanup            t
+            treemacs-tag-follow-delay              1.5
+            treemacs-width                         55)))
 
     ;; The default width and height of the icons is 22 pixels. If you are
     ;; using a Hi-DPI display, uncomment this to double the icon size.
     ;;(treemacs-resize-icons 44)
 
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (treemacs-fringe-indicator-mode t)
-    (pcase (cons (not (null (executable-find "git")))
-                 (not (null treemacs-python-executable)))
-      (`(t . t)
-       (treemacs-git-mode 'deferred))
-      (`(t . _)
-       (treemacs-git-mode 'simple))))
+
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode t)
+  (pcase (cons (not (null (executable-find "git")))
+               (not (null treemacs-python-executable)))
+    (`(t . t)
+     (treemacs-git-mode 'deferred))
+    (`(t . _)
+     (treemacs-git-mode 'simple)))
 
   :bind
   (:map global-map
@@ -979,6 +1044,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
         ("C-x t B"   . treemacs-bookmark)
         ("C-x t C-t" . treemacs-find-file)
         ("C-x t M-t" . treemacs-find-tag)))
+
+(add-hook 'treemacs-mode-hook
+          (lambda () (linum-mode nil)))
 
 ;; (use-package treemacs-evil
 ;;   :after treemacs evil
@@ -1197,9 +1265,14 @@ assuming it is in a maven-style project."
 
   :bind
   (("RET"     . reindent-then-newline-and-indent)
-   ("C-\t" . dabbrev-expand)              ; ???? Do I still want this?
+   ("C-<tab>" . dabbrev-expand)              ; ???? Do I still want this?
    ("C-c c"   . 'sbt-hydra)
-   ("C-c e"   . 'next-error))
+   ("C-c e"   . 'next-error)
+
+   ("s-<delete>"    . 'sp-kill-sexp)
+   ("s-<backspace>" . 'sp-backward-kill-sexp)
+   ("s-<home>"      . 'sp-beginning-of-sexp)
+   ("s-<end>"       . 'sp-end-of-sexp))
 
   ;; Old stuff....
 
@@ -1292,7 +1365,7 @@ assuming it is in a maven-style project."
 
 (use-package lsp-mode
   :hook
-  (lsp-mode . lsp-enable-which-key-integration)
+  ;; (lsp-mode . lsp-enable-which-key-integration)
   (lsp-mode . lsp-lens-mode)
   (java-mode . lsp)
   (scala-mode . lsp)
@@ -1318,12 +1391,6 @@ assuming it is in a maven-style project."
   :hook
   (lsp-mode . dap-mode)
   (lsp-mode . dap-ui-mode))
-
-;; optional if you want which-key integration
-(use-package which-key
-  :config
-  (which-key-mode))
-
 
 ;; Old, but maybe still useful
 ;;
@@ -1438,15 +1505,6 @@ assuming it is in a maven-style project."
   (smartparens-global-mode)
   (setq sp-interactive-dwim t)
   (show-smartparens-global-mode t)
-
-  (define-key clojure-mode-map (kbd "s-<return>") 'init-ns)
-  (define-key clojure-mode-map (kbd "C-s-<return>") 'cider-eval-expression-at-point-in-repl)
-  (define-key clojure-mode-map (kbd "M-s-<return>") 'cider-eval-defun-at-point-in-repl)
-
-  (define-key scala-mode-map (kbd "s-<delete>") (sp-restrict-c 'sp-kill-sexp))
-  (define-key scala-mode-map (kbd "s-<backspace>") (sp-restrict-c 'sp-backward-kill-sexp))
-  (define-key scala-mode-map (kbd "s-<home>") (sp-restrict-c 'sp-beginning-of-sexp))
-  (define-key scala-mode-map (kbd "s-<end>") (sp-restrict-c 'sp-end-of-sexp))
 
   :bind
   (:map smartparens-mode-map
@@ -1978,44 +2036,6 @@ buffer's."
 ;;; Misc key (un)bindings
 
 
-;; The default for ctrl-backspace is to delete words backward into the
-;; clipboard, thus destroying whatever was in the clipboard.  This
-;; (plus the keybinding below) fixes that.
-(defun delete-word (arg)
-  "Delete characters forward until encountering the end of a word.
-With ARG, do this that many times."
-  (interactive "p")
-  (delete-region (point) (progn (forward-word arg) (point))))
-
-(defun backward-delete-word (arg)
-  "Delete characters backward until encountering the end of a word.
-With ARG, do this that many times."
-  (interactive "p")
-  (delete-word (- arg)))
-
-(defun contextual-backspace ()
-  "Hungry whitespace or delete word depending on context."
-  (interactive)
-  (if (looking-back "[[:space:]\n]\\{2,\\}" (- (point) 2))
-      (while (looking-back "[[:space:]\n]" (- (point) 1))
-        (delete-char -1))
-    (cond
-     ((and (boundp 'smartparens-strict-mode)
-           smartparens-strict-mode)
-      (sp-backward-kill-word 1))
-     (subword-mode
-      (subword-backward-kill 1))
-     (t
-      (backward-delete-word 1)))))
-
-
-(defun exit-message ()
-  "Define a friendly message to display for the re-bound C-x C-c."
-  (interactive)
-  (message "Type C-x C-q to exit Emacs.  It's waaaay too easy to accidentally hit C-x C-c")
-  (ding))
-
-
 (use-package all-the-icons)
 
 ;; We don't want extra tabs in aquamacs
@@ -2044,9 +2064,6 @@ With ARG, do this that many times."
     (dashboard-mode . centaur-tabs-local-mode)
     (calender-mode . centaur-tabs-local-mode)
     (helpful-mode . centaur-tabs-local-mode)
-
-    :init
-    (centaur-tabs-group-by-projectile-project)
 
     :bind
     ("C-c t s" . centaur-tabs-counsel-switch-group)
@@ -2077,7 +2094,8 @@ With ARG, do this that many times."
                 ((string-equal "*" (substring (buffer-name) 0 1)) "Emacs")
                 ((derived-mode-p 'dired-mode) "DirEd")
                 (t (centaur-tabs-get-group-name (current-buffer))))))
-  )
+
+  (centaur-tabs-group-by-projectile-project))
 
 
 (global-set-key [tab] 'company-tab-indent-or-complete)
@@ -2088,31 +2106,6 @@ With ARG, do this that many times."
 (global-set-key "\C-c z" 'repeat)
 (global-set-key (kbd "M-/") 'hippie-expand)
 ;;(global-set-key (kbd "C-z") 'undo)
-(global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
-(global-set-key [home] 'beginning-of-line)
-(global-set-key [end] 'end-of-line)
-
-(when (boundp 'aquamacs-version)
-  (define-key osx-key-mode-map [home] 'beginning-of-line)
-  (define-key osx-key-mode-map [end] 'end-of-line)
-  (define-key osx-key-mode-map (kbd "C-<left>") 'backward-word)
-  (define-key osx-key-mode-map (kbd "C-<right>") 'forward-word))
-
-(global-set-key "\M-[1;5C"    'forward-word)      ; Ctrl+right   => forward word
-(global-set-key "\M-[1;5D"    'backward-word)     ; Ctrl+left    => backward word
-
-(global-set-key (kbd "C-<left>") 'backward-word)
-(global-set-key (kbd "C-<right>") 'forward-word)
-(global-set-key (kbd "C-<backspace>") 'backward-delete-word) ; NOTE alternative below********
-;; (global-set-key (kbd "C-<backspace>") 'contextual-backspace)
-
-(global-set-key (kbd "M-[ h") 'beginning-of-line) ;; Fix for Terminal.app
-(global-set-key (kbd "M-[ f") 'end-of-line)       ;; Fix for Terminal.app
-(global-set-key (kbd "\C-c g") 'goto-line)
-(global-set-key (kbd "\C-F") 'find-file-at-point)
-(global-set-key (kbd "\C-c c") 'compile)
-(global-set-key (kbd "C-x C-c") 'exit-message) ;; It's waaaay too easy to accidentally Ctrl-x Ctrl-c
-(global-set-key (kbd "C-x C-q") 'save-buffers-kill-terminal)
 
 (global-set-key [s-left] 'windmove-left)   ; move to left window
 (global-set-key [s-right] 'windmove-right)        ; move to right window
@@ -2123,6 +2116,11 @@ With ARG, do this that many times."
 (global-set-key [C-M-right] 'windmove-right)        ; move to right window
 (global-set-key [C-M-up] 'windmove-up)              ; move to upper window
 (global-set-key [C-M-down] 'windmove-down)          ; move to lower window
+
+
+(use-package which-key
+  :config
+  (which-key-mode t))
 
 
 (defun unclutter-window ()
@@ -2139,13 +2137,15 @@ With ARG, do this that many times."
 
 (provide 'init)
 ;;; init.el ends here
+
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(company-scrollbar-bg ((t (:background "#2e992e992e99"))))
- '(company-scrollbar-fg ((t (:background "#21cc21cc21cc"))))
- '(company-tooltip ((t (:inherit default :background "#1a1e1a1e1a1e"))))
+ '(company-scrollbar-bg ((t (:background "#2eae2eae2eae"))))
+ '(company-scrollbar-fg ((t (:background "#21e121e121e1"))))
+ '(company-tooltip ((t (:inherit default :background "#1a331a331a33"))))
  '(company-tooltip-common ((t (:inherit font-lock-constant-face))))
  '(company-tooltip-selection ((t (:inherit font-lock-function-name-face)))))
