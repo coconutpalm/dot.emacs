@@ -535,24 +535,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 
 ;; shell-mode
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(comint-completion-addsuffix t)
- '(comint-completion-autolist t)
- '(comint-input-ignoredups t)
- '(comint-move-point-for-output t)
- '(comint-scroll-show-maximum-output t)
- '(comint-scroll-to-bottom-on-input t)
- '(custom-safe-themes
-   '("12670281275ea7c1b42d0a548a584e23b9c4e1d2dabb747fd5e2d692bcd0d39b" "e1498b2416922aa561076edc5c9b0ad7b34d8ff849f335c13364c8f4276904f0" "f5f3a6fb685fe5e1587bafd07db3bf25a0655f3ddc579ed9d331b6b19827ea46" "73ad471d5ae9355a7fa28675014ae45a0589c14492f52c32a4e9b393fcc333fd" "fc7fd2530b82a722ceb5b211f9e732d15ad41d5306c011253a0ba43aaf93dccc" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" default))
- '(helm-follow-mode-persistent t)
- '(help-at-pt-timer-delay 0.9)
- '(package-selected-packages
-   '(prettier-js multiple-cursors dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
-
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
 
@@ -823,14 +805,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (use-package magit
   :commands magit-status magit-blame magit-refresh-all
-  :init (setq
-         magit-revert-buffers nil)
   :bind (("M-l" . magit-log-current) ;; See git-timemachine bindings below
          ("\t" . magit-section-toggle-children)
          ("s-g" . magit-status)
          ("s-b" . magit-blame)))
 
-(setq magit-revert-buffers 0.5)
 (global-set-key (kbd "C-x g") 'magit-status)
 (global-set-key (kbd "C-x C-g") 'magit-status)
 (global-set-key (kbd "C-c C-g") 'magit-status)
@@ -840,8 +819,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 
 ;; Use Git to provide local history
-(require 'local-history)
-(global-set-key [C-H] 'local-history-check-changes)
+;; (require 'local-history)
+;; (global-set-key [C-H] 'local-history-check-changes)
 
 
 (use-package git-timemachine
@@ -924,6 +903,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (global-set-key (kbd "C-c h") 'helm-command-prefix) ;; Better Helm activation sequence
 (global-unset-key (kbd "C-x c"))
 
+(define-key helm-map (kbd "TAB") 'helm-execute-persistent-action) ; rebind tab to autocomplete
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to autocomplete
 (define-key helm-map (kbd "\t") 'helm-execute-persistent-action) ; rebind tab to autocomplete
 (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
 (define-key helm-map (kbd "C-<return>") 'helm-select-action)
@@ -1154,7 +1135,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (interactive)
   (if (minibufferp)
       (minibuffer-complete)
-    (if (or (not yas/minor-mode)
+    (if (or (bound-and-true-p yas-minor-mode)
             (null (do-yas-expand)))
         (if (check-expansion)
             (company-complete-common)
@@ -1372,7 +1353,6 @@ assuming it is in a maven-style project."
   (sbt-mode . lsp)
   (javascript-mode . lsp)
   (typescript-mode . lsp)
-  (clojure-mode . lsp)
 
   :commands lsp lsp-deferred)
 
@@ -1511,13 +1491,11 @@ assuming it is in a maven-style project."
         ("s-{" . 'sp-rewrap-sexp)))
 
 
-(use-package paredit)
+;;(use-package paredit)
 
-;; Paredit normally takes over key bindings like ctrl-left/right
-;; which in sane editors means to move a word left/right.  Fix that.
-(global-set-key (kbd "C-}") 'paredit-forward-slurp-sexp)
-(global-set-key (kbd "C-{") 'paredit-forward-barf-sexp)
-(global-set-key (kbd "M-q") 'paredit-reindent-defun)
+(global-set-key (kbd "C-}") 'lispy-forward-slurp-sexp)
+(global-set-key (kbd "C-{") 'lispy-forward-barf-sexp)
+(global-set-key (kbd "M-q") 'cider-format-defun)
 
 
 ;; clojure-semantic (https://github.com/kototama/clojure-semantic)
@@ -1527,8 +1505,7 @@ assuming it is in a maven-style project."
 
 
 ;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
-(unless (package-installed-p 'lispy)
-  (package-install 'lispy))
+(use-package lispy)
 
 
 (defun lispy-mode-key-unbindings ()
@@ -1666,30 +1643,30 @@ assuming it is in a maven-style project."
 ;;  merged with master: https://github.com/clojure-emacs/cider/blob/master/nrepl-client.el
 ;;
 ;; Enable the nrepl-server buffer to scroll automatically for log following
-(defun nrepl-server-filter (process string)
-  "Process server PROCESS output contained in STRING."
-  (with-current-buffer (process-buffer process)
-    (let ((moving (= (point) (process-mark process))))
-      (save-excursion
-        (goto-char (process-mark process))
-        (insert string)
-        (set-marker (process-mark process) (point)))
-      (when moving
-        (goto-char (process-mark process))
-        (-when-let (win (get-buffer-window))
-          (set-window-point win (point))))))
-  (when (string-match "nREPL server started on port \\([0-9]+\\)" string)
-    (let ((port (string-to-number (match-string 1 string))))
-      (message (format "nREPL server started on %s" port))
-      (with-current-buffer (process-buffer process)
-        (let* ((client-proc (nrepl-start-client-process nil port process))
-               (client-buffer (process-buffer client-proc)))
-          (setq nrepl-client-buffers
-                (cons client-buffer
-                      (delete client-buffer nrepl-client-buffers)))
+;; (defun nrepl-server-filter (process string)
+;;   "Process server PROCESS output contained in STRING."
+;;   (with-current-buffer (process-buffer process)
+;;     (let ((moving (= (point) (process-mark process))))
+;;       (save-excursion
+;;         (goto-char (process-mark process))
+;;         (insert string)
+;;         (set-marker (process-mark process) (point)))
+;;       (when moving
+;;         (goto-char (process-mark process))
+;;         (-when-let (win (get-buffer-window))
+;;           (set-window-point win (point))))))
+;;   (when (string-match "nREPL server started on port \\([0-9]+\\)" string)
+;;     (let ((port (string-to-number (match-string 1 string))))
+;;       (message (format "nREPL server started on %s" port))
+;;       (with-current-buffer (process-buffer process)
+;;         (let* ((client-proc (nrepl-start-client-process nil port process))
+;;                (client-buffer (process-buffer client-proc)))
+;;           (setq nrepl-client-buffers
+;;                 (cons client-buffer
+;;                       (delete client-buffer nrepl-client-buffers)))
 
-          (when (functionp nrepl-post-client-callback)
-            (funcall nrepl-post-client-callback client-buffer)))))))
+;;           (when (functionp nrepl-post-client-callback)
+;;             (funcall nrepl-post-client-callback client-buffer)))))))
 
 
 (defun init-ns ()
@@ -1728,6 +1705,7 @@ buffer's."
 
 (define-key clojure-mode-map (kbd "s-<return>") 'init-ns)
 (define-key clojure-mode-map (kbd "C-s-<return>") 'cider-eval-expression-at-point-in-repl)
+(define-key clojure-mode-map (kbd "C-<return>") 'cider-eval-expression-at-point-in-repl)
 (define-key clojure-mode-map (kbd "M-s-<return>") 'cider-eval-defun-at-point-in-repl)
 
 
@@ -1758,6 +1736,7 @@ buffer's."
            (cider-namespace-refresh))))))
 
 (setq cider-prompt-for-symbol nil)
+
 
 (unless (package-installed-p 'clojure-mode)
   (package-install 'clojure-mode))
@@ -2149,3 +2128,21 @@ buffer's."
  '(company-tooltip ((t (:inherit default :background "#1a331a331a33"))))
  '(company-tooltip-common ((t (:inherit font-lock-constant-face))))
  '(company-tooltip-selection ((t (:inherit font-lock-function-name-face)))))
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(comint-completion-addsuffix t)
+ '(comint-completion-autolist t)
+ '(comint-input-ignoredups t)
+ '(comint-move-point-for-output t)
+ '(comint-scroll-show-maximum-output t)
+ '(comint-scroll-to-bottom-on-input t)
+ '(custom-safe-themes
+   '("12670281275ea7c1b42d0a548a584e23b9c4e1d2dabb747fd5e2d692bcd0d39b" "e1498b2416922aa561076edc5c9b0ad7b34d8ff849f335c13364c8f4276904f0" "f5f3a6fb685fe5e1587bafd07db3bf25a0655f3ddc579ed9d331b6b19827ea46" "73ad471d5ae9355a7fa28675014ae45a0589c14492f52c32a4e9b393fcc333fd" "fc7fd2530b82a722ceb5b211f9e732d15ad41d5306c011253a0ba43aaf93dccc" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" default))
+ '(helm-follow-mode-persistent t)
+ '(help-at-pt-timer-delay 0.9)
+ '(package-selected-packages
+   '(prettier-js multiple-cursors dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
