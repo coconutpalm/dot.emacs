@@ -202,17 +202,6 @@ With ARG, do this that many times."
 (delete-selection-mode 1) ; typing with the mark active will overwrite the marked region
 (transient-mark-mode 1) ; enable visual feedback on selections, default since v23
 
-(when window-system
-  (global-unset-key "\C-z")
-  (set-frame-size (selected-frame) 120 37)
-
-  ;; default Latin font (e.g. Consolas)
-  (set-face-font 'default "Noto Mono:size=14")
-  (set-face-font 'mode-line "Noto Sans:weight=ultra-light:size=18")
-
-  (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
-  )
-
 
 (defun starts-with (begins s)
   "Return non-nil if string S starts with BEGINS."
@@ -2051,7 +2040,7 @@ buffer's."
           (insert "    "))
         (forward-line 1))
       (concat (buffer-substring-no-properties (point-min) (point-max))
-              "\n\n;; Execute the following to upgrade packages:\n(package-utils-upgrade-all)\n\n;; and the following to change fonts/sizes:\n(set-default-font \"Mononoki 12\")\n\n;; Enable word wrap:\n(visual-line-mode)
+              "\n\n;; Execute the following to upgrade packages:\n(package-utils-upgrade-all)\n\n;; and the following to change fonts/sizes:\n(set-face-font 'default \"Noto Mono:size=14\")\n(set-face-font 'mode-line \"Noto Sans:weight=ultra-light:size=18\")\n\n;; Enable word wrap:\n(visual-line-mode)
 
 \n\n;;Quick key binding examples:\n(bind-key \"C-c c\" 'sbt-hydra scala-mode-map)\n(define-key ensime-mode-map (kbd \"C-<return>\") 'ensime-print-errors-at-point)\n\n(global-set-key (kbd \"C-/\") 'comment-or-uncomment-region-or-line)\n(global-set-key [A-left] 'windmove-left)\n\n(define-key clojure-mode-map (kbd \"s-<return>\") 'init-ns)\n(define-key clojure-mode-map (kbd \"C-s-<return>\") 'cider-eval-expression-at-point-in-repl)\n(define-key clojure-mode-map (kbd \"M-s-<return>\") 'cider-eval-defun-at-point-in-repl)\n"))))
 
@@ -2088,6 +2077,8 @@ buffer's."
           uniquify-buffer-name-style 'forward)
     ;; (centaur-tabs-change-fonts "Noto Sans" 140)
     (centaur-tabs-headline-match)
+    (centaur-tabs-change-fonts "Noto Sans" 180)
+    (centaur-tabs-group-by-projectile-project)
 
     :hook
     (dashboard-mode . centaur-tabs-local-mode)
@@ -2122,9 +2113,7 @@ buffer's."
                 ((starts-with "*Helm" (buffer-name)) "Helm")
                 ((string-equal "*" (substring (buffer-name) 0 1)) "Emacs")
                 ((derived-mode-p 'dired-mode) "DirEd")
-                (t (centaur-tabs-get-group-name (current-buffer))))))
-
-  (centaur-tabs-group-by-projectile-project))
+                (t (centaur-tabs-get-group-name (current-buffer)))))))
 
 
 (global-set-key [tab] 'company-tab-indent-or-complete)
@@ -2150,6 +2139,18 @@ buffer's."
 (use-package which-key
   :config
   (which-key-mode t))
+
+
+(when window-system
+  (global-unset-key "\C-z")
+  (set-frame-size (selected-frame) 120 60)
+
+  ;; default Latin font (e.g. Consolas)
+  (set-face-font 'default "Noto Mono:size=14")
+  (set-face-font 'mode-line "Noto Sans:weight=ultra-light:size=20")
+
+  (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
+  )
 
 
 (defun unclutter-window ()
