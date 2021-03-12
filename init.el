@@ -1371,8 +1371,13 @@ assuming it is in a maven-style project."
   (java-mode . lsp)
   (scala-mode . lsp)
   (sbt-mode . lsp)
+  (clojure-mode . lsp)
+  (clojurescript-mode . lsp)
   (javascript-mode . lsp)
   (typescript-mode . lsp)
+
+  :config
+  (setq lsp-lens-enable t)
 
   :commands lsp lsp-deferred)
 
