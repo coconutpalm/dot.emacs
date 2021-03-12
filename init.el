@@ -17,10 +17,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'package)
-;;(setq package-check-signature nil)
-(setq package-archives '(("melpa" . "http://melpa.org/packages/")
-			 ("gnu" . "http://elpa.gnu.org/packages/")
-			 ("org" . "http://orgmode.org/elpa/")))
+
+(setq package-check-signature nil)
+(setq package-archives
+      '(("melpa" . "http://melpa.org/packages/")
+		  ("gnu" . "http://elpa.gnu.org/packages/")
+		  ("org" . "http://orgmode.org/elpa/")))
 
 
 (package-initialize)
