@@ -1713,9 +1713,10 @@ buffer's."
     ;; Strip excess whitespace
     (while (string-match "\\`\s+\\|\n+\\'" form)
       (setq form (replace-match "" t t form)))
-    (cider-switch-to-repl-buffer t)
-    (goto-char (point-max))
-    (insert form)))
+    (save-mark-and-excursion
+      (cider-switch-to-repl-buffer t)
+      (goto-char (point-max))
+      (insert form))))
 
 (defun cider-eval-defun-at-point-in-repl ()
   (interactive)
@@ -1724,13 +1725,14 @@ buffer's."
     (while (string-match "\\`\s+\\|\n+\\'" form)
       (setq form (replace-match "" t t form)))
     (setq form (concat "\n" form))
-    (cider-switch-to-repl-buffer t)
-    (goto-char (point-max))
-    (insert form)))
+    (save-mark-and-excursion
+      (cider-switch-to-repl-buffer t)
+      (goto-char (point-max))
+      (insert form))))
 
 (define-key clojure-mode-map (kbd "s-<return>") 'init-ns)
 (define-key clojure-mode-map (kbd "C-s-<return>") 'cider-eval-expression-at-point-in-repl)
-(define-key clojure-mode-map (kbd "C-<return>") 'cider-eval-expression-at-point-in-repl)
+(define-key clojure-mode-map (kbd "c-<return>") 'cider-eval-expression-at-point-in-repl)
 (define-key clojure-mode-map (kbd "M-s-<return>") 'cider-eval-defun-at-point-in-repl)
 
 
