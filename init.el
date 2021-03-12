@@ -553,7 +553,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
    (quote
-    (prettier-js multiple-cursors dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode))))
+    (kaocha-runner prettier-js multiple-cursors dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode))))
 
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
@@ -1762,8 +1762,6 @@ buffer's."
        (if (and (boundp 'cider-mode) cider-mode)
            (cider-namespace-refresh))))))
 
-(setq cider-prompt-for-symbol nil)
-
 
 (unless (package-installed-p 'clojure-mode)
   (package-install 'clojure-mode))
@@ -1796,6 +1794,26 @@ buffer's."
 (unless (package-installed-p 'clojure-mode-extra-font-locking)
   (package-install 'clojure-mode-extra-font-locking))
 (require 'clojure-mode-extra-font-locking)
+
+
+;; Integrate with the kaocha test runner
+(use-package kaocha-runner)
+
+(define-key clojure-mode-map (kbd "C-c k t") 'kaocha-runner-run-test-at-point)
+(define-key clojure-mode-map (kbd "C-c k r") 'kaocha-runner-run-tests)
+(define-key clojure-mode-map (kbd "C-c k a") 'kaocha-runner-run-all-tests)
+(define-key clojure-mode-map (kbd "C-c k w") 'kaocha-runner-show-warnings)
+(define-key clojure-mode-map (kbd "C-c k h") 'kaocha-runner-hide-windows)
+
+;; Search everything please
+(use-package helm-cider
+  :config
+  (helm-cider-mode 1))
+
+;; Keybinding menus!
+(use-package cider-hydra
+  :config
+  (add-hook 'clojure-mode-hook #'cider-hydra-mode))
 
 
 ;; FIXME: Need to enable Company mode support here?
@@ -2155,21 +2173,3 @@ buffer's."
  '(company-tooltip ((t (:inherit default :background "#1a1e1a1e1a1e"))))
  '(company-tooltip-common ((t (:inherit font-lock-constant-face))))
  '(company-tooltip-selection ((t (:inherit font-lock-function-name-face)))))
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(comint-completion-addsuffix t)
- '(comint-completion-autolist t)
- '(comint-input-ignoredups t)
- '(comint-move-point-for-output t)
- '(comint-scroll-show-maximum-output t)
- '(comint-scroll-to-bottom-on-input t)
- '(custom-safe-themes
-   '("12670281275ea7c1b42d0a548a584e23b9c4e1d2dabb747fd5e2d692bcd0d39b" "e1498b2416922aa561076edc5c9b0ad7b34d8ff849f335c13364c8f4276904f0" "f5f3a6fb685fe5e1587bafd07db3bf25a0655f3ddc579ed9d331b6b19827ea46" "73ad471d5ae9355a7fa28675014ae45a0589c14492f52c32a4e9b393fcc333fd" "fc7fd2530b82a722ceb5b211f9e732d15ad41d5306c011253a0ba43aaf93dccc" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" default))
- '(helm-follow-mode-persistent t)
- '(help-at-pt-timer-delay 0.9)
- '(package-selected-packages
-   '(prettier-js multiple-cursors dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
