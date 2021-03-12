@@ -1150,7 +1150,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (defun do-yas-expand ()
   "Expand snippet or return null."
   (let ((yas/fallback-behavior 'return-nil))
-    (yas-expand)))
+    (when (fboundp 'yas-expand)           ; Make sure yas-minor-mode is enabled
+      (yas-expand))))
 
 (defun company-tab-indent-or-complete ()
   "If focus is in the minibuffer then autocomplete else try to expand/tab using (or yasnippet company indent)."
