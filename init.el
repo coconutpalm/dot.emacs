@@ -2136,7 +2136,7 @@ buffer's."
 (unclutter-window)
 
 
-(find-file (concat (file-name-as-directory "~/_NOTES") "TIME.md" ))
+(find-file (concat (file-name-as-directory "~/_NOTES") "NOTES.md" ))
 
 
 (provide 'init)
