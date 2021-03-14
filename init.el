@@ -106,6 +106,48 @@ With ARG, do this that many times."
   (ding))
 
 
+;; Font sizing / zooming
+(defun my-dpi (&optional frame)
+  "Get the DPI of FRAME (or current if nil)."
+  (cl-flet ((pyth (lambda (w h)
+                    (sqrt (+ (* w w)
+                             (* h h)))))
+            (mm2in (lambda (mm)
+                     (/ mm 25.4))))
+    (let* ((atts (frame-monitor-attributes frame))
+           (pix-w (cl-fourth (assoc 'geometry atts)))
+           (pix-h (cl-fifth (assoc 'geometry atts)))
+           (pix-d (pyth pix-w pix-h))
+           (mm-w (cl-second (assoc 'mm-size atts)))
+           (mm-h (cl-third (assoc 'mm-size atts)))
+           (mm-d (pyth mm-w mm-h)))
+      (/ pix-d (mm2in mm-d)))))
+
+;; (defun my-dpi ()
+;;   "Get the DPI."
+;;   (let* ((attrs (car (display-monitor-attributes-list)))
+;;          (size (assoc 'mm-size attrs))
+;;          (sizex (cadr size))
+;;          (res (cdr (assoc 'geometry attrs)))
+;;          (resx (- (caddr res) (car res)))
+;;          dpi)
+;;     (catch 'exit
+;;       ;; in terminal
+;;       (unless sizex
+;;         (throw 'exit 10))
+;;       ;; on big screen
+;;       (when (> sizex 1000)
+;;         (throw 'exit 10))
+;;       ;; DPI
+;;       (* (/ (float resx) sizex) 25.4))))
+
+(defun normalize-pts (base-pts)
+  "Normalize BASE-PTS based on pixels/inch of current display."
+  (let ((pt-zoom-factor (/ (my-dpi) 72)))
+    (message (format "Font scale factor: %f" pt-zoom-factor))
+    (round (* base-pts pt-zoom-factor))))
+
+
 (defun zoom-by (delta-points)
   "Increase font size by DELTA-POINTS."
   (set-face-attribute 'default nil
@@ -128,52 +170,25 @@ With ARG, do this that many times."
   (zoom-by -10))
 
 ;; change font size, interactively
-(global-set-key (kbd "C-=") 'zoom-in)
-(global-set-key (kbd "C--") 'zoom-out)
+(global-set-key (kbd "C-=") #'zoom-in)
+(global-set-key (kbd "C--") #'zoom-out)
 
 
-(defun my-dpi (&optional frame)
-  "Get the DPI of FRAME (or current if nil)."
-  (cl-flet ((pythagorean (lambda (w h)
-                           (sqrt (+ (* w w)
-                                    (* h h)))))
-            (mm2in (lambda (mm)
-                     (/ mm 25.4))))
-    (let* ((atts (frame-monitor-attributes frame))
-           (pix-w (cl-fourth (assoc 'geometry atts)))
-           (pix-h (cl-fifth (assoc 'geometry atts)))
-           (pix-d (pythagorean pix-w pix-h))
-           (mm-w (cl-second (assoc 'mm-size atts)))
-           (mm-h (cl-third (assoc 'mm-size atts)))
-           (mm-d (pythagorean mm-w mm-h)))
-      (/ pix-d (mm2in mm-d)))))
-
-(defvar my-zoom-frm-wanted-dpi 70
-  "The DPI I want to achieve when using `zoom-frm-by-dpi'.")
-
-(defun zoom-frame-by-dpi (&optional frame)
-  "Zoom FRAME so the DPI is closer to `my-zoom-frm-wanted-dpi'."
-  (interactive)
-  (let ((frame (or frame (selected-frame))))
-    (let ((frame-zoom-font-difference (1- (round (/ (my-dpi frame)
-                                                    my-zoom-frm-wanted-dpi)))))
-      (when (called-interactively-p 'interactive)
-        (message "Zooming by %S" frame-zoom-font-difference))
-      (zoom-by frame-zoom-font-difference))))
-
-;; Apply the scaling I want to each newly created frame:
-(add-hook 'after-make-frame-functions #'zoom-frame-by-dpi)
-
-(defun display-changed-hook (disp)
-  "Called when a display change is detected."
-  (message "rejiggering for %s" disp)
-  (zoom-frame-by-dpi))
-
-(use-package dispwatch
-  :config
-  (add-hook 'dispwatch-display-change-hooks #'display-changed-hook)
-  (dispwatch-mode 1)
-  (zoom-frame-by-dpi))
+;; (defun my-dpi (&optional frame)
+;;   "Get the DPI of FRAME (or current if nil)."
+;;   (cl-flet ((pythagorean (lambda (w h)
+;;                            (sqrt (+ (* w w)
+;;                                     (* h h)))))
+;;             (mm2in (lambda (mm)
+;;                      (/ mm 25.4))))
+;;     (let* ((atts (frame-monitor-attributes frame))
+;;            (pix-w (cl-fourth (assoc 'geometry atts)))
+;;            (pix-h (cl-fifth (assoc 'geometry atts)))
+;;            (pix-d (pythagorean pix-w pix-h))
+;;            (mm-w (cl-second (assoc 'mm-size atts)))
+;;            (mm-h (cl-third (assoc 'mm-size atts)))
+;;            (mm-d (pythagorean mm-w mm-h)))
+;;       (/ pix-d (mm2in mm-d)))))
 
 
 ;; More global keybinding adjustments
@@ -295,7 +310,6 @@ With ARG, do this that many times."
   (cond ((>= (length s) (length begins))
          (string-equal (substring s 0 (length begins)) begins))
         (t nil)))
-
 
 
 (use-package epl)
@@ -2146,9 +2160,8 @@ buffer's."
           centaur-tabs-gray-out-icons 'buffer
           uniquify-separator "/"
           uniquify-buffer-name-style 'forward)
-    ;; (centaur-tabs-change-fonts "Noto Sans" 140)
     (centaur-tabs-headline-match)
-    (centaur-tabs-change-fonts "Noto Sans" 180)
+    (centaur-tabs-change-fonts "Noto Sans" (* 10 (normalize-pts 8)))
     (centaur-tabs-group-by-projectile-project)
 
     :hook
@@ -2218,8 +2231,8 @@ buffer's."
   (set-frame-size (selected-frame) 120 60)
 
   ;; default Latin font (e.g. Consolas)
-  (set-face-font 'default "Noto Mono:size=14")
-  (set-face-font 'mode-line "Noto Sans:weight=ultra-light:size=20")
+  (set-face-font 'default (format "Noto Mono:size=%d" (normalize-pts 10)))
+  (set-face-font 'mode-line (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 16)))
 
   (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
   )
@@ -2239,13 +2252,3 @@ buffer's."
 
 (provide 'init)
 ;;; init.el ends here
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(company-scrollbar-bg ((t (:background "#2eae2eae2eae"))))
- '(company-scrollbar-fg ((t (:background "#21e121e121e1"))))
- '(company-tooltip ((t (:inherit default :background "#1a331a331a33"))))
- '(company-tooltip-common ((t (:inherit font-lock-constant-face))))
- '(company-tooltip-selection ((t (:inherit font-lock-function-name-face)))))
