@@ -24,7 +24,6 @@
 		  ("gnu" . "http://elpa.gnu.org/packages/")
 		  ("org" . "http://orgmode.org/elpa/")))
 
-
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
@@ -41,14 +40,12 @@
       backup-directory-alist `((".*" . ,temporary-file-directory))
       auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
 
-
 (use-package package-utils)
 
 ;; Upgrade packages automatically on startup
 ;;  If you don't want this, comment out package-utils-upgrade-all
-;;
-;; (package-utils-upgrade-all)
-;; (package-install 'gnu-elpa-keyring-update)
+;;   (package-utils-upgrade-all)
+;;   (package-install 'gnu-elpa-keyring-update)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -57,7 +54,6 @@
   :ensure t)
 
 (load-theme 'base16-chalk t)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -123,24 +119,6 @@ With ARG, do this that many times."
            (mm-d (pyth mm-w mm-h)))
       (/ pix-d (mm2in mm-d)))))
 
-;; (defun my-dpi ()
-;;   "Get the DPI."
-;;   (let* ((attrs (car (display-monitor-attributes-list)))
-;;          (size (assoc 'mm-size attrs))
-;;          (sizex (cadr size))
-;;          (res (cdr (assoc 'geometry attrs)))
-;;          (resx (- (caddr res) (car res)))
-;;          dpi)
-;;     (catch 'exit
-;;       ;; in terminal
-;;       (unless sizex
-;;         (throw 'exit 10))
-;;       ;; on big screen
-;;       (when (> sizex 1000)
-;;         (throw 'exit 10))
-;;       ;; DPI
-;;       (* (/ (float resx) sizex) 25.4))))
-
 (defun normalize-pts (base-pts)
   "Normalize BASE-PTS based on pixels/inch of current display."
   (let ((pt-zoom-factor (/ (my-dpi) 72)))
@@ -156,7 +134,7 @@ With ARG, do this that many times."
                          delta-points))
   (set-face-attribute 'mode-line nil
                       :height
-                      (+ (face-attribute 'default :height)
+                      (+ (face-attribute 'mode-line :height)
                          delta-points)))
 
 (defun zoom-in ()
@@ -2161,7 +2139,7 @@ buffer's."
           uniquify-separator "/"
           uniquify-buffer-name-style 'forward)
     (centaur-tabs-headline-match)
-    (centaur-tabs-change-fonts "Noto Sans" (* 10 (normalize-pts 8)))
+    (centaur-tabs-change-fonts "Noto Sans" 180)
     (centaur-tabs-group-by-projectile-project)
 
     :hook
@@ -2232,7 +2210,7 @@ buffer's."
 
   ;; default Latin font (e.g. Consolas)
   (set-face-font 'default (format "Noto Mono:size=%d" (normalize-pts 10)))
-  (set-face-font 'mode-line (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 16)))
+  (set-face-font 'mode-line (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 12)))
 
   (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
   )
