@@ -41,7 +41,23 @@
       backup-directory-alist `((".*" . ,temporary-file-directory))
       auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
 
-;(package-install 'gnu-elpa-keyring-update)
+
+(use-package package-utils)
+
+;; Upgrade packages automatically on startup
+;;  If you don't want this, comment out package-utils-upgrade-all
+;;
+;; (package-utils-upgrade-all)
+;; (package-install 'gnu-elpa-keyring-update)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Color theme
+(use-package base16-theme
+  :ensure t)
+
+(load-theme 'base16-chalk t)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -90,6 +106,77 @@ With ARG, do this that many times."
   (ding))
 
 
+(defun zoom-by (delta-points)
+  "Increase font size by DELTA-POINTS."
+  (set-face-attribute 'default nil
+                      :height
+                      (+ (face-attribute 'default :height)
+                         delta-points))
+  (set-face-attribute 'mode-line nil
+                      :height
+                      (+ (face-attribute 'default :height)
+                         delta-points)))
+
+(defun zoom-in ()
+  "Increase font size by 10 points."
+  (interactive)
+  (zoom-by 10))
+
+(defun zoom-out ()
+  "Decrease font size by 10 points."
+  (interactive)
+  (zoom-by -10))
+
+;; change font size, interactively
+(global-set-key (kbd "C-=") 'zoom-in)
+(global-set-key (kbd "C--") 'zoom-out)
+
+
+(defun my-dpi (&optional frame)
+  "Get the DPI of FRAME (or current if nil)."
+  (cl-flet ((pythagorean (lambda (w h)
+                           (sqrt (+ (* w w)
+                                    (* h h)))))
+            (mm2in (lambda (mm)
+                     (/ mm 25.4))))
+    (let* ((atts (frame-monitor-attributes frame))
+           (pix-w (cl-fourth (assoc 'geometry atts)))
+           (pix-h (cl-fifth (assoc 'geometry atts)))
+           (pix-d (pythagorean pix-w pix-h))
+           (mm-w (cl-second (assoc 'mm-size atts)))
+           (mm-h (cl-third (assoc 'mm-size atts)))
+           (mm-d (pythagorean mm-w mm-h)))
+      (/ pix-d (mm2in mm-d)))))
+
+(defvar my-zoom-frm-wanted-dpi 70
+  "The DPI I want to achieve when using `zoom-frm-by-dpi'.")
+
+(defun zoom-frame-by-dpi (&optional frame)
+  "Zoom FRAME so the DPI is closer to `my-zoom-frm-wanted-dpi'."
+  (interactive)
+  (let ((frame (or frame (selected-frame))))
+    (let ((frame-zoom-font-difference (1- (round (/ (my-dpi frame)
+                                                    my-zoom-frm-wanted-dpi)))))
+      (when (called-interactively-p 'interactive)
+        (message "Zooming by %S" frame-zoom-font-difference))
+      (zoom-by frame-zoom-font-difference))))
+
+;; Apply the scaling I want to each newly created frame:
+(add-hook 'after-make-frame-functions #'zoom-frame-by-dpi)
+
+(defun display-changed-hook (disp)
+  "Called when a display change is detected."
+  (message "rejiggering for %s" disp)
+  (zoom-frame-by-dpi))
+
+(use-package dispwatch
+  :config
+  (add-hook 'dispwatch-display-change-hooks #'display-changed-hook)
+  (dispwatch-mode 1)
+  (zoom-frame-by-dpi))
+
+
+;; More global keybinding adjustments
 (global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
 (global-set-key [home] 'beginning-of-line)
 (global-set-key [end] 'end-of-line)
@@ -210,24 +297,8 @@ With ARG, do this that many times."
         (t nil)))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Package manager init
-
-;; Color theme
-
-(use-package base16-theme
-  :ensure t)
-
-(load-theme 'base16-chalk t)
-
 
 (use-package epl)
-(use-package package-utils)
-
-;; Upgrade packages automatically on startup
-;;  If you don't want this, comment out package-utils-upgrade-all
-;;
-;; (package-utils-upgrade-all)
 
 
 ;; Multiple cursors
@@ -544,7 +615,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
  '(helm-follow-mode-persistent t)
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
-   '(kaocha-runner prettier-js multiple-cursors dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
+   '(default-text-scale zoom-frm dispwatch kaocha-runner prettier-js multiple-cursors dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
 
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
@@ -2141,6 +2212,7 @@ buffer's."
   (which-key-mode t))
 
 
+; Set default font sizes
 (when window-system
   (global-unset-key "\C-z")
   (set-frame-size (selected-frame) 120 60)
@@ -2167,3 +2239,13 @@ buffer's."
 
 (provide 'init)
 ;;; init.el ends here
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(company-scrollbar-bg ((t (:background "#2eae2eae2eae"))))
+ '(company-scrollbar-fg ((t (:background "#21e121e121e1"))))
+ '(company-tooltip ((t (:inherit default :background "#1a331a331a33"))))
+ '(company-tooltip-common ((t (:inherit font-lock-constant-face))))
+ '(company-tooltip-selection ((t (:inherit font-lock-function-name-face)))))
