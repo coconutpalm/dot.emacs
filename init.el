@@ -103,6 +103,8 @@ With ARG, do this that many times."
 
 
 ;; Font sizing / zooming
+;; See: https://emacs.stackexchange.com/questions/28390/quickly-adjusting-text-to-dpi-changes
+;;
 (defun my-dpi (&optional frame)
   "Get the DPI of FRAME (or current if nil)."
   (cl-flet ((pyth (lambda (w h)
