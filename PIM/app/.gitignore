@@ -1,0 +1,8 @@
+.DS_Store
+.nrepl-port
+.calva
+.clj-kondo
+.history
+.lsp
+.vscode
+out
