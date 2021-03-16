@@ -2,6 +2,7 @@
   "A reactively-designed model that coordinates server communication and various
   parts of the UI."
   (:require
+   [clojure.core.async :refer [go <!]]
    [javelin.core :refer [defc defc= cell= cell]]
    [oops.core :refer [oget oset! ocall oapply ocall! oapply!
                       oget+ oset!+ ocall+ oapply+ ocall!+ oapply!+]]
@@ -103,6 +104,11 @@
 ;; at the beginning of the program, that automatically kicks off the rest of the
 ;; model initialization.
 (defc editor nil)
+
+(defc= append-server-messages
+  (when (and editor ws/message-as-edn)
+    (let [cm (.-codemirror editor)]
+      (.setValue cm (str (.getValue cm) "\n```edn\n" ws/message-as-edn "\n```\n")))))
 
 ;; The file-node-format of the file currently open for editing or an empty map
 ;; for an untitled file.

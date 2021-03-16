@@ -18,12 +18,11 @@
 
 
 ;; The raw message event
-(defc message-event {})
+(defc message-as-string "")
 
 ;; Semi-processed input
 (def malformed-edn :websocket/malformed-edn)
 
-(defc= message-as-string (or (:message message-event) ""))
 (defc= message-as-edn (try
                         (edn/read-string message-as-string)
                         (catch js/Object e {:websocket/malformed-edn e})))
@@ -34,7 +33,7 @@
     (println "opening connection")
     (reset! connection-state [:connect (server-url)])
 
-    (oset! websocket "onmessage" (clj->js #(reset! message-event %)))
+    (oset! websocket "onmessage" (clj->js (fn [e] (reset! message-as-string (.-data e)) (println e))))
     (oset! websocket "onopen" (clj->js #(reset! connection-state [:connected %])))
     (oset! websocket "onclose" (clj->js #(reset! connection-state [:offline %])))
     (oset! websocket "onerror" (clj->js #(println (.-message %))))

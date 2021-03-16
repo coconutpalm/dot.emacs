@@ -1,7 +1,5 @@
 (ns server.handler
-  "A server stub for testing the network layer between the web-tier and editor server tiers.
-  Requests can be stubbed here or proxied between a live web-tier client or editor server.
-  Doesn't support multiple web-tier clients."
+  "A service-oriented network hub and switch."
   (:require
    [clojure.java.io                :as    io]
    [compojure.core                 :refer [defroutes GET]]
@@ -15,10 +13,7 @@
    [gniazdo.core                   :as backend]
 
    [util.maps                      :refer [letfn-map]]
-   [util.jobs                      :refer :all])
-
-  (:import
-   [org.eclipse.jetty.websocket.api Session]))
+   [util.jobs                      :refer :all]))
 
 
 ;; Websocket implementation
@@ -31,9 +26,18 @@
       (loop []
         (let [next-msg (<! conn)]
           (when @ws-to-web-tier
-            (.send @ws-to-web-tier next-msg)))
+            (j9/send! @ws-to-web-tier next-msg)))
         (recur)))
     conn))
+
+
+(comment
+  @ws-to-web-tier
+  (j9/send! @ws-to-web-tier "{:message [\"Hello\"] }")
+  (put! to-web "{:message [\"Hello\"] }")
+  (map (fn [n] {(keyword (str "k" n)) (Math/round (* 100 (Math/random)))}) (range 1 10))
+  ,)
+
 
 (defonce to-backend (chan))
 
@@ -41,26 +45,25 @@
 (def web-tier-ws-events
   (letfn-map
    [(on-error
-     [^Session ws e]
+     [ws e]
      (println "WEB error:" e))
 
     (on-connect
-     [^Session ws]
+     [ws]
      (println "WEB connect")
      (reset! ws-to-web-tier ws))
 
     (on-close
-     [^Session ws status-code reason]
+     [ws status-code reason]
      (println "WEB close" status-code reason)
      (reset! ws-to-web-tier nil))
 
     (on-text
-     [^Session ws text-message]
-     (println "WEB text " text-message)
+     [ws text-message]
      (put! to-backend text-message))
 
     (on-bytes
-     [^Session ws bytes offset len]
+     [ws bytes offset len]
      (println (str "WEB binary: not implemented.  (" offset len ")")))]))
 
 
@@ -91,7 +94,7 @@
 
 (defn start! []
   (when-not @web-tier
-    (reset! web-tier (j9/run-jetty app {:join? false :port 8000 :websockets {"/ws/" #'web-tier-ws-events}}))))
+    (reset! web-tier (j9/run-jetty app {:join? false :port 8000 :websockets {"/ws/" web-tier-ws-events}}))))
 
 (defn stop! []
   (when @web-tier
