@@ -55,6 +55,17 @@
 
 (load-theme 'base16-chalk t)
 
+
+;; Line numbering
+                                        ;
+(use-package linum
+  :ensure t
+  :config
+  (global-linum-mode t)
+  (setq linum-format " %4d "))
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Some basic keybindings so if we blow up later the editor has some baseline behavior
@@ -295,6 +306,115 @@ With ARG, do this that many times."
 (use-package epl)
 
 
+
+;; Comp(lete)any mode
+
+(use-package company
+  :diminish company-mode
+  :commands company-mode
+  :init
+  (global-company-mode)
+  (define-key company-active-map (kbd "C-c h") #'company-quickhelp-manual-begin)
+  (setq
+   company-dabbrev-ignore-case nil
+   company-dabbrev-code-ignore-case nil
+   company-dabbrev-downcase nil
+   company-idle-delay 0
+   company-minimum-prefix-length 4)
+  :config
+  ;; dabbrev is too slow
+  (delete 'company-dabbrev company-backends))
+
+(use-package company-quickhelp
+  :init
+  (company-quickhelp-mode))
+
+;; Icons in content help menus
+(use-package company-box
+  :hook (company-mode . company-box-mode))
+
+;; Resolve conflicts with indenting, completion, and yasnippets
+
+(defun check-expansion ()
+  "Return 't if the prior characters should be expanded and nil otherwise."
+  (save-excursion
+    (if (looking-at "\\_>") t
+      (backward-char 1)
+      (if (looking-at "\\.") t
+        (backward-char 1)
+        (if (looking-at "->") t nil)))))
+
+(defun do-yas-expand ()
+  "Expand snippet or return null."
+  (let ((yas/fallback-behavior 'return-nil))
+    (when (fboundp 'yas-expand)           ; Make sure yas-minor-mode is enabled
+      (yas-expand))))
+
+(defun company-tab-indent-or-complete ()
+  "If focus is in the minibuffer then autocomplete else try to expand/tab using (or yasnippet company indent)."
+  (interactive)
+  (if (minibufferp)
+      (minibuffer-complete)
+    (if (or (bound-and-true-p yas-minor-mode)
+            (null (do-yas-expand)))
+        (if (check-expansion)
+            (company-complete-common)
+          (indent-for-tab-command)))))
+
+
+;; Company colors
+(require 'color)
+
+(let ((bg (face-attribute 'default :background)))
+  (custom-set-faces
+   `(company-tooltip ((t (:inherit default :background ,(color-lighten-name bg 2)))))
+   `(company-scrollbar-bg ((t (:background ,(color-lighten-name bg 10)))))
+   `(company-scrollbar-fg ((t (:background ,(color-lighten-name bg 5)))))
+   `(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
+   `(company-tooltip-common ((t (:inherit font-lock-constant-face))))))
+
+
+
+(use-package hydra
+  :commands defhydra
+  :bind ("C-M-s" . hydra-splitter/body))
+
+(defun hydra-splitter/body ()
+  "Defines a Hydra to resize the windows."
+  ;; overwrites the original function and calls it
+  ;; https://github.com/abo-abo/hydra/issues/149
+  (interactive)
+  (require 'hydra-examples)
+  (funcall
+   (defhydra hydra-splitter nil "splitter"
+     ("<left>" hydra-move-splitter-left)
+     ("<down>" hydra-move-splitter-down)
+     ("<up>" hydra-move-splitter-up)
+     ("<right>" hydra-move-splitter-right))))
+
+(defun hydra-smerge/body ()
+  "Defines a Hydra to give ediff commands in `smerge-mode'."
+  (interactive)
+  (funcall
+   (defhydra hydra-smerge nil "smerge"
+     ("p" smerge-prev)
+     ("n" smerge-next)
+     ("e" smerge-ediff)
+     ("a" smerge-keep-mine)
+     ("b" smerge-keep-other))))
+(add-hook 'smerge-mode-hook (lambda () (hydra-smerge/body)))
+
+
+(use-package which-key
+  :config
+  (which-key-mode t))
+
+
+(use-package discover
+  :config
+  (global-discover-mode 1))
+
+
 ;; Multiple cursors
 (use-package multiple-cursors)
 
@@ -305,16 +425,6 @@ With ARG, do this that many times."
 (global-set-key (kbd "C-s->") 'mc/skip-to-next-like-this)
 (global-set-key (kbd "C-s-<") 'mc/skip-to-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-
-
-;; Line numbering
-                                        ;
-(use-package linum
-  :ensure t
-  :config
-  (global-linum-mode t)
-  (setq linum-format " %4d "))
-
 
 
 ;;;
@@ -359,7 +469,7 @@ With ARG, do this that many times."
 
 (use-package ibuffer
   :ensure nil
-  :bind ("C-x C-b". ibuffer))
+  :bind ("C-x C-b" . ibuffer))
 
 (use-package dired
   :ensure nil
@@ -592,25 +702,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
             (define-key term-raw-map (kbd "C-y") 'term-paste)))
 
 
-;; shell-mode
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(comint-completion-addsuffix t)
- '(comint-completion-autolist t)
- '(comint-input-ignoredups t)
- '(comint-move-point-for-output t)
- '(comint-scroll-show-maximum-output t)
- '(comint-scroll-to-bottom-on-input t)
- '(custom-safe-themes
-   '("12670281275ea7c1b42d0a548a584e23b9c4e1d2dabb747fd5e2d692bcd0d39b" "e1498b2416922aa561076edc5c9b0ad7b34d8ff849f335c13364c8f4276904f0" "f5f3a6fb685fe5e1587bafd07db3bf25a0655f3ddc579ed9d331b6b19827ea46" "73ad471d5ae9355a7fa28675014ae45a0589c14492f52c32a4e9b393fcc333fd" "fc7fd2530b82a722ceb5b211f9e732d15ad41d5306c011253a0ba43aaf93dccc" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" default))
- '(helm-follow-mode-persistent t)
- '(help-at-pt-timer-delay 0.9)
- '(package-selected-packages
-   '(default-text-scale zoom-frm dispwatch kaocha-runner prettier-js multiple-cursors dap-typescript dap-clojure dap-java dap-scala swiper-helm all-the-icons dockerfile-mode dockrfile-mode centaur-tabs base16-theme impatient-mode simple-httpd dap-mode company-box help-lsp flycheck-cask flycheck-tip flymd tree-mode smart-mode-line f yaml-mode which-key web-mode use-package textmate smartparens smart-tabs-mode robe project-explorer popup-imenu play-routes-mode perspective paredit package-utils markdown-toc markdown-preview-mode magit lispy js-comint highlight-symbol helm-projectile helm-descbinds goto-chg git-timemachine git-gutter exec-path-from-shell ensime edbi clojure-mode-extra-font-locking cider adoc-mode)))
-
 ; interpret and use ansi color codes in shell output windows
 (require 'ansi-color)
 
@@ -704,30 +795,56 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 
 (use-package typescript-mode
-  :hook (typescript-mode .
-                         (lambda ()
-                           (add-to-list
-                            (make-local-variable
-                             'grep-find-ignored-directories) "build")
-                           (electric-indent-mode -1)))
-  :mode (rx ".ts" (? "x") string-end)
-  :init
-  )
+  :hook
+  (typescript-mode
+   . (lambda ()
+       (add-to-list
+        (make-local-variable
+         'grep-find-ignored-directories) "build")
+       (electric-indent-mode -1)))
 
-(use-package tide)
-(setq flycheck-javascript-standard-executable "standard")
+  :mode (rx ".ts" (? "x") string-end))
 
-(defun setup-tide-mode ()
-  (interactive)
-  (tide-setup)
-  (flycheck-mode t)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode t)
-  (tide-hl-identifier-mode t)
-  ;; company is an optional dependency. You have to
-  ;; install it separately via package-install
-  ;; `M-x package-install [ret] company`
-  (company-mode +1))
+
+(use-package js2-mode
+  :config
+  (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
+
+  :custom
+  (js2-include-node-externs t)
+  (js2-global-externs '("customElements"))
+  (js2-highlight-level 3)
+  (js2r-prefer-let-over-var t)
+  (js2r-prefered-quote-type 2)
+  (js-indent-align-list-continuation t))
+
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+
+
+(use-package xref-js2
+  :bind
+  ("C-G" . #'xref-find-references)
+
+  :hook
+  (js2-mode
+   . (lambda () (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
+
+
+
+;; (use-package tide)
+;; (setq flycheck-javascript-standard-executable "standard")
+
+;; (defun setup-tide-mode ()
+;;   (interactive)
+;;   (tide-setup)
+;;   (flycheck-mode t)
+;;   (setq flycheck-check-syntax-automatically '(save mode-enabled))
+;;   (eldoc-mode t)
+;;   (tide-hl-identifier-mode t)
+;;   ;; company is an optional dependency. You have to
+;;   ;; install it separately via package-install
+;;   ;; `M-x package-install [ret] company`
+;;   (company-mode +1))
 
 (use-package prettier-js)
 
@@ -1164,104 +1281,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 
 
-;; Comp(lete)any mode
-
-(use-package company
-  :diminish company-mode
-  :commands company-mode
-  :init
-  (global-company-mode)
-  (define-key company-active-map (kbd "C-c h") #'company-quickhelp-manual-begin)
-  (setq
-   company-dabbrev-ignore-case nil
-   company-dabbrev-code-ignore-case nil
-   company-dabbrev-downcase nil
-   company-idle-delay 0
-   company-minimum-prefix-length 4)
-  :config
-  ;; dabbrev is too slow
-  (delete 'company-dabbrev company-backends))
-
-(use-package company-quickhelp
-  :init
-  (company-quickhelp-mode))
-
-;; Icons in content help menus
-(use-package company-box
-  :hook (company-mode . company-box-mode))
-
-;; Resolve conflicts with indenting, completion, and yasnippets
-
-(defun check-expansion ()
-  "Return 't if the prior characters should be expanded and nil otherwise."
-  (save-excursion
-    (if (looking-at "\\_>") t
-      (backward-char 1)
-      (if (looking-at "\\.") t
-        (backward-char 1)
-        (if (looking-at "->") t nil)))))
-
-(defun do-yas-expand ()
-  "Expand snippet or return null."
-  (let ((yas/fallback-behavior 'return-nil))
-    (when (fboundp 'yas-expand)           ; Make sure yas-minor-mode is enabled
-      (yas-expand))))
-
-(defun company-tab-indent-or-complete ()
-  "If focus is in the minibuffer then autocomplete else try to expand/tab using (or yasnippet company indent)."
-  (interactive)
-  (if (minibufferp)
-      (minibuffer-complete)
-    (if (or (bound-and-true-p yas-minor-mode)
-            (null (do-yas-expand)))
-        (if (check-expansion)
-            (company-complete-common)
-          (indent-for-tab-command)))))
-
-
-;; Company colors
-(require 'color)
-
-(let ((bg (face-attribute 'default :background)))
-  (custom-set-faces
-   `(company-tooltip ((t (:inherit default :background ,(color-lighten-name bg 2)))))
-   `(company-scrollbar-bg ((t (:background ,(color-lighten-name bg 10)))))
-   `(company-scrollbar-fg ((t (:background ,(color-lighten-name bg 5)))))
-   `(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
-   `(company-tooltip-common ((t (:inherit font-lock-constant-face))))))
-
-
-
-(use-package hydra
-  :commands defhydra
-  :bind ("C-M-s" . hydra-splitter/body))
-
-(defun hydra-splitter/body ()
-  "Defines a Hydra to resize the windows."
-  ;; overwrites the original function and calls it
-  ;; https://github.com/abo-abo/hydra/issues/149
-  (interactive)
-  (require 'hydra-examples)
-  (funcall
-   (defhydra hydra-splitter nil "splitter"
-     ("<left>" hydra-move-splitter-left)
-     ("<down>" hydra-move-splitter-down)
-     ("<up>" hydra-move-splitter-up)
-     ("<right>" hydra-move-splitter-right))))
-
-(defun hydra-smerge/body ()
-  "Defines a Hydra to give ediff commands in `smerge-mode'."
-  (interactive)
-  (funcall
-   (defhydra hydra-smerge nil "smerge"
-     ("p" smerge-prev)
-     ("n" smerge-next)
-     ("e" smerge-ediff)
-     ("a" smerge-keep-mine)
-     ("b" smerge-keep-other))))
-(add-hook 'smerge-mode-hook (lambda () (hydra-smerge/body)))
-
-
 ;;
 ;; Docker
 ;;
@@ -1431,6 +1450,7 @@ assuming it is in a maven-style project."
   ;; (clojure-mode . lsp)   ; Need to figure out how to use this with Boot
   ;; (clojurescript-mode . lsp)
   (javascript-mode . lsp)
+  (js2-mode . lsp)
   (typescript-mode . lsp)
 
   :config
@@ -1441,7 +1461,12 @@ assuming it is in a maven-style project."
 (use-package lsp-metals)
 
 ;; optionally
-(use-package lsp-ui :commands lsp-ui-mode)
+(use-package lsp-ui
+  :commands lsp-ui-mode
+
+  :config
+  (setq lsp-clients-deno-enable-code-lens-references-all-functions 1))
+
 ;; if you are helm user
 ;; (use-package helm-lsp :commands helm-lsp-workspace-symbol)
 (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
@@ -2199,10 +2224,6 @@ buffer's."
 (global-set-key [C-M-up] 'windmove-up)              ; move to upper window
 (global-set-key [C-M-down] 'windmove-down)          ; move to lower window
 
-
-(use-package which-key
-  :config
-  (which-key-mode t))
 
 
 ; Set default font sizes
