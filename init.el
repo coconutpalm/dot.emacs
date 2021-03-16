@@ -715,7 +715,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   )
 
 (use-package tide)
-(setq flycheck-javascript-standard-executable "standardx")
+(setq flycheck-javascript-standard-executable "standard")
 
 (defun setup-tide-mode ()
   (interactive)
