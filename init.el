@@ -262,6 +262,16 @@ With ARG, do this that many times."
 ;; Set the selection color; but doesn't work well with syntax highlight
 ;; (set-face-attribute 'region nil :background "#5555ff" :foreground "#ffffff")
 
+(set-language-environment "UTF-8")
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(if (boundp 'buffer-file-coding-system)
+    (setq-default buffer-file-coding-system 'utf-8)
+  (setq default-buffer-file-coding-system 'utf-8))
+(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+
 (menu-bar-mode -1)
 (tool-bar-mode 0)
 (setq inhibit-splash-screen t)
@@ -954,13 +964,38 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (use-package markdown-mode
   :ensure t
 
+  :commands (markdown-mode gfm-mode)
+
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . gfm-mode)
-         ("\\.markdown\\'" . gfm-mode))
+         ("\\.markdown\\'" . gfm-mode)
+         ("\\.txt$" . gfm-mode))
 
   :init
   (setq markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
   (setq markdown-fontify-code-blocks-natively t))
+
+(defun markdown-flyspell-check-word-p ()
+  "Return t if `flyspell' should check word just before point."
+      (save-excursion
+        (goto-char (1- (point)))
+        (not (or (markdown-code-block-at-point-p)
+                 (markdown-inline-code-at-point-p)
+                 (markdown-in-comment-p)
+                 (let ((faces (get-text-property (point) 'face)))
+                   (if (listp faces)
+                       (or (memq 'markdown-reference-face faces)
+                           (memq 'markdown-markup-face faces)
+                           (memq 'markdown-url-face faces))
+                     (memq faces '(markdown-reference-face
+                                   markdown-markup-face
+                                   markdown-url-face))))))))
+
+(add-hook 'markdown-mode-hook
+          (lambda ()
+            (variable-pitch-mode 1)
+            (flyspell-mode 1)
+            (setq flyspell-generic-check-word-predicate 'markdown-flyspell-check-word-p)))
 
 ;; Generate a TOC from a markdown file: M-x markdown-toc-generate-toc
 ;; This will compute the TOC at insert it at current position.
@@ -1274,12 +1309,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; Spell checking: from https://raw.githubusercontent.com/kaushalmodi/.emacs.d/master/setup-files/setup-spell.el
 ;; (require 'setup-spell)
-
-;; Helm support: from https://raw.githubusercontent.com/pronobis/helm-flyspell/master/helm-flyspell.el
-;; (require 'helm-flyspell)
-;; (define-key flyspell-mode-map (kbd "C-;") 'helm-flyspell-correct)
-
-
 
 ;;
 ;; Docker
@@ -2166,7 +2195,7 @@ buffer's."
           uniquify-separator "/"
           uniquify-buffer-name-style 'forward)
     (centaur-tabs-headline-match)
-    (centaur-tabs-change-fonts "Noto Sans" 180)
+    (centaur-tabs-change-fonts "Noto Sans" 160)
     (centaur-tabs-group-by-projectile-project)
 
     :hook
@@ -2233,6 +2262,7 @@ buffer's."
 
   ;; default Latin font (e.g. Consolas)
   (set-face-font 'default (format "Noto Mono:size=%d" (normalize-pts 10)))
+  (set-face-font 'variable-pitch (format "Noto Sans:size=%d" (normalize-pts 10)))
   (set-face-font 'mode-line (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 12)))
 
   (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
@@ -2253,3 +2283,20 @@ buffer's."
 
 (provide 'init)
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(xref-js2 js2-mode discover yasnippet yaml-mode which-key web-mode use-package treemacs-projectile treemacs-magit treemacs-icons-dired tree-mode tide smartparens smart-tabs-mode smart-mode-line scala-mode sbt-mode prettier-js popup-imenu play-routes-mode perspective package-utils multiple-cursors markdown-toc lsp-ui lsp-metals lispy kaocha-runner js-comint impatient-mode highlight-symbol helm-projectile helm-descbinds helm-cider helm-ag goto-chg git-timemachine git-gutter flycheck-status-emoji flycheck-pos-tip flycheck-color-mode-line flycheck-cask exec-path-from-shell edbi dockerfile-mode dispwatch default-text-scale company-quickhelp company-box clojure-mode-extra-font-locking cider-hydra centaur-tabs base16-theme all-the-icons adoc-mode)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(company-scrollbar-bg ((t (:background "#2eae2eae2eae"))))
+ '(company-scrollbar-fg ((t (:background "#21e121e121e1"))))
+ '(company-tooltip ((t (:inherit default :background "#1a331a331a33"))))
+ '(company-tooltip-common ((t (:inherit font-lock-constant-face))))
+ '(company-tooltip-selection ((t (:inherit font-lock-function-name-face)))))

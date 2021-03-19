@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+set -o errexit
+set -o nounset
+
+is_git_dep(){
+    echo "$1" | grep -Eq '^(https://git|git@)'
+}
+
+is_local_dep(){
+    echo "$1" | grep -Eq '^\.?\.?/'
+}
+
+git_url_to_dep_name(){
+    # examples:
+    # "https://github.com/yourname/time-lib.git" => "github.com/yourname/time-lib.git"
+    # "git@github.com/yourname/time-lib.git" => "github.com/yourname/time-lib.git"
+    echo "${1}" | sed 's|^https://||' | sed 's|^git@||' | sed 's|git.sr.ht/~||'
+}
+
+expand_dep(){
+    if is_git_dep "$1"; then
+        echo "$(git_url_to_dep_name "$1") {:git/url \"${1}\" :sha \"${2}\"}"
+    elif is_local_dep "$2"; then
+        echo "${1} {:local/root \"${2}\"}"
+    else
+        echo "${1} {:mvn/version \"${2}\"}"
+    fi
+}
+
+expand_deps(){
+    if [ ! "$1" ]; then
+        echo "${2:-}"
+    else
+        echo "$1" | while IFS=';' read -r dep rem;do
+            echo "$dep" | while IFS='=' read -r name version; do
+                expand_deps "${rem:-}" "$(expand_dep "${name}" "${version}") ${2:-}"
+            done
+        done
+    fi
+}
+
+extract_var_from_script(){
+    eval "$(grep -m 1 "^\"${1}=" "$2" | cut -d'"' -f2)"
+}
+
+function new_command(){
+    cat<<EOS
+#!/usr/bin/env goclj
+;;"DEPS='clj-time=0.15.1;some-other-dep=3.4.5'"
+
+(ns user
+  #_(:require [clj-time.core :as t]))
+
+(defn -main [& args]
+  (prn :args args))
+
+
+(ns test
+  (:require [clojure.test :refer [deftest is testing are]]
+            [user]))
+
+(deftest main-test
+  (is (some? (user/-main 1 2)) "FIXME"))
+EOS
+}
+
+function run_command() {
+    local script="$1"
+    shift
+    # TODO check presence/existance of script
+
+    extract_var_from_script "DEPS" "$script"
+    echo "$(cat $script)\n (apply user/-main *command-line-args*)" | (exec "clojure" "-Sdeps" "{:deps {$(expand_deps "${DEPS:-}")}}" "-M" "-" "$@")
+}
+
+function test_command() {
+    local script="$1"
+    shift
+    # TODO check presence/existance of script
+
+    extract_var_from_script "DEPS" "$script"
+    local run_tests
+    run_tests=$(cat <<'EOS'
+(require (quote [clojure.test]))
+(let [{:keys [fail error]} (clojure.test/run-tests (quote test))]
+  (System/exit (+ fail error)))
+EOS
+)
+    echo "$(cat $script)\n$run_tests" | (exec "clojure" "-Sdeps" "{:deps {$(expand_deps "${DEPS:-}")}}" "-M" "-" "$@")
+}
+
+function repl_command(){
+    local script="$1"
+    shift
+    extract_var_from_script "DEPS" "$script"
+
+    local script_basename
+    script_basename=$(basename "${script}")
+    local init_repl
+    init_repl=$(cat <<EOS
+(require '[rebel-readline.clojure.main :as rebel-main]
+         '[rebel-readline.core :as rebel-core])
+
+(defn reload [] (require '${script_basename%.clj} :reload))
+
+(when (find-ns (symbol "test"))
+  (defn run-tests [] ((resolve (symbol "clojure.test/run-tests")) 'test)))
+
+
+(rebel-core/ensure-terminal (rebel-main/repl
+                                :init (fn [] (apply require clojure.main/repl-requires)
+                                             (reload))))
+EOS
+)
+    local init_script
+    init_script="/tmp/clj-repl-$RANDOM"
+    echo "$init_repl" > "$init_script"
+
+    local script_dirname
+    script_dirname=$(dirname "$script")
+    if [[ -t 0 ]]; then
+        exec "clojure" "-Sdeps" "{:paths [\"${script_dirname}\"]
+                                  :deps {com.bhauman/rebel-readline {:mvn/version \"0.1.4\"}
+                                        $(expand_deps "${DEPS:-}")}}" "-M" "$init_script" "$@"
+    else
+        exec "clj" "-Sdeps" "{:paths [\"${script_dirname}\"]
+                              :deps {$(expand_deps "${DEPS:-}")}}" "-e" "$script" "$@"
+    fi
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    case "$1" in
+        ''|-h|--help)
+            echo "goclj v0.4"
+            echo "usage: goclj new > some.clj"
+            echo "usage: goclj [test|repl|run] some.clj"
+            ;;
+        --version|version)
+            echo 'v0.4'
+            ;;
+        *\.clj)
+            run_command "$@"
+            ;;
+        new)
+            shift
+            new_command "$@"
+            ;;
+        run)
+            shift
+            run_command "$@"
+            ;;
+        test)
+            shift
+            test_command "$@"
+            ;;
+        repl)
+            shift
+            repl_command "$@"
+            ;;
+        *)
+            echo "Unknown flag/command"
+            exit 1
+            ;;
+    esac
+fi

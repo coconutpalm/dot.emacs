@@ -10,7 +10,6 @@
    [ring.util.response             :refer [content-type resource-response]]
    [ring.adapter.jetty9            :as j9]
    [clojure.core.async             :refer [go <! put! chan]]
-   [gniazdo.core                   :as backend]
 
    [util.maps                      :refer [letfn-map]]
    [util.jobs                      :refer :all]))
