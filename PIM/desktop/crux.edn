@@ -1,0 +1,7 @@
+{:rocksdb {:crux/module 'crux.rocksdb/->kv-store
+           :db-dir (io/file "../data/idx")}
+ :crux/tx-log {:kv-store :rocksdb}
+ :crux/document-store {:kv-store :rocksdb}
+ :crux.lucene/lucene-store {:db-dir "../data/text"}
+
+ :crux.http-server/server {:port 3000}}

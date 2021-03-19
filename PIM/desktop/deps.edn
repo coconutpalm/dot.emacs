@@ -1,4 +1,11 @@
-{
- :aliases {:rebel {:extra-deps {com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
-                   :main-opts  ["-m" "rebel-readline.main"]}}
-}
+{:aliases
+
+ {:database/crux
+  {:extra-deps
+   {juxt/crux-core        {:mvn/version "21.02-1.15.0-beta"}
+    juxt/crux-rocksdb     {:mvn/version "21.02-1.15.0-beta"}
+    juxt/crux-http-server {:mvn/version "21.02-1.15.0-alpha"}}}}
+
+ {:database/datahike
+  {:extra-deps
+   {io.replikativ/datahike {:mvn/version "0.3.3"}}}}}
