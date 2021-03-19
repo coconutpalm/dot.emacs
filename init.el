@@ -2,13 +2,23 @@
 ;;;
 ;;; Commentary:
 ;;;  None.
-
-;;; Code:f
-
-;;; General settings
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;  Execellent examples: https://so.nwalsh.com/2020/02/29/dot-emacs
 
 ;;; Code:
+
+;;; Tell custom to put its stuff somewhere else, but load it early
+(setq custom-file (concat user-emacs-directory "custom.el"))
+(load custom-file 'noerror)
+
+
+;; Remove the built-in version of Org from the load-path
+(require 'cl-seq)
+(setq load-path
+      (cl-remove-if
+       (lambda (x)
+         (string-match-p "org$" x))
+       load-path))
+
 
 ;;
 ;; NOTE-When receiving an out-of-date certificate error, uncomment
@@ -165,6 +175,12 @@ With ARG, do this that many times."
 (global-set-key (kbd "C--") #'zoom-out)
 
 
+;; Dim inactive buffer windows
+(use-package dimmer
+  :config
+  (dimmer-mode 1))
+
+
 ;; (defun my-dpi (&optional frame)
 ;;   "Get the DPI of FRAME (or current if nil)."
 ;;   (cl-flet ((pythagorean (lambda (w h)
@@ -212,6 +228,8 @@ With ARG, do this that many times."
 (global-set-key (kbd "M-<up>") 'move-text-up)
 (global-set-key (kbd "M-<down>") 'move-text-down)
 
+(global-set-key (kbd "C-z") 'undo)
+;(global-set-key (kbd "C-Z") 'redo)
 
 ;;; Load the init file into a buffer so it's easy to get to
 (find-file (concat (file-name-as-directory "~/.emacs.d") "init.el" ))
@@ -436,6 +454,13 @@ With ARG, do this that many times."
 (global-set-key (kbd "C-s-<") 'mc/skip-to-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 
+
+;; Keep a list of recent files
+(use-package recentf
+  :init
+  (setq recentf-max-menu-items 100)
+  :config
+  (recentf-mode 1))
 
 ;;;
 ;;; Generic utilities
@@ -804,6 +829,29 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
         (next-line)))
 
 
+(use-package groovy-mode
+  :mode
+  (("\\.groovy$" . groovy-mode)
+   ("\\.gradle$" . groovy-mode))
+
+  :config
+  (add-to-list 'interpreter-mode-alist '("groovy" . groovy-mode))
+
+  :hook
+  (groovy-mode
+   . (lambda ()
+       (require 'groovy-electric)
+       (groovy-electric-mode))))
+
+(use-package jenkinsfile-mode
+  :mode
+  ("Jenkinsfile.*" . jenkinsfile-mode))
+
+
+(use-package restclient
+  :mode (rx ".rest" string-end))
+
+
 (use-package typescript-mode
   :hook
   (typescript-mode
@@ -884,6 +932,16 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
         (add-to-list 'comint-preoutput-filter-functions
                      (lambda (output)
                      (replace-regexp-in-string ".*1G.*3G" "> " output)))))
+
+
+;; SASS css support
+(use-package sass-mode)
+
+
+(use-package json-mode
+  :mode (("\\.json\\'" . json-mode)
+         ("\\manifest.webapp\\'" . json-mode )
+         ("\\.tern-project\\'" . json-mode)))
 
 
 ;; Web-mode
@@ -1001,7 +1059,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; This will compute the TOC at insert it at current position.
 ;; Update existing TOC: C-u M-x markdown-toc-generate-toc
 (use-package markdown-toc)
-
+(use-package markdown-mode+)
 
 ;; See functions above for MD preview; may bring this back someday?
 
@@ -1314,6 +1372,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; Docker
 ;;
 
+(use-package docker)
+(use-package docker-api)
+(use-package docker-compose-mode)
 (use-package dockerfile-mode
   :init
   (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
@@ -1975,34 +2036,9 @@ buffer's."
 
 
 ;; Org mode
-
-(unless (package-installed-p 'org)
-  (package-install 'org))
-(require 'org)
+(use-package org)
 
 (setq org-time-clocksum-format (quote (:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t)))
-
-(require 'ob-clojure)                   ; Use Clojure/CIDER for executable code in org files
-(setq org-babel-default-header-args     ; Use a single session for each org file
-           (cons '(:session . "default-clojure")
-                 (assq-delete-all :session org-babel-default-header-args)))
-
-;; Redefine execute to always use cider; doesn't seem to work?
-(defun org-babel-execute:clojure (body params)
-  "Execute a block of Clojure code with Babel."
-  (let ((expanded (org-babel-expand-body:clojure body params))
-        result)
-    (require 'cider)
-    (let ((result-params (cdr (assoc :result-params params))))
-      (setq result
-            (nrepl-dict-get
-             (nrepl-sync-request:eval
-              expanded (cider-current-connection) (cider-current-session))
-             (if (or (member "output" result-params)
-                     (member "pp" result-params))
-                 "out"
-               "value"))))))
-
 
 ;; org mode hooks
 (add-hook 'org-mode-hook 'turn-on-font-lock)
@@ -2283,20 +2319,3 @@ buffer's."
 
 (provide 'init)
 ;;; init.el ends here
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(xref-js2 js2-mode discover yasnippet yaml-mode which-key web-mode use-package treemacs-projectile treemacs-magit treemacs-icons-dired tree-mode tide smartparens smart-tabs-mode smart-mode-line scala-mode sbt-mode prettier-js popup-imenu play-routes-mode perspective package-utils multiple-cursors markdown-toc lsp-ui lsp-metals lispy kaocha-runner js-comint impatient-mode highlight-symbol helm-projectile helm-descbinds helm-cider helm-ag goto-chg git-timemachine git-gutter flycheck-status-emoji flycheck-pos-tip flycheck-color-mode-line flycheck-cask exec-path-from-shell edbi dockerfile-mode dispwatch default-text-scale company-quickhelp company-box clojure-mode-extra-font-locking cider-hydra centaur-tabs base16-theme all-the-icons adoc-mode)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(company-scrollbar-bg ((t (:background "#2eae2eae2eae"))))
- '(company-scrollbar-fg ((t (:background "#21e121e121e1"))))
- '(company-tooltip ((t (:inherit default :background "#1a331a331a33"))))
- '(company-tooltip-common ((t (:inherit font-lock-constant-face))))
- '(company-tooltip-selection ((t (:inherit font-lock-function-name-face)))))
