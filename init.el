@@ -13,11 +13,11 @@
 
 ;; Remove the built-in version of Org from the load-path
 (require 'cl-seq)
-(setq load-path
-      (cl-remove-if
-       (lambda (x)
-         (string-match-p "org$" x))
-       load-path))
+;; (setq load-path
+;;       (cl-remove-if
+;;        (lambda (x)
+;;          (string-match-p "org$" x))
+;;        load-path))
 
 
 ;;
@@ -155,6 +155,10 @@ With ARG, do this that many times."
                       :height
                       (+ (face-attribute 'default :height)
                          delta-points))
+  (set-face-attribute 'variable-pitch nil
+                      :height
+                      (+ (face-attribute 'default :height)
+                         delta-points))
   (set-face-attribute 'mode-line nil
                       :height
                       (+ (face-attribute 'mode-line :height)
@@ -176,8 +180,8 @@ With ARG, do this that many times."
 
 
 ;; Org mode
-(use-package org)
-
+(use-package org
+  :ensure t)
 
 (setq org-duration-format (quote (:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t)))
 
@@ -930,8 +934,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; aligns annotation to the right hand side
 (setq company-tooltip-align-annotations t)
 
+
 ;; formats the buffer before saving
-(add-hook 'before-save-hook 'tide-format-before-save)
 (add-hook 'js2-mode-hook 'prettier-js-mode)
 (add-hook 'web-mode-hook 'prettier-js-mode)
 
@@ -1714,15 +1718,15 @@ assuming it is in a maven-style project."
 (global-set-key (kbd "M-q") 'cider-format-defun)
 
 
-;; clojure-semantic (https://github.com/kototama/clojure-semantic)
-;; (Prerequisite for Lispy Clojure support)
-;(add-to-list 'load-path "~/.emacs.d/clojure-semantic")
-;(load "clojure.el")
-
+(use-package clojure-mode)
+(use-package clj-refactor)
 
 ;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
 (use-package lispy)
 
+;; clojure-semantic (https://github.com/kototama/clojure-semantic)
+;; (Prerequisite for Lispy Clojure support)
+;;(use-package clojure-semantic)
 
 (defun lispy-mode-key-unbindings ()
   "Disable some Lispy-mode keybindings that conflict with Clojure or other packages."
