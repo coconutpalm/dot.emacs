@@ -175,6 +175,25 @@ With ARG, do this that many times."
 (global-set-key (kbd "C--") #'zoom-out)
 
 
+;; Org mode
+(use-package org)
+
+
+(setq org-duration-format (quote (:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t)))
+
+;; org mode hooks
+(add-hook 'org-mode-hook 'turn-on-font-lock)
+(add-hook 'org-mode-hook 'visual-line-mode)
+;; turn on soft wrapping mode for org mode
+(add-hook 'org-mode-hook
+          (lambda () (setq truncate-lines nil)))
+(setq org-src-fontify-natively t)
+(add-hook 'org-mode-hook
+          (lambda ()
+            (org-indent-mode t)) t)
+
+
+
 ;; Dim inactive buffer windows
 (use-package dimmer
   :config
@@ -1697,8 +1716,8 @@ assuming it is in a maven-style project."
 
 ;; clojure-semantic (https://github.com/kototama/clojure-semantic)
 ;; (Prerequisite for Lispy Clojure support)
-(add-to-list 'load-path "~/.emacs.d/clojure-semantic")
-(load "clojure.el")
+;(add-to-list 'load-path "~/.emacs.d/clojure-semantic")
+;(load "clojure.el")
 
 
 ;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
@@ -2033,23 +2052,6 @@ buffer's."
 ;; From https://raw.githubusercontent.com/bsvingen/sql-indent/master/sql-indent.el
 (eval-after-load "sql"
   '(load-library "sql-indent"))
-
-
-;; Org mode
-(use-package org)
-
-(setq org-time-clocksum-format (quote (:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t)))
-
-;; org mode hooks
-(add-hook 'org-mode-hook 'turn-on-font-lock)
-(add-hook 'org-mode-hook 'visual-line-mode)
-;; turn on soft wrapping mode for org mode
-(add-hook 'org-mode-hook
-          (lambda () (setq truncate-lines nil)))
-(setq org-src-fontify-natively t)
-(add-hook 'org-mode-hook
-          (lambda ()
-            (org-indent-mode t)) t)
 
 
 (unless (package-installed-p 'cedet)

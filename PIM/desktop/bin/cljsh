@@ -45,7 +45,7 @@ extract_var_from_script(){
 
 function new_command(){
     cat<<EOS
-#!/usr/bin/env goclj
+#!/usr/bin/env cljsh
 ;;"DEPS='clj-time=0.15.1;some-other-dep=3.4.5'"
 
 (ns user
