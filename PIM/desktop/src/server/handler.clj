@@ -31,10 +31,12 @@
 
 
 (comment
+  (start!)
   @ws-to-web-tier
   (j9/send! @ws-to-web-tier "{:message [\"Hello\"] }")
   (put! to-web "{:message [\"Hello\"] }")
   (map (fn [n] {(keyword (str "k" n)) (Math/round (* 100 (Math/random)))}) (range 1 10))
+  (stop!)
   ,)
 
 
