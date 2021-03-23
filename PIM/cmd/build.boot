@@ -17,9 +17,7 @@
 
                  [cpmcdaniel/boot-copy           "1.0"   :scope "test"]
                  [adzerk/boot-test               "1.2.0"]
-                 #_[boot-clj/boot                  "2.8.3" :scope "test"]
-                 [adzerk/boot-jar2bin            "1.2.0" :scope "test"]
-                 #_[coconutpalm/boot-boot          "LATEST" :scope "test"]])
+                 [adzerk/boot-jar2bin            "1.2.0" :scope "test"]])
 
 
 ;; Require boot-boot tasks
