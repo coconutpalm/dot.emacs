@@ -72,10 +72,23 @@
 (use-package ag)
 
 
+;;
+;; Deft notetaking
+;;   - by default stored in ~/.deft
+;;   https://jblevins.org/projects/deft/
+;;
+(use-package deft
+  :config
+  (setq deft-file-naming-rules
+      '((noslash . "-")
+        (nospace . "-")
+        (case-fn . downcase))
+      deft-default-extension "md"))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Some basic keybindings so if we blow up later the editor has some baseline behavior
+;;
+;; Some basic behavior/ keybindings so if we blow up the editor has some baseline things
 
 (use-package subword
   :ensure nil
