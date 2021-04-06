@@ -1,4 +1,5 @@
 custom.el
+.mc-lists.el
 recentf
 ac-comphist.dat
 semanticdb
@@ -36,4 +37,3 @@ transient
 bookmarks
 .dap-breakpoints
 .DS_Store
-

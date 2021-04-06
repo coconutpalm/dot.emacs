@@ -11,15 +11,6 @@
 (load custom-file 'noerror)
 
 
-;; Remove the built-in version of Org from the load-path
-(require 'cl-seq)
-;; (setq load-path
-;;       (cl-remove-if
-;;        (lambda (x)
-;;          (string-match-p "org$" x))
-;;        load-path))
-
-
 ;;
 ;; NOTE-When receiving an out-of-date certificate error, uncomment
 ;;      (setq package-check-signature nil)               and
@@ -40,10 +31,6 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(when (not package-archive-contents)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
 (require 'use-package)
 (setq use-package-always-ensure t
       use-package-always-defer t
@@ -56,6 +43,11 @@
 ;;  If you don't want this, comment out package-utils-upgrade-all
 ;;   (package-utils-upgrade-all)
 ;;   (package-install 'gnu-elpa-keyring-update)
+
+
+;; Show a spinner while initializing
+(use-package spinner)
+(spinner-start)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -589,11 +581,12 @@ With ARG, do this that many times."
   '("^[*]\\(notmuch\\-hello\\|unsent\\|ag search\\|grep\\|eshell\\).*")
   "Whitelist regexp of `clean-buffer-list' buffers to show when switching buffer.")
 
+(use-package dash)
+
 (defun midnight-clean-or-ido-whitelisted (name)
   "T if midnight is likely to kill the buffer named NAME, unless whitelisted.
 Approximates the rules of `clean-buffer-list'."
   (require 'midnight)
-  (require 'dash)
   (cl-flet* ((buffer-finder (regexp) (string-match regexp name))
              (buffer-find (regexps) (-partial #'-find #'buffer-finder)))
     (and (buffer-find clean-buffer-list-kill-regexps)
@@ -648,8 +641,6 @@ Approximates the rules of `clean-buffer-list'."
   (exec-path-from-shell-copy-envs macos-copy-from-env-list)
   (exec-path-from-shell-initialize))
 
-
-(use-package spinner)
 
 ;; Horizontal scrolling, please
 (setq-default truncate-lines t)
@@ -864,6 +855,17 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (use-package restclient
   :mode (rx ".rest" string-end))
 
+(use-package request)
+(use-package graphql-mode)
+
+
+;;
+;; (Type|Java)Script
+;;
+;; More ideas:
+;;   https://github.com/felipeochoa/rjsx-mode
+;;   https://dev.to/viglioni/how-i-set-up-my-emacs-for-typescript-3eeh
+;;   https://news.ycombinator.com/item?id=24119611  (rjsx configs; react stuff generally)
 
 (use-package typescript-mode
   :hook
@@ -880,6 +882,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (use-package js2-mode
   :config
   (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
+  (add-hook 'js2-mode-hook #'setup-tide-mode)
 
   :custom
   (js2-include-node-externs t)
@@ -901,21 +904,25 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    . (lambda () (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
 
 
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode t)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode t)
+  (tide-hl-identifier-mode t)
+  (company-mode +1))
 
-;; (use-package tide)
-;; (setq flycheck-javascript-standard-executable "standard")
+(use-package tide
+  :ensure t
+  :after (typescript-mode company flycheck)
+  :config
+  (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+  (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)
 
-;; (defun setup-tide-mode ()
-;;   (interactive)
-;;   (tide-setup)
-;;   (flycheck-mode t)
-;;   (setq flycheck-check-syntax-automatically '(save mode-enabled))
-;;   (eldoc-mode t)
-;;   (tide-hl-identifier-mode t)
-;;   ;; company is an optional dependency. You have to
-;;   ;; install it separately via package-install
-;;   ;; `M-x package-install [ret] company`
-;;   (company-mode +1))
+  :hook ((typescript-mode . setup-tide-mode)
+         (typescript-mode . tide-hl-identifier-mode)
+         (before-save . tide-format-before-save)))
 
 (use-package prettier-js)
 
@@ -924,6 +931,34 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; aligns annotation to the right hand side
 (setq company-tooltip-align-annotations t)
 
+
+;; Web-mode
+(use-package web-mode
+  :ensure t
+  :after (tide)
+  :config
+  (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode))
+
+  (add-hook web-mode-hook
+          (lambda ()
+            (when (or (string-equal "tsx" (file-name-extension buffer-file-name))
+                      (string-equal "jsx" (file-name-extension buffer-file-name)))
+              (setup-tide-mode)))))
+
+
+;; enable typescript-tslint checker
+(flycheck-add-mode 'typescript-tslint 'web-mode)
+(flycheck-add-mode 'javascript-eslint 'web-mode)
 
 ;; formats the buffer before saving
 (add-hook 'js2-mode-hook 'prettier-js-mode)
@@ -955,21 +990,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :mode (("\\.json\\'" . json-mode)
          ("\\manifest.webapp\\'" . json-mode )
          ("\\.tern-project\\'" . json-mode)))
-
-
-;; Web-mode
-(use-package web-mode
-  :config
-  (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode)))
-
 
 
 (defun my-semicolon ()
@@ -1137,11 +1157,14 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (unless (package-installed-p 'helm)
   (package-install 'helm))
 
-(require 'helm-config)
-(require 'helm-buffers)
-(require 'helm-locate)
-(require 'helm-bookmark)
-(require 'helm-files)
+(use-package helm
+  :config
+  (require 'helm-config)
+  (require 'helm-buffers)
+  (require 'helm-locate)
+  (require 'helm-bookmark)
+  (require 'helm-files))
+
 
 ;; Must be set before loading helm-ag
 
@@ -1152,12 +1175,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (setq helm-autoresize-max-height 80)
 (helm-autoresize-mode 1)
 
-(unless (package-installed-p 'helm-descbinds)
-  (package-install 'helm-descbinds))
+(use-package helm-descbinds
+  :config
+  (helm-descbinds-mode)
+  (global-set-key (kbd "C-h h") 'describe-bindings))
 
-(require 'helm-descbinds)
-(helm-descbinds-mode)
-(global-set-key (kbd "C-h h") 'describe-bindings)
 
 (setq
     helm-boring-buffer-regexp-list '("^diary$")
@@ -1228,7 +1250,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (require 'helm-projectile)
 
-(projectile-global-mode)
 (projectile-mode +1)
 (define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map)
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
@@ -1237,6 +1258,14 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (setq projectile-enable-caching t)
 (setq projectile-completion-system 'helm)
 (setq projectile-indexing-method 'native)
+(setq projectile-globally-ignored-directories
+      '(".git"
+        ".github"
+        ".history"
+        ".log"
+        ".metals"
+        ".storybook"
+        ".vscode"))
 (setq projectile-use-git-grep t)
 
 (global-set-key (kbd "C-x p p") 'projectile-switch-project)
@@ -1247,13 +1276,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
-
-;; (unless (package-installed-p 'project-explorer)
-;;   (package-install 'project-explorer))
-;; (global-set-key "\C-\\" 'project-explorer-toggle)
-;; (global-set-key "\C-\M-\\" 'project-explorer-helm)
-;; (setq pe/omit-gitignore t)
-;; (setq pe/width 65)
 
 
 (use-package treemacs
@@ -1712,7 +1734,9 @@ assuming it is in a maven-style project."
 (use-package clj-refactor)
 
 ;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
-(use-package lispy)
+(use-package lispy
+  :hook
+  (emacs-lisp-mode . (lambda () (lispy-mode 1))))
 
 ;; clojure-semantic (https://github.com/kototama/clojure-semantic)
 ;; (Prerequisite for Lispy Clojure support)
@@ -1839,6 +1863,7 @@ assuming it is in a maven-style project."
 (add-hook 'cider-mode-hook #'eldoc-mode)
 
 (setq cider-repl-use-clojure-font-lock t)
+(setq cider-connection-message-fn #'cider-random-tip)
 
 ;; Abbreviate the REPL prompt if it gets long
 (setq cider-repl-prompt-function
@@ -1846,37 +1871,6 @@ assuming it is in a maven-style project."
          (if (> (length namespace) 20)
              (cider-repl-prompt-abbreviated namespace)
            (cider-repl-prompt-default namespace))))
-
-
-;; From: https://raw.githubusercontent.com/vspinu/cider/79f828b60963747d87f898487912aa0b5fb802d2/nrepl-client.el
-;;  and: https://github.com/clojure-emacs/cider/pull/818
-;;  merged with master: https://github.com/clojure-emacs/cider/blob/master/nrepl-client.el
-;;
-;; Enable the nrepl-server buffer to scroll automatically for log following
-;; (defun nrepl-server-filter (process string)
-;;   "Process server PROCESS output contained in STRING."
-;;   (with-current-buffer (process-buffer process)
-;;     (let ((moving (= (point) (process-mark process))))
-;;       (save-excursion
-;;         (goto-char (process-mark process))
-;;         (insert string)
-;;         (set-marker (process-mark process) (point)))
-;;       (when moving
-;;         (goto-char (process-mark process))
-;;         (-when-let (win (get-buffer-window))
-;;           (set-window-point win (point))))))
-;;   (when (string-match "nREPL server started on port \\([0-9]+\\)" string)
-;;     (let ((port (string-to-number (match-string 1 string))))
-;;       (message (format "nREPL server started on %s" port))
-;;       (with-current-buffer (process-buffer process)
-;;         (let* ((client-proc (nrepl-start-client-process nil port process))
-;;                (client-buffer (process-buffer client-proc)))
-;;           (setq nrepl-client-buffers
-;;                 (cons client-buffer
-;;                       (delete client-buffer nrepl-client-buffers)))
-
-;;           (when (functionp nrepl-post-client-callback)
-;;             (funcall nrepl-post-client-callback client-buffer)))))))
 
 
 (defun init-ns ()
@@ -1948,10 +1942,6 @@ buffer's."
            (cider-namespace-refresh))))))
 
 
-(unless (package-installed-p 'clojure-mode)
-  (package-install 'clojure-mode))
-(require 'clojure-mode)
-
 (add-to-list 'auto-mode-alist '("\\.hl\\'" . clojure-mode))
 (add-to-list 'auto-mode-alist '("\\.boot\\'" . clojure-mode))
 (add-to-list 'magic-mode-alist '(".* boot" . clojure-mode)) ; Shebang script support
@@ -1976,9 +1966,8 @@ buffer's."
             (git-gutter-mode t)
             (local-set-key [f1] 'cider-jack-in)))
 
-(unless (package-installed-p 'clojure-mode-extra-font-locking)
-  (package-install 'clojure-mode-extra-font-locking))
-(require 'clojure-mode-extra-font-locking)
+
+(use-package clojure-mode-extra-font-locking)
 
 
 ;; Integrate with the kaocha test runner
@@ -2034,7 +2023,11 @@ buffer's."
 ;; Like VIM's modeline hack
 ;(unless (package-installed-p 'smart-mode-line-powerline-theme)
 ;  (package-install 'smart-mode-line-powerline-theme))
-;(require 'smart-mode-line-powerline-theme)
+                                        ;(require 'smart-mode-line-powerline-theme)
+(use-package smart-mode-line-powerline-theme)
+
+;(use-package nyan-mode)   ; Cat in modeline!
+
 
 (unless (package-installed-p 'tree-mode)
   (package-install 'tree-mode))
@@ -2311,6 +2304,10 @@ buffer's."
 
 
 (find-file (concat (file-name-as-directory "~/_NOTES") "NOTES.md" ))
+
+
+;; We're done; stop the spinner
+(spinner-stop)
 
 
 (provide 'init)
