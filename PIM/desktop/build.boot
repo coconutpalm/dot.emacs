@@ -8,7 +8,7 @@
                  [adzerk/boot-reload        "0.6.0" :scope "test"]
                  [deraen/boot-sass          "0.5.3" :scope "test"]
                  [cider/piggieback          "0.5.2" :scope "test"]
-                 [weasel                    "0.7.1" :scope "test"   :exclusions [org.clojure/clojurescript]]
+                 [weasel                    "0.7.1" :scope "test" :exclusions [org.clojure/clojurescript]]
                  [org.slf4j/slf4j-nop       "1.7.13" :scope "test"]
 
                  ;; Both front/back-end

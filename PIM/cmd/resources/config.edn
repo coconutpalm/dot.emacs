@@ -1,0 +1,23 @@
+{
+ :clojure-version  "1.10.3"
+ :boot-clj-version "2.8.2"
+
+ :fuse-port           7000
+ :fuse-bootplugin-dir "Bootstrap"
+ :boot-plugin-repo    "https://github.com/fuse-code/Bootstrap.git"
+ :bootstrap-task      "web-dev"
+
+ :git-credentials {:add-your-credentials "Please add your Git credentials here and then remove this line!"
+                   :name "~/.ssh/id_rsa"
+                   :exclusive true}
+
+ ;; TODO: Add set of default plugins here, or maybe find a better way to inject this into the build?
+ :plugins [#_{:name "Code Notebook"
+              :init "boot-code.parensoup/do-init"}
+
+           #_{:name "Workbench"
+              :remote-repo "git@github.com:/coconutpalm/fuse-mz-light"}
+
+           #_{:name "CodeMirror Editor"
+              :remote-repo "git@github.com:/coconutpalm/fuse-cm"}]
+ }
