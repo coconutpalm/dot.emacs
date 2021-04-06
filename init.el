@@ -78,12 +78,15 @@
 ;;   https://jblevins.org/projects/deft/
 ;;
 (use-package deft
+  :ensure t
   :config
   (setq deft-file-naming-rules
       '((noslash . "-")
         (nospace . "-")
         (case-fn . downcase))
-      deft-default-extension "md"))
+      deft-default-extension "md"
+      deft-markdown-mode-title-level 1
+      deft-use-filter-string-for-filename t))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
