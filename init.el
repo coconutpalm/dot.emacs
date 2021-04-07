@@ -79,19 +79,20 @@
   :ensure t
   :config
   (setq deft-file-naming-rules
-      '((noslash . "-")
-        (nospace . "-")
-        (case-fn . downcase))
-      deft-default-extension "md"
-      deft-markdown-mode-title-level 1
-      deft-use-filter-string-for-filename t))
+        '((noslash . "_")
+          (nospace . "-")
+          (case-fn . downcase))
+        deft-recursive t
+        deft-default-extension "md"
+        deft-markdown-mode-title-level 1
+        deft-use-filter-string-for-filename t))
 
 
 ;; Distraction-free writing, please
 (use-package writeroom-mode)
 
 (defun zoom ()
-  "Toggle writeroom-mode; is an easier command to remember."
+  "Enable writeroom-mode; is an easier command to remember."
   (interactive)
   (writeroom-mode))
 
