@@ -87,6 +87,15 @@
       deft-use-filter-string-for-filename t))
 
 
+;; Distraction-free writing, please
+(use-package writeroom-mode)
+
+(defun zoom ()
+  "Toggle writeroom-mode; is an easier command to remember."
+  (interactive)
+  (writeroom-mode))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Some basic behavior/ keybindings so if we blow up the editor has some baseline things
