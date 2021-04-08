@@ -1,9 +1,11 @@
 ;;; .emacs --- Dave's Emacs configuration -*- emacs-lisp -*-
 ;;;
 ;;; Commentary:
-;;;  None.
-;;;  Execellent examples: https://so.nwalsh.com/2020/02/29/dot-emacs
-
+;;;
+;;;  Execellent examples:
+;;;    https://so.nwalsh.com/2020/02/29/dot-emacs
+;;;    https://github.com/angrybacon/dotemacs/blob/master/dotemacs.org
+;;;
 ;;; Code:
 
 ;;; Tell custom to put its stuff somewhere else, but load it early
@@ -16,7 +18,6 @@
 ;;      (setq package-check-signature nil)               and
 ;;      (package-install 'gnu-elpa-keyring-update)       and reload
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (setq package-archives
       '(("melpa" . "http://melpa.org/packages/")
@@ -43,10 +44,7 @@
 ;;   (package-install 'gnu-elpa-keyring-update)
 
 
-;; Show a spinner while initializing
 (use-package spinner)
-(spinner-start)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Color theme
@@ -89,12 +87,14 @@
 
 
 ;; Distraction-free writing, please
-(use-package writeroom-mode)
-
 (defun zoom ()
-  "Enable writeroom-mode; is an easier command to remember."
+  "Zoom to distraction-free writing mode."
   (interactive)
-  (writeroom-mode))
+  (olivetti-mode "toggle"))
+
+(use-package olivetti
+  :bind
+  ("C-z" . zoom))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -282,6 +282,7 @@ With ARG, do this that many times."
   (setq nodejs-path "/usr/local/bin/node"))
 
 (setq lein-path "~/bin/lein")
+(setq boot-path "~/bin/boot")
 
 ;; In Clojure, Cmd-enter inserts the contents of this file into the current repl
 (setq clojure-repl-init-file "~/.repl.clj")
@@ -659,12 +660,10 @@ Approximates the rules of `clean-buffer-list'."
 ;;
 ;; Fix macos environment variable handling
 ;;
-(unless (package-installed-p 'exec-path-from-shell)
-  (package-install 'exec-path-from-shell))
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-copy-envs macos-copy-from-env-list)
-  (exec-path-from-shell-initialize))
-
+(use-package exec-path-from-shell :ensure t)
+(when (or (daemonp) (memq window-system '(mac ns)))
+    (exec-path-from-shell-copy-envs macos-copy-from-env-list)
+    (exec-path-from-shell-initialize))
 
 ;; Horizontal scrolling, please
 (setq-default truncate-lines t)
@@ -921,7 +920,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (use-package xref-js2
   :bind
-  ("C-G" . #'xref-find-references)
+  ("C-G" . xref-find-references)
 
   :hook
   (js2-mode
@@ -1086,7 +1085,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
          ("\\.markdown\\'" . gfm-mode)
          ("\\.txt$" . gfm-mode))
 
-  :init
+  :custom
+  (markdown-asymmetric-header t)
+  (markdown-split-window-direction 'right)
+
+  :config
   (setq markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
   (setq markdown-fontify-code-blocks-natively t))
 
@@ -1109,6 +1112,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (add-hook 'markdown-mode-hook
           (lambda ()
             (variable-pitch-mode 1)
+            (olivetti-mode 1)
             (flyspell-mode 1)
             (setq flyspell-generic-check-word-predicate 'markdown-flyspell-check-word-p)))
 
@@ -1754,13 +1758,25 @@ assuming it is in a maven-style project."
 (global-set-key (kbd "M-q") 'cider-format-defun)
 
 
-(use-package clojure-mode)
+(use-package clojure-mode
+  :bind
+  (:map clojure-mode-map
+        ("C-c k t" . 'kaocha-runner-run-test-at-point)
+        ("C-c k r" . 'kaocha-runner-run-tests)
+        ("C-c k a" . 'kaocha-runner-run-all-tests)
+        ("C-c k w" . 'kaocha-runner-show-warnings)
+        ("C-c k h" . 'kaocha-runner-hide-windows)
+
+        ("s-<return>" . 'init-ns)
+        ("C-s-<return>" . 'cider-eval-expression-at-point-in-repl)
+        ("c-<return>" . 'cider-eval-expression-at-point-in-repl)
+        ("M-s-<return>" . 'cider-eval-defun-at-point-in-repl)))
+
 (use-package clj-refactor)
 
+
 ;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
-(use-package lispy
-  :hook
-  (emacs-lisp-mode . (lambda () (lispy-mode 1))))
+(use-package lispy)
 
 ;; clojure-semantic (https://github.com/kototama/clojure-semantic)
 ;; (Prerequisite for Lispy Clojure support)
@@ -1870,31 +1886,41 @@ assuming it is in a maven-style project."
 
 ;; Turn it on by default; toggle via M-x lispy-mode
 (add-hook 'clojure-mode-hook 'lispy-mode-on)
-(add-hook 'emacs-lisp-mode-hook 'lispy-mode-on)
 (add-hook 'lispy-mode-hook 'lispy-mode-key-unbindings)
 
-(unless (package-installed-p 'cider)
-  (package-install 'cider))
-(require 'cider)
-(require 'cider-repl)
 
-(add-hook 'cider-repl-mode-hook #'company-mode)
-(add-hook 'cider-mode-hook #'company-mode)
-(add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
-(add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
+(use-package elisp-mode
+  :ensure nil
+  :bind
+  (:map
+   emacs-lisp-mode-map
+   ("C-c C-c" . me/eval-region-dwim)
+   :map lisp-interaction-mode-map
+   ("C-c C-c" . me/eval-region-dwim))
+  :hook
+  (emacs-lisp-mode . outline-minor-mode)
+  (emacs-lisp-mode . lispy-mode))
 
-(setq cider-lein-command lein-path)
-(add-hook 'cider-mode-hook #'eldoc-mode)
 
-(setq cider-repl-use-clojure-font-lock t)
-(setq cider-connection-message-fn #'cider-random-tip)
+(use-package cider
+  :config
+  (setq cider-lein-command lein-path)
+  (setq cider-boot-command boot-path)
+  (setq cider-repl-use-clojure-font-lock t)
+  (setq cider-connection-message-fn #'cider-random-tip)
 
-;; Abbreviate the REPL prompt if it gets long
-(setq cider-repl-prompt-function
-      '(lambda (namespace)
-         (if (> (length namespace) 20)
-             (cider-repl-prompt-abbreviated namespace)
-           (cider-repl-prompt-default namespace))))
+  ;; Abbreviate the REPL prompt if it gets long
+  (setq cider-repl-prompt-function
+        '(lambda (namespace)
+           (if (> (length namespace) 20)
+               (cider-repl-prompt-abbreviated namespace)
+             (cider-repl-prompt-default namespace))))
+  :hook
+  (cider-mode-hook . eldoc-mode)
+  (cider-mode-hook . cider-company-enable-fuzzy-completion)
+  (cider-repl-mode-hook . cider-company-enable-fuzzy-completion)
+  (cider-mode-hook . company-mode)
+  (cider-repl-mode . company-mode))
 
 
 (defun init-ns ()
@@ -1932,11 +1958,6 @@ buffer's."
       (cider-switch-to-repl-buffer t)
       (goto-char (point-max))
       (insert form))))
-
-(define-key clojure-mode-map (kbd "s-<return>") 'init-ns)
-(define-key clojure-mode-map (kbd "C-s-<return>") 'cider-eval-expression-at-point-in-repl)
-(define-key clojure-mode-map (kbd "c-<return>") 'cider-eval-expression-at-point-in-repl)
-(define-key clojure-mode-map (kbd "M-s-<return>") 'cider-eval-defun-at-point-in-repl)
 
 
 (defun pretty-print-if-possible ()
@@ -1997,11 +2018,6 @@ buffer's."
 ;; Integrate with the kaocha test runner
 (use-package kaocha-runner)
 
-(define-key clojure-mode-map (kbd "C-c k t") 'kaocha-runner-run-test-at-point)
-(define-key clojure-mode-map (kbd "C-c k r") 'kaocha-runner-run-tests)
-(define-key clojure-mode-map (kbd "C-c k a") 'kaocha-runner-run-all-tests)
-(define-key clojure-mode-map (kbd "C-c k w") 'kaocha-runner-show-warnings)
-(define-key clojure-mode-map (kbd "C-c k h") 'kaocha-runner-hide-windows)
 
 ;; Search everything please
 (use-package helm-cider
@@ -2010,6 +2026,7 @@ buffer's."
 
 ;; Keybinding menus!
 (use-package cider-hydra
+  :after '(clojure-mode)
   :config
   (add-hook 'clojure-mode-hook #'cider-hydra-mode))
 
@@ -2328,10 +2345,6 @@ buffer's."
 
 
 (find-file (concat (file-name-as-directory "~/_NOTES") "NOTES.md" ))
-
-
-;; We're done; stop the spinner
-(spinner-stop)
 
 
 (provide 'init)
