@@ -85,10 +85,7 @@
   (interactive)
   (olivetti-mode "toggle"))
 
-(use-package olivetti
-  :bind
-  ("C-z" . zoom))
-
+(use-package olivetti)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
