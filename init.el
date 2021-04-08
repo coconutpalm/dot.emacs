@@ -920,7 +920,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (use-package xref-js2
   :bind
-  ("C-G" . xref-find-references)
+  ("C-S-g" . xref-find-references)
 
   :hook
   (js2-mode
@@ -1161,7 +1161,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (global-set-key (kbd "C-x C-g") 'magit-status)
 (global-set-key (kbd "C-c C-g") 'magit-status)
 (global-set-key (kbd "C-x G") 'magit-diff-unstaged)
-(global-set-key (kbd "C-x C-G") 'magit-diff-unstaged)
+(global-set-key (kbd "C-x C-S-g") 'magit-diff-unstaged)
 (add-hook 'after-save-hook 'magit-refresh-all)
 
 
@@ -1521,7 +1521,7 @@ assuming it is in a maven-style project."
   ;; (bind-key [f8] 'ensime-db-step-out scala-mode-map)
   ;; (bind-key [f9] 'ensime-db-continue scala-mode-map)
   ;; (bind-key "C-c C-s" 'ensime-helm-search scala-mode-map)
-  ;; (bind-key "C-G" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
+  ;; (bind-key "C-S-g" 'ensime-show-uses-of-symbol-at-point scala-mode-map)
   ;; (bind-key "C-M-T" 'ensime-show-hierarchy-of-type-at-point scala-mode-map)
   ;; (bind-key "M-R" 'ensime-refactor-diff-rename scala-mode-map)
   ;; (bind-key "M-M" 'ensime-refactor-diff-extract-method scala-mode-map)
@@ -1617,6 +1617,9 @@ assuming it is in a maven-style project."
 (use-package lsp-ui
   :commands lsp-ui-mode
 
+  :bind
+  ("C-S-g" . lsp-ui-peek-find-references)
+
   :config
   (setq lsp-clients-deno-enable-code-lens-references-all-functions 1))
 
@@ -1644,7 +1647,7 @@ assuming it is in a maven-style project."
 ;; (use-package lsp-ui
 ;;   :bind
 ;;   (:map lsp-ui-mode-map
-;;         ("C-G" . lsp-ui-peek-find-references))
+;;         ("C-S-g" . lsp-ui-peek-find-references))
 
 ;;   :config
 ;;   (setq lsp-ui-sideline-enable t
@@ -2320,10 +2323,14 @@ buffer's."
 (global-set-key [C-M-down] 'windmove-down)          ; move to lower window
 
 
+(require 'redo+)
+(global-set-key (kbd "C-z") 'undo)
+(global-set-key (kbd "C-S-z") 'redo)
 
-; Set default font sizes
+
+                                        ; Set default font sizes
 (when window-system
-  (global-unset-key "\C-z")
+  ;; (global-unset-key "\C-z")    ; We reset C-z to 'undo just above here
   (set-frame-size (selected-frame) 120 60)
 
   ;; default Latin font (e.g. Consolas)
