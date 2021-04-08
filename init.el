@@ -899,6 +899,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
          'grep-find-ignored-directories) "build")
        (electric-indent-mode -1)))
 
+  (typescript-mode . setup-tide-mode)
+
   :mode (rx ".ts" (? "x") string-end))
 
 
@@ -947,9 +949,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
          (typescript-mode . tide-hl-identifier-mode)
          (before-save . tide-format-before-save)))
 
-(use-package prettier-js)
-
-(require 'prettier-js)
 
 ;; aligns annotation to the right hand side
 (setq company-tooltip-align-annotations t)
@@ -960,6 +959,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :ensure t
   :after (tide)
   :config
+  (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
@@ -972,37 +972,37 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode))
 
-  (add-hook web-mode-hook
-          (lambda ()
-            (when (or (string-equal "tsx" (file-name-extension buffer-file-name))
-                      (string-equal "jsx" (file-name-extension buffer-file-name)))
-              (setup-tide-mode)))))
+  :hook ((web-mode-hook . (lambda ()
+                            (when (or (string-equal "tsx" (file-name-extension buffer-file-name))
+                                      (string-equal "jsx" (file-name-extension buffer-file-name)))
+                              (setup-tide-mode))))))
 
 
 ;; enable typescript-tslint checker
 (flycheck-add-mode 'typescript-tslint 'web-mode)
 (flycheck-add-mode 'javascript-eslint 'web-mode)
 
-;; formats the buffer before saving
-(add-hook 'js2-mode-hook 'prettier-js-mode)
-(add-hook 'web-mode-hook 'prettier-js-mode)
 
-(add-hook 'typescript-mode-hook #'setup-tide-mode)
+(use-package prettier-js
+  :ensure t
+  :hook
+  (web-mode-hook . prettier-js-mode)
+  (js2-mode-hook . prettier-js-mode))
+
 
 ;; Javascript REPL
-(use-package js-comint)
+(use-package js-comint
+  :config
+  (setq inferior-js-program-command nodejs-path)
 
-;; Use node as our repl
-(setq inferior-js-program-command nodejs-path)
+  :hook
+  (inferior-js-mode-hook . (lambda ()
+                             (ansi-color-for-comint-mode-on)
+                             ;; Deal with some prompt nonsense
+                             (add-to-list 'comint-preoutput-filter-functions
+                                          (lambda (output)
+                                            (replace-regexp-in-string ".*1G.*3G" "> " output))))))
 
-(setq inferior-js-mode-hook
-      (lambda ()
-        ;; We like nice colors
-        (ansi-color-for-comint-mode-on)
-        ;; Deal with some prompt nonsense
-        (add-to-list 'comint-preoutput-filter-functions
-                     (lambda (output)
-                     (replace-regexp-in-string ".*1G.*3G" "> " output)))))
 
 
 ;; SASS css support
