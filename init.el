@@ -54,27 +54,20 @@
 (load-theme 'base16-chalk t)
 
 
-;; Line numbering
-                                        ;
-(use-package linum
-  :ensure t
-  :config
-  (global-linum-mode t)
-  (setq linum-format " %4d "))
-
-
 ;; Ag searching
 
 (use-package ag)
 
 
 ;;
-;; Deft notetaking
+;; Deft notetaking/notes
 ;;   - by default stored in ~/.deft
 ;;   https://jblevins.org/projects/deft/
 ;;
 (use-package deft
   :ensure t
+  :bind
+  ("S-C-d" . deft)
   :config
   (setq deft-file-naming-rules
         '((noslash . "_")
@@ -2322,7 +2315,6 @@ buffer's."
 (global-set-key [C-M-up] 'windmove-up)              ; move to upper window
 (global-set-key [C-M-down] 'windmove-down)          ; move to lower window
 
-
 (require 'redo+)
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-S-z") 'redo)
@@ -2340,6 +2332,13 @@ buffer's."
 
   (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
   )
+
+
+(use-package linum
+  :ensure t
+  :config
+  (global-linum-mode t)
+  (setq linum-format " %4d "))
 
 
 (defun unclutter-window ()
