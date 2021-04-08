@@ -43,6 +43,8 @@
 ;;   (package-utils-upgrade-all)
 ;;   (package-install 'gnu-elpa-keyring-update)
 
+(use-package diminish
+  :ensure t)
 
 (use-package spinner)
 
@@ -211,12 +213,6 @@ With ARG, do this that many times."
 (use-package nginx-mode)
 
 
-;; Dim inactive buffer windows
-(use-package dimmer
-  :config
-  (dimmer-mode 1))
-
-
 ;; More global keybinding adjustments
 (global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
 (global-set-key [home] 'beginning-of-line)
@@ -256,7 +252,6 @@ With ARG, do this that many times."
 ;;;
 ;;; Configuration settings
 ;;;
-(set-language-environment "utf-8")
 (require 'cl-lib)   ;; Common Lisp compatibility layer
 
 (setq debug-on-error t)
@@ -1144,6 +1139,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :commands magit-status magit-blame magit-refresh-all
   :bind (("M-l" . magit-log-current) ;; See git-timemachine bindings below
          ("\t" . magit-section-toggle-children)
+         ("<tab>" . magit-section-toggle-children)
          ("s-g" . magit-status)
          ("s-b" . magit-blame)))
 
@@ -1162,11 +1158,75 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (use-package git-timemachine
   :commands git-timemachine
-  :bind ("C-M-l" . git-timemachine)     ;; See magit bindings above
+  :bind ("C-M-l" . git-timemachine) ;; See magit bindings above
   :init (setq
          git-timemachine-abbreviation-length 4))
 
 
+(use-package forge
+  :after magit
+  :config
+  (setq auth-sources '("~/.ssh/.authinfo")))
+
+(require 'forge)
+
+(use-package github-review
+  :ensure t
+  :after forge
+  :config
+  (setq auth-sources '("~/.ssh/.authinfo"))
+  (define-key magit-status-mode-map (kbd "g") 'github-review-forge-pr-at-point)
+  (define-key magit-mode-map (kbd "g") 'github-review-forge-pr-at-point))
+
+(require 'github-review)
+
+
+(use-package ediff
+  :init
+  (setq
+   ;; Always split nicely for wide screens
+   ediff-split-window-function 'split-window-horizontally)
+  (defun ediff-copy-both-to-C ()
+    (interactive)
+    (ediff-copy-diff
+     ediff-current-difference nil 'C nil
+     (concat
+      (ediff-get-region-contents
+       ediff-current-difference 'A ediff-control-buffer)
+      (ediff-get-region-contents
+       ediff-current-difference 'B ediff-control-buffer))))
+  (defun add-d-to-ediff-mode-map ()
+    (define-key ediff-mode-map "d" 'ediff-copy-both-to-C))
+  (add-hook 'ediff-keymap-setup-hook 'add-d-to-ediff-mode-map))
+
+
+(defhydra hydra-smerge
+  (:color red :hint nil
+          :pre (smerge-mode 1))
+  "
+^Move^ ^Keep^ ^Diff^ ^Pair^
+------------------------------------------------------
+_n_ext _b_ase _R_efine _<_: base-mine
+_p_rev _m_ine _E_diff _=_: mine-other
+^ ^ _o_ther _C_ombine _>_: base-other
+^ ^ _a_ll _r_esolve
+_q_uit _RET_: current
+"
+  ("RET" smerge-keep-current)
+  ("C" smerge-combine-with-next)
+  ("E" smerge-ediff)
+  ("R" smerge-refine)
+  ("a" smerge-keep-all)
+  ("b" smerge-keep-base)
+  ("m" smerge-keep-mine)
+  ("n" smerge-next)
+  ("o" smerge-keep-other)
+  ("p" smerge-prev)
+  ("r" smerge-resolve)
+  ("<" smerge-diff-base-mine)
+  ("=" smerge-diff-mine-other)
+  (">" smerge-diff-base-other)
+  ("q" nil :color blue))
 ;;
 ;; Projectile / Helm
 ;;
@@ -1178,10 +1238,39 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (use-package helm
   :config
   (require 'helm-config)
-  (require 'helm-buffers)
-  (require 'helm-locate)
-  (require 'helm-bookmark)
-  (require 'helm-files))
+  ;; (require 'helm-buffers)
+  ;; (require 'helm-locate)
+  ;; (require 'helm-bookmark)
+  ;; (require 'helm-files)
+
+  (setq
+   helm-boring-buffer-regexp-list
+   '("^diary$"
+     "magit-"
+     "magit:"
+     "helm"
+     "*ag"
+     "*t"
+     "*forge"
+     "*Mini"
+     "*Messages"
+     "*which"
+     "*code"
+     "*Echo")
+   helm-boring-file-regexp-list
+   '("\\.git$" "\\.hg$" "\\.svn$"  "^\\."  "\\.$"
+     "\\.\\.$" "\\.Plo$" "\\.lo$"  "_source.*"
+     "_8h.*"  "\\.CVS$" "\\._darcs$"  "\\.la$"
+     "\\.o$" "~$"  "^#.*")
+   ;; helm-ff-skip-boring-files t
+   ;; helm-buffer-max-length 80
+   ;; helm-idle-delay 2.0
+   ;; helm-find-files-show-icons t
+   ;; helm-quick-update t
+   helm-candidate-number-limit 50
+   ;; helm-use-standard-keys nil
+   ;; helm-locate-case-fold-search t
+   ))
 
 
 ;; Must be set before loading helm-ag
@@ -1198,23 +1287,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (helm-descbinds-mode)
   (global-set-key (kbd "C-h h") 'describe-bindings))
 
-
-(setq
-    helm-boring-buffer-regexp-list '("^diary$")
-    helm-boring-file-regexp-list
-    '("\\.git$" "\\.hg$" "\\.svn$"  "^\\."  "\\.$"
-       "\\.\\.$" "\\.Plo$" "\\.lo$"  "_source.*"
-       "_8h.*"  "\\.CVS$" "\\._darcs$"  "\\.la$"
-       "\\.o$" "~$"  "^#.*")
-    helm-ff-skip-boring-files t
-    helm-buffer-max-length 80
-    helm-idle-delay 2.0
-    helm-find-files-show-icons t
-    helm-quick-update t
-    helm-candidate-number-limit 20
-    helm-use-standard-keys nil
-    helm-locate-case-fold-search t)
-
 (global-set-key (kbd "C-x b")
                 (lambda () (interactive)
                   (ignore-errors
@@ -1223,6 +1295,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
                                       helm-source-locate
                                       helm-source-bookmarks
                                       helm-source-recentf
+                                      helm-source-in-buffer
                                       helm-source-files-in-current-dir)))))
 
 
@@ -1252,21 +1325,19 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (when (executable-find "curl")
   (setq helm-google-suggest-use-curl-p t))
+(global-set-key (kbd "C-c h g") 'helm-google-suggest)
 
 (setq helm-semantic-fuzzy-match t
       helm-imenu-fuzzy-match    t)
 
-(unless (package-installed-p 'projectile)
-  (package-install 'projectile))
+(use-package projectile :ensure t)
+(use-package helm-projectile
+  :ensure t
+  :config
+  (helm-projectile-on))
 
-(unless (package-installed-p 'helm-projectile)
-  (package-install 'helm-projectile))
-
-(unless (package-installed-p 'perspective)
-  (package-install 'perspective))
+(use-package perspective)
 (persp-mode)
-
-(require 'helm-projectile)
 
 (projectile-mode +1)
 (define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map)
@@ -1338,7 +1409,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
             treemacs-space-between-root-nodes      t
             treemacs-tag-follow-cleanup            t
             treemacs-tag-follow-delay              1.5
-            treemacs-width                         55)))
+            treemacs-width                         40)))
 
     ;; The default width and height of the icons is 22 pixels. If you are
     ;; using a Hi-DPI display, uncomment this to double the icon size.
@@ -1355,6 +1426,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
     (`(t . _)
      (treemacs-git-mode 'simple)))
 
+  :hook
+  (treemacs-mode . (lambda ()
+                     (variable-pitch-mode 1)
+                     (linum-mode nil)))
+
   :bind
   (:map global-map
         ("M-0"       . treemacs-select-window)
@@ -1365,8 +1441,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
         ("C-x t C-t" . treemacs-find-file)
         ("C-x t M-t" . treemacs-find-tag)))
 
-(add-hook 'treemacs-mode-hook
-          (lambda () (linum-mode nil)))
 
 ;; (use-package treemacs-evil
 ;;   :after treemacs evil
@@ -2045,22 +2119,16 @@ buffer's."
   (package-install 's))
 (require 's)
 
-(unless (package-installed-p 'smart-mode-line)
-  (package-install 'smart-mode-line))
-(require 'smart-mode-line)
-(setq sml/no-confirm-load-theme t)
-(setq sml/theme 'dark)
-(sml/setup)
-(smart-mode-line-enable)
 
-;; Only works well with dark themes
-;; Like VIM's modeline hack
-;(unless (package-installed-p 'smart-mode-line-powerline-theme)
-;  (package-install 'smart-mode-line-powerline-theme))
-                                        ;(require 'smart-mode-line-powerline-theme)
-(use-package smart-mode-line-powerline-theme)
-
-;(use-package nyan-mode)   ; Cat in modeline!
+;; Modeline things
+;; (use-package nyan-mode :ensure t)   ; Cat in modeline!
+(use-package smart-mode-line-powerline-theme :ensure t)
+(use-package smart-mode-line
+  :ensure t
+  :config
+  (setq sml/theme 'dark)
+  ;; (setq sml/theme 'powerline)
+  (add-hook 'after-init-hook 'sml/setup))
 
 
 (unless (package-installed-p 'tree-mode)
@@ -2345,6 +2413,12 @@ buffer's."
   (set-face-foreground 'fringe (face-background 'default)))
 
 (unclutter-window)
+
+;; Dim inactive buffer windows
+(use-package dimmer
+  :config
+  (dimmer-mode 1))
+
 
 
 (find-file (concat (file-name-as-directory "~/_NOTES") "NOTES.md" ))
