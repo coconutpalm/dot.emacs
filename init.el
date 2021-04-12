@@ -12,6 +12,10 @@
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file 'noerror)
 
+;; Immediately tidy the frame
+(menu-bar-mode -1)
+(tool-bar-mode 0)
+(toggle-scroll-bar -1)
 
 ;;
 ;; NOTE-When receiving an out-of-date certificate error, uncomment
