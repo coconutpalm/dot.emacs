@@ -47,9 +47,6 @@
 ;;   (package-utils-upgrade-all)
 ;;   (package-install 'gnu-elpa-keyring-update)
 
-(use-package diminish
-  :ensure t)
-
 (use-package spinner)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
