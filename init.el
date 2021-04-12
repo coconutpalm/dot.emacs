@@ -306,8 +306,6 @@ With ARG, do this that many times."
   (setq default-buffer-file-coding-system 'utf-8))
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
-(menu-bar-mode -1)
-(tool-bar-mode 0)
 (setq inhibit-splash-screen t)
 (setq select-enable-clipboard t)      ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
@@ -962,7 +960,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
                             (when (or (string-equal "tsx" (file-name-extension buffer-file-name))
                                       (string-equal "jsx" (file-name-extension buffer-file-name)))
                               (setup-tide-mode))))))
-
 
 ;; enable typescript-tslint checker
 (flycheck-add-mode 'typescript-tslint 'web-mode)
