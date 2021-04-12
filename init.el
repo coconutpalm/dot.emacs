@@ -987,6 +987,15 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
                                             (replace-regexp-in-string ".*1G.*3G" "> " output))))))
 
 
+;; Configure embedded Webkit browser
+(require 'xwidget)
+(setq browse-url-browser-function 'xwidget-webkit-browse-url)
+
+(global-set-key (kbd "C-c b g") 'helm-google-suggest)
+(global-set-key (kbd "C-c b u") 'xwidget-webkit-browse-url)
+(global-set-key (kbd "C-c b b") 'xwidget-webkit-bookmark-make-record)
+(define-key xwidget-webkit-mode-map [home] 'xwidget-webkit-scroll-top)
+(define-key xwidget-webkit-mode-map [end] 'xwidget-webkit-scroll-bottom)
 
 ;; SASS css support
 (use-package sass-mode)
@@ -2121,12 +2130,10 @@ buffer's."
 ;; Modeline things
 ;; (use-package nyan-mode :ensure t)   ; Cat in modeline!
 (use-package smart-mode-line-powerline-theme :ensure t)
-(use-package smart-mode-line
-  :ensure t
-  :config
-  (setq sml/theme 'dark)
-  ;; (setq sml/theme 'powerline)
-  (add-hook 'after-init-hook 'sml/setup))
+(use-package smart-mode-line :ensure t)
+;; (setq sml/theme 'powerline)
+(setq sml/theme 'dark)
+(sml/setup)
 
 
 (unless (package-installed-p 'tree-mode)
