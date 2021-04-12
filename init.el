@@ -989,13 +989,31 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; Configure embedded Webkit browser
 (require 'xwidget)
+
+(use-package xwwp
+  :custom
+  (xwwp-follow-link-completion-system 'helm)
+  :bind (:map xwidget-webkit-mode-map
+              ("l" . xwwp-follow-link)))
+(require 'xwwp)
+
+(use-package xwwp-follow-link-helm :ensure t)
+
 (setq browse-url-browser-function 'xwidget-webkit-browse-url)
 
+(defun web-browse-or-search (browse-target)
+  "Browse to a web link or search terms in BROWSE-TARGET."
+  (interactive "sURL or search terms: ")
+  (xwwp browse-target browse-target))
+
 (global-set-key (kbd "C-c b g") 'helm-google-suggest)
-(global-set-key (kbd "C-c b u") 'xwidget-webkit-browse-url)
+(global-set-key (kbd "C-c b s") 'web-browse-or-search)
 (global-set-key (kbd "C-c b b") 'xwidget-webkit-bookmark-make-record)
+(define-key xwidget-webkit-mode-map (kbd "C-w") 'xwidget-webkit-copy-selection-as-kill)
+(define-key xwidget-webkit-mode-map (kbd "M-w") 'xwidget-webkit-copy-selection-as-kill)
 (define-key xwidget-webkit-mode-map [home] 'xwidget-webkit-scroll-top)
 (define-key xwidget-webkit-mode-map [end] 'xwidget-webkit-scroll-bottom)
+
 
 ;; SASS css support
 (use-package sass-mode)
