@@ -2420,10 +2420,8 @@ buffer's."
 (unclutter-window)
 
 ;; Dim inactive buffer windows
-(use-package dimmer
-  :config
-  (dimmer-mode 1))
-
+(use-package dimmer :ensure t)
+(dimmer-mode 1)
 
 
 (find-file (concat (file-name-as-directory "~/_NOTES") "NOTES.md" ))
