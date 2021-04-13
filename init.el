@@ -1006,13 +1006,64 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (interactive "sURL or search terms: ")
   (xwwp browse-target browse-target))
 
+(defun web-bookmark-page ()
+  "Bookmark current page's URL."
+  (interactive)
+  (xwidget-webkit-bookmark-make-record))
+
+(defun web-storyboard ()
+  "Open my current project's scrum board."
+  (interactive)
+  (browse-url "https://jira.rallyhealth.com/secure/RapidBoard.jspa?rapidView=844"))
+
 (global-set-key (kbd "C-c b g") 'helm-google-suggest)
 (global-set-key (kbd "C-c b s") 'web-browse-or-search)
-(global-set-key (kbd "C-c b b") 'xwidget-webkit-bookmark-make-record)
+(global-set-key (kbd "C-c b S") 'web-storyboard)
+(global-set-key (kbd "C-c b b") 'web-bookmark-page)
 (define-key xwidget-webkit-mode-map (kbd "C-w") 'xwidget-webkit-copy-selection-as-kill)
 (define-key xwidget-webkit-mode-map (kbd "M-w") 'xwidget-webkit-copy-selection-as-kill)
-(define-key xwidget-webkit-mode-map [home] 'xwidget-webkit-scroll-top)
-(define-key xwidget-webkit-mode-map [end] 'xwidget-webkit-scroll-bottom)
+(define-key xwidget-webkit-mode-map [remap beginning-of-buffer] 'xwidget-webkit-scroll-top)
+(define-key xwidget-webkit-mode-map [remap end-of-buffer] 'xwidget-webkit-scroll-bottom)
+;; (define-key xwidget-webkit-mode-map [home] 'xwidget-webkit-scroll-top)
+;; (define-key xwidget-webkit-mode-map [end] 'xwidget-webkit-scroll-bottom)
+
+
+(defun xwidget-webkit-new-doctitle (title)
+  "Called when a web browser has a new document TITLE."
+  (unless (string-equal title "")
+    (rename-buffer title)
+    ;; (rename-buffer (concat "*w3 " title "*"))
+    (centaur-tabs-get-groups)))
+
+;; HACK! Forked from xwidget.el: better buffer names!
+(defun xwidget-webkit-callback (xwidget xwidget-event-type)
+  "Callback for xwidgets.
+XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
+  (if (not (buffer-live-p (xwidget-buffer xwidget)))
+      (xwidget-log
+       "error: callback called for xwidget with dead buffer")
+    (with-current-buffer (xwidget-buffer xwidget)
+      (cond ((eq xwidget-event-type 'load-changed)
+             (xwidget-webkit-execute-script
+              xwidget "document.title"
+              #'xwidget-webkit-new-doctitle)
+             (pop-to-buffer (current-buffer)))
+            ((eq xwidget-event-type 'decide-policy)
+             (let ((strarg  (nth 3 last-input-event)))
+               (if (string-match ".*#\\(.*\\)" strarg)
+                   (xwidget-webkit-show-id-or-named-element
+                    xwidget
+                    (match-string 1 strarg)))))
+            ((eq xwidget-event-type 'javascript-callback)
+             (let ((proc (nth 3 last-input-event))
+                   (arg  (nth 4 last-input-event)))
+               (funcall proc arg)))
+            (t (xwidget-log "unhandled event:%s" xwidget-event-type))))))
+
+(defun xwidget-kill-buffer-query-function ()
+  "Don't ask before killing a buffer that has xwidgets."
+  1)
+
 
 
 ;; SASS css support
@@ -2345,8 +2396,7 @@ buffer's."
           uniquify-separator "/"
           uniquify-buffer-name-style 'forward)
     (centaur-tabs-headline-match)
-    (centaur-tabs-change-fonts "Noto Sans" 160)
-    (centaur-tabs-group-by-projectile-project)
+    (centaur-tabs-change-fonts "Noto Sans" 140)
 
     :hook
     (dashboard-mode . centaur-tabs-local-mode)
@@ -2361,27 +2411,71 @@ buffer's."
     ("M-<right>" . centaur-tabs-forward))
 
   (defun centaur-tabs-buffer-groups ()
-    "Return the name of the tab group names the current buffer belongs to."
-    (list (cond ((starts-with "*sbt*" (buffer-name)) "System")
-                ((starts-with "*terminal" (buffer-name)) "System")
-                ((eq major-mode 'org-mode) "Notes")
-                ((eq major-mode 'clojure-mode) "Clojure")
-                ((eq major-mode 'clojurescript-mode) "Clojure")
-                ((starts-with "TAGS" (buffer-name)) "Emacs")
-                ((starts-with "*cider-error" (buffer-name)) "Emacs")
-                ((starts-with "*cider" (buffer-name)) "User")
-                ((starts-with "*nrepl-server" (buffer-name)) "User")
-                ((string-equal "*eshell*" (buffer-name)) "User")
-                ((starts-with "*term" (buffer-name)) "User")
-                ((string-equal "*scratch*" (buffer-name)) "ELisp")
-                ((eq major-mode 'emacs-lisp-mode) "ELisp")
-                ((starts-with "magit" (buffer-name)) "Magit")
-                ((starts-with "*magit" (buffer-name)) "Magit")
-                ((starts-with "*helm" (buffer-name)) "Helm")
-                ((starts-with "*Helm" (buffer-name)) "Helm")
-                ((string-equal "*" (substring (buffer-name) 0 1)) "Emacs")
-                ((derived-mode-p 'dired-mode) "DirEd")
-                (t (centaur-tabs-get-group-name (current-buffer)))))))
+    "`centaur-tabs-buffer-groups' control buffers' group rules.
+
+    Group centaur-tabs with mode if buffer is derived from `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
+    All buffer name start with * will group to \"Emacs\".
+    Other buffer group by `centaur-tabs-get-group-name' with project name."
+    (list
+	  (cond
+	   ((or (string-equal "*" (substring (buffer-name) 0 1))
+	        (memq major-mode '(magit-process-mode
+				                  magit-status-mode
+				                  magit-diff-mode
+				                  magit-log-mode
+				                  magit-file-mode
+				                  magit-blob-mode
+				                  magit-blame-mode
+				                  )))
+	    "Emacs")
+	   ((derived-mode-p 'prog-mode)
+	    "Programming")
+	   ((derived-mode-p 'dired-mode)
+	    "Dired")
+      ((derived-mode-p 'xwidget-webkit-mode)
+       "Web")
+	   ((memq major-mode '(helpful-mode
+			                 help-mode))
+	    "Help")
+	   ((memq major-mode '(org-mode
+			                 org-agenda-clockreport-mode
+			                 org-src-mode
+			                 org-agenda-mode
+			                 org-beamer-mode
+			                 org-indent-mode
+			                 org-bullets-mode
+			                 org-cdlatex-mode
+			                 org-agenda-log-mode
+			                 diary-mode))
+	    "OrgMode")
+	   (t (or (vc-root-dir)
+	          (centaur-tabs-get-group-name (current-buffer)))))))
+
+  ;; (defun centaur-tabs-buffer-groups ()
+  ;;   "Return the name of the tab group names the current buffer belongs to."
+  ;;   (list (cond ((starts-with "*sbt*" (buffer-name)) "System")
+  ;;               ((starts-with "*terminal" (buffer-name)) "System")
+  ;;               ((eq major-mode 'org-mode) "Notes")
+  ;;               ((eq major-mode 'clojure-mode) "Clojure")
+  ;;               ((eq major-mode 'clojurescript-mode) "Clojure")
+  ;;               ((eq major-mode 'xwidget-webkit-mode) "Web-page")
+  ;;               ((starts-with "*w3" (buffer-name)) "Web-page")
+  ;;               ((starts-with "TAGS" (buffer-name)) "Emacs")
+  ;;               ((starts-with "*cider-error" (buffer-name)) "Emacs")
+  ;;               ((starts-with "*cider" (buffer-name)) "User")
+  ;;               ((starts-with "*nrepl-server" (buffer-name)) "User")
+  ;;               ((string-equal "*eshell*" (buffer-name)) "User")
+  ;;               ((starts-with "*term" (buffer-name)) "User")
+  ;;               ((string-equal "*scratch*" (buffer-name)) "ELisp")
+  ;;               ((eq major-mode 'emacs-lisp-mode) "ELisp")
+  ;;               ((starts-with "magit" (buffer-name)) "Magit")
+  ;;               ((starts-with "*magit" (buffer-name)) "Magit")
+  ;;               ((starts-with "*helm" (buffer-name)) "Helm")
+  ;;               ((starts-with "*Helm" (buffer-name)) "Helm")
+  ;;               ((string-equal "*" (substring (buffer-name) 0 1)) "Emacs")
+  ;;               ((derived-mode-p 'dired-mode) "DirEd")
+  ;;               (t (centaur-tabs-get-group-name (current-buffer))))))
+  )
 
 
 (global-set-key [tab] 'company-tab-indent-or-complete)
