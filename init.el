@@ -914,6 +914,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    . (lambda () (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
 
 
+(use-package npm-mode)
+
+
 (defun setup-tide-mode ()
   (interactive)
   (tide-setup)
