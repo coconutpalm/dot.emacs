@@ -249,7 +249,7 @@ With ARG, do this that many times."
 ;(global-set-key (kbd "C-Z") 'redo)
 
 ;;; Load the init file into a buffer so it's easy to get to
-(find-file (concat (file-name-as-directory "~/.emacs.d") "init.el" ))
+;; (find-file (concat (file-name-as-directory "~/.emacs.d") "init.el" ))
 
 ;;;
 ;;; Configuration settings
