@@ -264,32 +264,13 @@ With ARG, do this that many times."
 (setq exec-path (append exec-path (list "/usr/bin")))
 
 ;; Yeah, Mach paths are different
-(if (memq window-system '(mac ns))
-    (setq nodejs-path "/Users/david.orme/.nvm/versions/node/v10.22.0/bin/node")
-  (setq nodejs-path "/usr/local/bin/node"))
-
-(setq lein-path "~/bin/lein")
-(setq boot-path "~/bin/boot")
+(setq nodejs-path (executable-find "node"))
+(setq lein-path (executable-find "lein"))
+(setq boot-path (executable-find "boot"))
+(setq clojure-path (executable-find "clj"))
 
 ;; In Clojure, Cmd-enter inserts the contents of this file into the current repl
 (setq clojure-repl-init-file "~/.repl.clj")
-
-;; On MacOS, make sure we have these environment variables:
-;;
-;; Make sure the following is in the environment to enable 256 colors in terminals:
-;; TERM=xterm-256color
-(setq macos-copy-from-env-list
-      '("AWS_ACCESS_KEY_ID"
-        "AWS_SECRET_ACCESS_KEY"
-        "SERVICE_LOCATOR_CONVENTION_SCHEME"
-        "SERVICE_LOCATOR_CONVENTION_DNS_PATTERN"
-        "PATH"
-        "JAVA_HOME"
-        "TERM"
-        "PERL5LIB"                      ; Needed for edbi
-        "PERL_LOCAL_LIB_ROOT"
-        "PERL_MB_OPT"
-        "PERL_MM_OPT"))
 
 
 ;;; Misc display settings
@@ -579,6 +560,18 @@ With ARG, do this that many times."
           (save-buffers-kill-emacs)
         (message-box "use 'M-x exit'")))))
 
+;; Automatically clean buffer list every hour
+;; (require 'midnight)
+;; (run-at-time "12am" (* 60 60) #'clean-buffer-list) ; the REPEAT parameter is in seconds
+
+;; (setq clean-buffer-list-delay-general 0)
+;; (setq clean-buffer-list-delay-special (* 8 60 60)) ; last used more than 8h ago
+;; (setq clean-buffer-list-never-regexps
+      ;; '("company"
+        ;; "magit"))
+;; (setq clean-buffer-list-kill-regexps
+      ;; '("[*]magit.*"))
+
 (defun declare-buffer-bankruptcy ()
   "Declare buffer bankruptcy and clean up everything using `midnight'."
   (interactive)
@@ -645,6 +638,23 @@ Approximates the rules of `clean-buffer-list'."
 ;;
 ;; Fix macos environment variable handling
 ;;
+(setq macos-copy-from-env-list
+      '("AWS_ACCESS_KEY_ID"
+        "AWS_SECRET_ACCESS_KEY"
+        "SERVICE_LOCATOR_CONVENTION_SCHEME"
+        "SERVICE_LOCATOR_CONVENTION_DNS_PATTERN"
+        "TERM"
+        "PATH"
+        "JAVA_HOME"
+        "NVM_BIN"
+        "NVM_CD_FLAGS"
+        "NVM_DIR"
+        "TERM"
+        "PERL5LIB"                      ; Needed for edbi
+        "PERL_LOCAL_LIB_ROOT"
+        "PERL_MB_OPT"
+        "PERL_MM_OPT"))
+
 (use-package exec-path-from-shell :ensure t)
 (when (or (daemonp) (memq window-system '(mac ns)))
     (exec-path-from-shell-copy-envs macos-copy-from-env-list)
@@ -765,7 +775,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; Ctrl-t to launch an ansi-term
 (defun ansi-term-with-config ()
-  (ansi-term "/bin/bash")
+  (ansi-term "/bin/bash -l")
   (term-send-string (get-buffer-process "*ansi-term*") "source /etc/profile\n"))
 
 (defun terminal ()
@@ -914,7 +924,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    . (lambda () (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
 
 
-(use-package npm-mode)
+;; Use my fork of npm-mode that fixes jump to error
+(require 'npm+-mode)
 
 
 (defun setup-tide-mode ()
