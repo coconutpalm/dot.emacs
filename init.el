@@ -77,7 +77,7 @@
           (nospace . "-")
           (case-fn . downcase))
         deft-recursive t
-        deft-auto-save-interval 10
+        deft-auto-save-interval 60
         deft-default-extension "md"
         deft-markdown-mode-title-level 1
         deft-use-filter-string-for-filename t))
