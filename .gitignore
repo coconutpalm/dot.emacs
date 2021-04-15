@@ -12,6 +12,8 @@ project-explorer-cache/
 projectile-bookmarks.eld
 projectile.cache
 tramp
+forge-database.sqlite
+helm-curl.log
 ede-projects.el
 /SessionDesktop.el
 
