@@ -58,9 +58,12 @@
 
 
 ;; Ag searching
-
 (use-package ag)
 
+
+;; Better Lisp lists and strings
+(use-package dash)
+(use-package s)
 
 ;;
 ;; Deft notetaking/notes
@@ -194,23 +197,6 @@ With ARG, do this that many times."
 (global-set-key (kbd "C--") #'zoom-out)
 
 
-;; Org mode
-(use-package org
-  :ensure t)
-
-(setq org-duration-format (quote (:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t)))
-
-;; org mode hooks
-(add-hook 'org-mode-hook 'turn-on-font-lock)
-(add-hook 'org-mode-hook 'visual-line-mode)
-;; turn on soft wrapping mode for org mode
-(add-hook 'org-mode-hook
-          (lambda () (setq truncate-lines nil)))
-(setq org-src-fontify-natively t)
-(add-hook 'org-mode-hook
-          (lambda ()
-            (org-indent-mode t)) t)
-
 
 (use-package nginx-mode)
 
@@ -261,6 +247,8 @@ With ARG, do this that many times."
 (setq exec-path-from-shell-check-startup-files nil)
 
 (add-to-list 'load-path "~/.emacs.d/elisp")
+(add-to-list 'load-path "~/.emacs.d/elisp/confluence-el")
+(add-to-list 'load-path "~/.emacs.d/elisp/graphiql.el")
 (setq exec-path (append exec-path (list "/usr/bin")))
 
 ;; Yeah, Mach paths are different
@@ -584,7 +572,6 @@ With ARG, do this that many times."
   '("^[*]\\(notmuch\\-hello\\|unsent\\|ag search\\|grep\\|eshell\\).*")
   "Whitelist regexp of `clean-buffer-list' buffers to show when switching buffer.")
 
-(use-package dash)
 
 (defun midnight-clean-or-ido-whitelisted (name)
   "T if midnight is likely to kill the buffer named NAME, unless whitelisted.
@@ -775,7 +762,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; Ctrl-t to launch an ansi-term
 (defun ansi-term-with-config ()
-  (ansi-term "/bin/bash -l")
+  (ansi-term "/bin/bash" "-l")
   (term-send-string (get-buffer-process "*ansi-term*") "source /etc/profile\n"))
 
 (defun terminal ()
@@ -870,11 +857,74 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   ("Jenkinsfile.*" . jenkinsfile-mode))
 
 
-(use-package restclient
-  :mode (rx ".rest" string-end))
+;;
+;; JSON and API explorer support
+;;
+(use-package json-mode
+  :mode (("\\.json\\'" . json-mode)
+         ("\\manifest.webapp\\'" . json-mode )
+         ("\\.tern-project\\'" . json-mode)))
 
+;; Import Postman files into restclient or verb
+(require 'impostman)
+
+;; For quick & dirty HTTP requests
+(use-package httprepl)
+
+;; For HTTP protocol syntax
+(use-package restclient
+  :ensure t
+  :defer t
+  :mode (("\\.http\\'" . restclient-mode))
+  :bind (:map restclient-mode-map
+              ("C-c C-i" . impostman-import-string)
+	           ("C-c C-f" . json-mode-beautify)
+              ("C-c C-r" . httprepl)))
+
+;; Extend Org mode into a literate form expressing
+;; HTTP requests.  Supports cURL import/export.
+;; C-c C-' displays Walkman's menu inside an Org buffer
+;;
+;; https://github.com/abrochard/walkman/blob/master/sample.org
+(use-package walkman
+  :ensure t
+  :defer t
+  :config
+  (setq walkman-keep-headers t)
+  :bind (:map org-mode-map
+              ("C-c C-c" . walkman-at-point)))
+(walkman-setup)
+
+;; Extend Org mode to DRY up REST requests
+;; An alternative to "walkman"
+;;
+;; Keymap is added below in org-mode package
+(use-package verb :ensure t)
+
+
+;; Org mode
+(use-package org
+  :ensure t
+
+  :config
+  (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
+  (setq org-src-fontify-natively t)
+  (setq org-duration-format (quote (:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t)))
+
+  :hook
+  (org-mode
+   . (lambda ()
+       (org-indent-mode t)
+       (turn-on-font-lock)
+       (visual-line-mode)
+       (setq truncate-lines nil))))
+
+
+;; GraphQL
 (use-package request)
-(use-package graphql-mode)
+(require 'graphiql)             ; Not sure which I prefer
+(setq graphiql-use-lsp t)
+;; (use-package graphql-mode)
 
 
 ;;
@@ -1083,12 +1133,6 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 
 ;; SASS css support
 (use-package sass-mode)
-
-
-(use-package json-mode
-  :mode (("\\.json\\'" . json-mode)
-         ("\\manifest.webapp\\'" . json-mode )
-         ("\\.tern-project\\'" . json-mode)))
 
 
 (defun my-semicolon ()
@@ -1322,9 +1366,6 @@ _q_uit _RET_: current
 ;; Projectile / Helm
 ;;
 ;; @see: http://tuhdo.github.io/helm-intro.html
-
-(unless (package-installed-p 'helm)
-  (package-install 'helm))
 
 (use-package helm
   :config
@@ -1764,7 +1805,10 @@ assuming it is in a maven-style project."
   :config
   (setq lsp-lens-enable t)
 
-  :commands lsp lsp-deferred)
+  :commands lsp lsp-deferred
+
+  :bind
+  ([f3] . 'lsp-goto-implementation))
 
 (use-package lsp-metals)
 
