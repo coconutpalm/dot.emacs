@@ -1051,6 +1051,21 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
                                           (lambda (output)
                                             (replace-regexp-in-string ".*1G.*3G" "> " output))))))
 
+;; Javascript testing/debugging
+(use-package jest-test-mode :ensure t :defer t :commands jest-test-mode
+  :init
+  (add-hook 'typescript-mode-hook 'jest-test-mode)
+  (add-hook 'js2-mode-hook 'jest-test-mode)
+  (add-hook 'typescript-tsx-mode-hook 'jest-test-mode))
+
+(use-package upbo
+  :ensure t
+  :init
+  (add-hook 'typescript-mode-hook 'upbo-mode)
+  (add-hook 'js2-mode-hook 'upbo-mode)
+  (add-hook 'typescript-tsx-mode-hook 'upbo-mode))
+
+
 
 ;; Configure embedded Webkit browser
 (require 'xwidget)
