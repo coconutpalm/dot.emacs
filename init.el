@@ -447,6 +447,8 @@ With ARG, do this that many times."
      "*Messages"
      "*which"
      "*code"
+     "*straight"
+     "*Slack Log"
      "*Echo")
    helm-boring-file-regexp-list
    '("\\.git$" "\\.hg$" "\\.svn$"  "^\\."  "\\.$"
@@ -454,11 +456,11 @@ With ARG, do this that many times."
      "_8h.*"  "\\.CVS$" "\\._darcs$"  "\\.la$"
      "\\.o$" "~$"  "^#.*")
    ;; helm-ff-skip-boring-files t
-   ;; helm-buffer-max-length 80
+   helm-buffer-max-length nil
    ;; helm-idle-delay 2.0
    ;; helm-find-files-show-icons t
    ;; helm-quick-update t
-   helm-candidate-number-limit 50
+   helm-candidate-number-limit 40
    ;; helm-use-standard-keys nil
    ;; helm-locate-case-fold-search t
    ))
@@ -719,10 +721,6 @@ With ARG, do this that many times."
 (add-to-load-path (expand-file-name "lisp" user-emacs-directory))
 
 (add-to-list 'auto-mode-alist '("\\.xml\\'" . nxml-mode))
-
-(use-package ibuffer
-  :ensure nil
-  :bind ("C-x C-b" . ibuffer))
 
 
 (require 'dired)
