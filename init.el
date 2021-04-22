@@ -17,30 +17,30 @@
 (tool-bar-mode 0)
 (toggle-scroll-bar -1)
 
+;; Configure straight.el and use-package
 ;;
 ;; NOTE-When receiving an out-of-date certificate error, uncomment
 ;;      (setq package-check-signature nil)               and
 ;;      (package-install 'gnu-elpa-keyring-update)       and reload
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(setq package-archives
-      '(("melpa" . "http://melpa.org/packages/")
-		  ("gnu" . "http://elpa.gnu.org/packages/")
-		  ("org" . "http://orgmode.org/elpa/")))
+;; Set up github:/raxod502/straight.el
+(setq straight-use-package-by-default t)
 
-(package-initialize)
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(require 'use-package)
-(setq use-package-always-ensure t
-      use-package-always-defer t
-      backup-directory-alist `((".*" . ,temporary-file-directory))
-      auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
-
-(use-package package-utils)
+(straight-use-package 'use-package)
 
 ;; Upgrade packages automatically on startup
 ;;  If you don't want this, comment out package-utils-upgrade-all
@@ -62,9 +62,12 @@
 
 
 ;; Better Lisp lists and strings
-(use-package dash)
-(use-package s)
 
+(use-package dash
+  :straight (:type git :host github :repo "magnars/dash.el"))
+
+(use-package s)
+(use-package f)
 ;;
 ;; Deft notetaking/notes
 ;;   - by default stored in ~/.deft
@@ -417,6 +420,235 @@ With ARG, do this that many times."
 (add-hook 'smerge-mode-hook (lambda () (hydra-smerge/body)))
 
 
+;; Projectile / Helm
+;;
+;; @see: http://tuhdo.github.io/helm-intro.html
+
+(use-package helm
+  :config
+  (require 'helm-config)
+  ;; (require 'helm-buffers)
+  ;; (require 'helm-locate)
+  ;; (require 'helm-bookmark)
+  ;; (require 'helm-files)
+
+  (setq
+   helm-boring-buffer-regexp-list
+   '("^diary$"
+     "magit-"
+     "magit:"
+     "helm"
+     "*ag"
+     "*t"
+     "*forge"
+     "*Mini"
+     "*Messages"
+     "*which"
+     "*code"
+     "*Echo")
+   helm-boring-file-regexp-list
+   '("\\.git$" "\\.hg$" "\\.svn$"  "^\\."  "\\.$"
+     "\\.\\.$" "\\.Plo$" "\\.lo$"  "_source.*"
+     "_8h.*"  "\\.CVS$" "\\._darcs$"  "\\.la$"
+     "\\.o$" "~$"  "^#.*")
+   ;; helm-ff-skip-boring-files t
+   ;; helm-buffer-max-length 80
+   ;; helm-idle-delay 2.0
+   ;; helm-find-files-show-icons t
+   ;; helm-quick-update t
+   helm-candidate-number-limit 50
+   ;; helm-use-standard-keys nil
+   ;; helm-locate-case-fold-search t
+   ))
+
+
+;; Must be set before loading helm-ag
+
+(use-package helm-ag)
+
+(helm-mode 1)
+
+(setq helm-autoresize-max-height 80)
+(helm-autoresize-mode 1)
+
+(use-package helm-descbinds
+  :config
+  (helm-descbinds-mode)
+  (global-set-key (kbd "C-h h") 'describe-bindings))
+
+(global-set-key (kbd "C-x b")
+                (lambda () (interactive)
+                  (ignore-errors
+                    (helm :prompt "Location:"
+                          :sources '( helm-source-buffers-list
+                                      helm-source-locate
+                                      helm-source-bookmarks
+                                      helm-source-recentf
+                                      helm-source-in-buffer
+                                      helm-source-files-in-current-dir)))))
+
+
+;; Sort Helm's switch buffer list
+(add-hook 'ido-make-buffer-list-hook
+          (lambda ()
+            (setq
+             ido-temp-list
+             (cl-sort ido-temp-list #'string<
+                      :key (lambda (b) (with-current-buffer b
+                                         (prin1-to-string major-mode)))))))
+
+(global-set-key (kbd "M-x") 'helm-M-x)
+;; (global-set-key (kbd "C-c C-b") 'helm-buffers-list)
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
+
+(global-set-key (kbd "C-c h") 'helm-command-prefix) ;; Better Helm activation sequence
+(global-unset-key (kbd "C-x c"))
+
+(define-key helm-map (kbd "TAB") 'helm-execute-persistent-action) ; rebind tab to autocomplete
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to autocomplete
+(define-key helm-map (kbd "\t") 'helm-execute-persistent-action) ; rebind tab to autocomplete
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+(define-key helm-map (kbd "C-<return>") 'helm-select-action)
+(define-key helm-find-files-map [(control backspace)] #'helm-find-files-up-one-level)
+(define-key helm-read-file-map [(control backspace)] #'helm-find-files-up-one-level)
+
+;; (when (executable-find "curl")
+;;   (setq helm-google-suggest-use-curl-p t))
+(global-set-key (kbd "C-c h g") 'helm-google-suggest)
+
+(setq helm-semantic-fuzzy-match t
+      helm-imenu-fuzzy-match    t)
+
+(use-package projectile :ensure t)
+(use-package helm-projectile
+  :ensure t
+  :config
+  (helm-projectile-on))
+
+(use-package perspective)
+(persp-mode)
+
+(projectile-mode +1)
+(define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map)
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+
+(setq projectile-switch-project-action 'treemacs)
+(setq projectile-enable-caching t)
+(setq projectile-completion-system 'helm)
+(setq projectile-indexing-method 'native)
+(setq projectile-globally-ignored-directories
+      '(".git"
+        ".github"
+        ".history"
+        ".log"
+        ".metals"
+        ".storybook"
+        ".vscode"))
+(setq projectile-use-git-grep t)
+
+(global-set-key (kbd "C-x p p") 'projectile-switch-project)
+(global-set-key (kbd "s-f") 'projectile-find-file)
+(global-set-key (kbd "s-F") 'projectile-grep)
+(global-set-key (kbd "C-c C-f") 'projectile-find-file)
+(global-set-key (kbd "C-x M-f") 'projectile-find-file)
+(global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
+(global-set-key (kbd "C-x C-b") 'helm-buffers-list)
+(global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
+
+
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+
+  :config
+  (when window-system
+    (progn
+      (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
+            treemacs-deferred-git-apply-delay      0.5
+            treemacs-display-in-side-window        t
+            treemacs-eldoc-display                 t
+            treemacs-file-event-delay              5000
+            treemacs-file-follow-delay             0.2
+            treemacs-follow-after-init             t
+            treemacs-git-command-pipe              ""
+            treemacs-goto-tag-strategy             'refetch-index
+            treemacs-indentation                   2
+            treemacs-indentation-string            " "
+            treemacs-is-never-other-window         nil
+            treemacs-max-git-entries               5000
+            treemacs-missing-project-action        'ask
+            treemacs-no-png-images                 nil
+            treemacs-no-delete-other-windows       t
+            treemacs-project-follow-cleanup        nil
+            treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+            treemacs-position                      'left
+            treemacs-recenter-distance             0.1
+            treemacs-recenter-after-file-follow    nil
+            treemacs-recenter-after-tag-follow     nil
+            treemacs-recenter-after-project-jump   'always
+            treemacs-recenter-after-project-expand 'on-distance
+            treemacs-show-cursor                   nil
+            treemacs-show-hidden-files             t
+            treemacs-silent-filewatch              nil
+            treemacs-silent-refresh                nil
+            treemacs-sorting                       'alphabetic-desc
+            treemacs-space-between-root-nodes      t
+            treemacs-tag-follow-cleanup            t
+            treemacs-tag-follow-delay              1.5
+            treemacs-width                         40)))
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode t)
+  (pcase (cons (not (null (executable-find "git")))
+               (not (null treemacs-python-executable)))
+    (`(t . t)
+     (treemacs-git-mode 'deferred))
+    (`(t . _)
+     (treemacs-git-mode 'simple)))
+
+  :hook
+  (treemacs-mode . (lambda ()
+                     (variable-pitch-mode 1)
+                     (linum-mode nil)))
+
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-\\"      . treemacs)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
+
+
+;; (use-package treemacs-evil
+;;   :after treemacs evil
+;;   :ensure t)
+
+(use-package treemacs-projectile
+  :after treemacs projectile
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :after treemacs dired
+  :ensure t
+  :config (treemacs-icons-dired-mode))
+
+(use-package treemacs-magit
+  :after treemacs magit
+  :ensure t)
+
+
 (use-package which-key
   :config
   (which-key-mode t))
@@ -490,13 +722,13 @@ With ARG, do this that many times."
   :ensure nil
   :bind ("C-x C-b" . ibuffer))
 
-(use-package dired
-  :ensure nil
-  :config
-  (setq dired-dwim-target t)           ; If two dired windows are open, "copy" and "move" target the other window's path
-  ;; a workflow optimisation too far?
-  (bind-key "C-c c" 'sbt-hydra dired-mode-map)
-  (bind-key "C-c e" 'next-error dired-mode-map))
+
+(require 'dired)
+(setq dired-dwim-target t)           ; If two dired windows are open, "copy" and "move" target the other window's path
+;; a workflow optimisation too far?
+(bind-key "C-c c" 'sbt-hydra dired-mode-map)
+(bind-key "C-c e" 'next-error dired-mode-map)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; This section is for generic interactive convenience methods.
@@ -781,7 +1013,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (global-set-key "\C-t" 'terminal)
 
 (defun named-term (name)
-  (interactive "Name: ")
+  (interactive "MName: ")
   (ansi-term "/bin/bash" name))
 
 
@@ -826,16 +1058,52 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
     (lambda () (delete-windows-on "*Completions*")))))
 
 
+;; Slack
+;;
+;; From github:/yuya373/emacs-slack
+(use-package alert
+  :commands (alert)
+  :config
+  (setq alert-default-style 'notifier))
+(use-package emojify)
+(use-package oauth2)
+(use-package request)
+(use-package websocket)
 
+(use-package slack
+  :commands (slack-start)
+  :config
+  (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
+  (setq slack-prefer-current-team t)
+
+  ;; (slack-register-team
+  ;; :name "emacs-slack"
+  ;; :default t
+  ;; :token "xoxs-sssssssssss-88888888888-hhhhhhhhhhh-jjjjjjjjjj"
+  ;; :subscribed-channels '(test-rename rrrrr)
+  ;; :full-and-display-names t)
+
+  ;; (slack-register-team
+  ;; :name "test"
+  ;; :token "xoxs-yyyyyyyyyy-zzzzzzzzzzz-hhhhhhhhhhh-llllllllll"
+  ;; :subscribed-channels '(hoge fuga))
+  )
+
+(use-package helm-slack
+  :straight (:type git :host github :repo "yuya373/helm-slack")
+  :after slack)
+
+
+;; Source code comment line(s)
 (defun comment-or-uncomment-region-or-line ()
-    "Comments or uncomments the region or the current line if there's no active region."
-    (interactive)
-    (let (beg end)
-        (if (region-active-p)
-            (setq beg (region-beginning) end (region-end))
-            (setq beg (line-beginning-position) end (line-end-position)))
-        (comment-or-uncomment-region beg end)
-        (next-line)))
+  "Comments or uncomments the region or the current line if there's no active region."
+  (interactive)
+  (let (beg end)
+    (if (region-active-p)
+        (setq beg (region-beginning) end (region-end))
+      (setq beg (line-beginning-position) end (line-end-position)))
+    (comment-or-uncomment-region beg end)
+    (next-line)))
 
 
 (use-package groovy-mode
@@ -1378,234 +1646,6 @@ _q_uit _RET_: current
   (">" smerge-diff-base-other)
   ("q" nil :color blue))
 ;;
-;; Projectile / Helm
-;;
-;; @see: http://tuhdo.github.io/helm-intro.html
-
-(use-package helm
-  :config
-  (require 'helm-config)
-  ;; (require 'helm-buffers)
-  ;; (require 'helm-locate)
-  ;; (require 'helm-bookmark)
-  ;; (require 'helm-files)
-
-  (setq
-   helm-boring-buffer-regexp-list
-   '("^diary$"
-     "magit-"
-     "magit:"
-     "helm"
-     "*ag"
-     "*t"
-     "*forge"
-     "*Mini"
-     "*Messages"
-     "*which"
-     "*code"
-     "*Echo")
-   helm-boring-file-regexp-list
-   '("\\.git$" "\\.hg$" "\\.svn$"  "^\\."  "\\.$"
-     "\\.\\.$" "\\.Plo$" "\\.lo$"  "_source.*"
-     "_8h.*"  "\\.CVS$" "\\._darcs$"  "\\.la$"
-     "\\.o$" "~$"  "^#.*")
-   ;; helm-ff-skip-boring-files t
-   ;; helm-buffer-max-length 80
-   ;; helm-idle-delay 2.0
-   ;; helm-find-files-show-icons t
-   ;; helm-quick-update t
-   helm-candidate-number-limit 50
-   ;; helm-use-standard-keys nil
-   ;; helm-locate-case-fold-search t
-   ))
-
-
-;; Must be set before loading helm-ag
-
-(use-package helm-ag)
-
-(helm-mode 1)
-
-(setq helm-autoresize-max-height 80)
-(helm-autoresize-mode 1)
-
-(use-package helm-descbinds
-  :config
-  (helm-descbinds-mode)
-  (global-set-key (kbd "C-h h") 'describe-bindings))
-
-(global-set-key (kbd "C-x b")
-                (lambda () (interactive)
-                  (ignore-errors
-                    (helm :prompt "Location:"
-                          :sources '( helm-source-buffers-list
-                                      helm-source-locate
-                                      helm-source-bookmarks
-                                      helm-source-recentf
-                                      helm-source-in-buffer
-                                      helm-source-files-in-current-dir)))))
-
-
-;; Sort Helm's switch buffer list
-(add-hook 'ido-make-buffer-list-hook
-          (lambda ()
-            (setq
-             ido-temp-list
-             (cl-sort ido-temp-list #'string<
-                      :key (lambda (b) (with-current-buffer b
-                                         (prin1-to-string major-mode)))))))
-
-(global-set-key (kbd "M-x") 'helm-M-x)
-;; (global-set-key (kbd "C-c C-b") 'helm-buffers-list)
-(global-set-key (kbd "C-x C-f") 'helm-find-files)
-
-(global-set-key (kbd "C-c h") 'helm-command-prefix) ;; Better Helm activation sequence
-(global-unset-key (kbd "C-x c"))
-
-(define-key helm-map (kbd "TAB") 'helm-execute-persistent-action) ; rebind tab to autocomplete
-(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to autocomplete
-(define-key helm-map (kbd "\t") 'helm-execute-persistent-action) ; rebind tab to autocomplete
-(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
-(define-key helm-map (kbd "C-<return>") 'helm-select-action)
-(define-key helm-find-files-map [(control backspace)] #'helm-find-files-up-one-level)
-(define-key helm-read-file-map [(control backspace)] #'helm-find-files-up-one-level)
-
-(when (executable-find "curl")
-  (setq helm-google-suggest-use-curl-p t))
-(global-set-key (kbd "C-c h g") 'helm-google-suggest)
-
-(setq helm-semantic-fuzzy-match t
-      helm-imenu-fuzzy-match    t)
-
-(use-package projectile :ensure t)
-(use-package helm-projectile
-  :ensure t
-  :config
-  (helm-projectile-on))
-
-(use-package perspective)
-(persp-mode)
-
-(projectile-mode +1)
-(define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map)
-(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-
-(setq projectile-switch-project-action 'treemacs)
-(setq projectile-enable-caching t)
-(setq projectile-completion-system 'helm)
-(setq projectile-indexing-method 'native)
-(setq projectile-globally-ignored-directories
-      '(".git"
-        ".github"
-        ".history"
-        ".log"
-        ".metals"
-        ".storybook"
-        ".vscode"))
-(setq projectile-use-git-grep t)
-
-(global-set-key (kbd "C-x p p") 'projectile-switch-project)
-(global-set-key (kbd "s-f") 'projectile-find-file)
-(global-set-key (kbd "s-F") 'projectile-grep)
-(global-set-key (kbd "C-c C-f") 'projectile-find-file)
-(global-set-key (kbd "C-x M-f") 'projectile-find-file)
-(global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
-(global-set-key (kbd "C-x C-b") 'helm-buffers-list)
-(global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
-
-
-(use-package treemacs
-  :ensure t
-  :defer t
-  :init
-  (with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-
-  :config
-  (when window-system
-    (progn
-      (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
-            treemacs-deferred-git-apply-delay      0.5
-            treemacs-display-in-side-window        t
-            treemacs-eldoc-display                 t
-            treemacs-file-event-delay              5000
-            treemacs-file-follow-delay             0.2
-            treemacs-follow-after-init             t
-            treemacs-git-command-pipe              ""
-            treemacs-goto-tag-strategy             'refetch-index
-            treemacs-indentation                   2
-            treemacs-indentation-string            " "
-            treemacs-is-never-other-window         nil
-            treemacs-max-git-entries               5000
-            treemacs-missing-project-action        'ask
-            treemacs-no-png-images                 nil
-            treemacs-no-delete-other-windows       t
-            treemacs-project-follow-cleanup        nil
-            treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-            treemacs-position                      'left
-            treemacs-recenter-distance             0.1
-            treemacs-recenter-after-file-follow    nil
-            treemacs-recenter-after-tag-follow     nil
-            treemacs-recenter-after-project-jump   'always
-            treemacs-recenter-after-project-expand 'on-distance
-            treemacs-show-cursor                   nil
-            treemacs-show-hidden-files             t
-            treemacs-silent-filewatch              nil
-            treemacs-silent-refresh                nil
-            treemacs-sorting                       'alphabetic-desc
-            treemacs-space-between-root-nodes      t
-            treemacs-tag-follow-cleanup            t
-            treemacs-tag-follow-delay              1.5
-            treemacs-width                         40)))
-
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
-
-
-  (treemacs-follow-mode t)
-  (treemacs-filewatch-mode t)
-  (treemacs-fringe-indicator-mode t)
-  (pcase (cons (not (null (executable-find "git")))
-               (not (null treemacs-python-executable)))
-    (`(t . t)
-     (treemacs-git-mode 'deferred))
-    (`(t . _)
-     (treemacs-git-mode 'simple)))
-
-  :hook
-  (treemacs-mode . (lambda ()
-                     (variable-pitch-mode 1)
-                     (linum-mode nil)))
-
-  :bind
-  (:map global-map
-        ("M-0"       . treemacs-select-window)
-        ("C-x t 1"   . treemacs-delete-other-windows)
-        ("C-x t t"   . treemacs)
-        ("C-\\"      . treemacs)
-        ("C-x t B"   . treemacs-bookmark)
-        ("C-x t C-t" . treemacs-find-file)
-        ("C-x t M-t" . treemacs-find-tag)))
-
-
-;; (use-package treemacs-evil
-;;   :after treemacs evil
-;;   :ensure t)
-
-(use-package treemacs-projectile
-  :after treemacs projectile
-  :ensure t)
-
-(use-package treemacs-icons-dired
-  :after treemacs dired
-  :ensure t
-  :config (treemacs-icons-dired-mode))
-
-(use-package treemacs-magit
-  :after treemacs magit
-  :ensure t)
-
 
 (use-package highlight-symbol
   :diminish highlight-symbol-mode
@@ -1685,14 +1725,11 @@ assuming it is in a maven-style project."
 
 
 (use-package play-routes-mode
-  :pin melpa
   :init
   (require 'play-routes-mode))
 
 
 (use-package scala-mode
-  :pin melpa
-
   :interpreter
   ("drydoc" . scala-mode) ;; Since the 'scala' command is deprecated
 
@@ -1774,8 +1811,6 @@ assuming it is in a maven-style project."
 
 
 (use-package sbt-mode
-  :pin melpa
-
   :interpreter
   ("sbt" . sbt-mode)
 
@@ -1912,21 +1947,6 @@ assuming it is in a maven-style project."
                          (yas-minor-mode t)
                          (company-mode t)
                          (smartparens-mode t)))
-
-
-;; smart tabs (indent with tabs, align with spaces)
-(unless (package-installed-p 'smart-tabs-mode)
-  (package-install 'smart-tabs-mode))
-(require 'smart-tabs-mode)
-
-;;(global-smart-tab-mode 1)
-(autoload 'smart-tabs-mode "smart-tabs-mode"
-  "Intelligently indent with tabs, align with spaces!")
-(autoload 'smart-tabs-mode-enable "smart-tabs-mode")
-(autoload 'smart-tabs-advice "smart-tabs-mode")
-(autoload 'smart-tabs-insinuate "smart-tabs-mode")
-(smart-tabs-insinuate 'c 'c++ 'java 'javascript 'cperl 'python 'ruby 'nxml)
-
 
 
 ;; Clojure
@@ -2105,18 +2125,11 @@ assuming it is in a maven-style project."
 (add-hook 'clojure-mode-hook 'lispy-mode-on)
 (add-hook 'lispy-mode-hook 'lispy-mode-key-unbindings)
 
-
-(use-package elisp-mode
-  :ensure nil
-  :bind
-  (:map
-   emacs-lisp-mode-map
-   ("C-c C-c" . me/eval-region-dwim)
-   :map lisp-interaction-mode-map
-   ("C-c C-c" . me/eval-region-dwim))
-  :hook
-  (emacs-lisp-mode . outline-minor-mode)
-  (emacs-lisp-mode . lispy-mode))
+;; Use Lispy mode with Emacs Lisp
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (outline-minor-mode 1)
+            (lispy-mode 1)))
 
 
 (use-package cider
@@ -2255,20 +2268,6 @@ buffer's."
   (yas-global-mode 1))
 
 
-;; Dependencies / misc
-
-(unless (package-installed-p 'dash)
-  (package-install 'dash))
-(require 'dash)
-
-(unless (package-installed-p 'f)
-  (package-install 'f))
-(require 'f)
-
-(unless (package-installed-p 's)
-  (package-install 's))
-(require 's)
-
 
 ;; Modeline things
 ;; (use-package nyan-mode :ensure t)   ; Cat in modeline!
@@ -2279,9 +2278,7 @@ buffer's."
 (sml/setup)
 
 
-(unless (package-installed-p 'tree-mode)
-  (package-install 'tree-mode))
-(require 'tree-mode)
+(use-package tree-mode)
 
 
 ;;SQL
@@ -2291,18 +2288,10 @@ buffer's."
   '(load-library "sql-indent"))
 
 
-(unless (package-installed-p 'cedet)
-  (package-install 'cedet))
-
-(unless (package-installed-p 'semantic)
-  (package-install 'semantic))
-
-(require 'cedet)
-(require 'semantic)
-;(require 'semantic/semanticdb-javap)
-(require 'semantic/ia)
+(use-package semantic)
 (load "semantic/loaddefs.el")
 (semantic-mode 1);;
+
 
 (require 'compile)
 (setq compilation-error-regexp-alist

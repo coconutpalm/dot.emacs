@@ -17,6 +17,10 @@ helm-curl.log
 ede-projects.el
 /SessionDesktop.el
 
+straight/build-cache.el
+straight/build
+straight/repos
+
 ensime/
 sbt-launcher
 launchers
