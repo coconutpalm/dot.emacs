@@ -1120,6 +1120,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (slack-mode
    .
    (lambda ()
+     (setq show-trailing-whitespace nil)
      (linum-mode nil)
      (variable-pitch-mode 1))))
 
