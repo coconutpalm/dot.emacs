@@ -8,6 +8,8 @@
 ;;;
 ;;; Code:
 
+(setq auth-sources '("~/.ssh/.authinfo"))
+
 ;;; Tell custom to put its stuff somewhere else, but load it early
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file 'noerror)
@@ -1076,6 +1078,35 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
   (setq slack-prefer-current-team t)
 
+  (slack-register-team
+   :name "Rally Health"
+   :token (auth-source-pick-first-password
+           :host "rallyhealth.slack.com"
+           :user "david.orme@rallyhealth.com")
+   :full-and-display-names t
+   :subscribed-channels
+   '((care-echo
+      care-ui
+      connect-fpc
+      domain-unification
+      jenkins-smes
+      linux-laptops
+      playproxy
+      reactiflux
+      scala-discussions
+      ui-bootcamp
+      ui-gurus
+      care-fpc-engineering
+      engineering
+      openapi-codegen
+      backend-bootcamp
+      backend-geeks
+      clojure
+      engineering
+      rally-chi
+      rally-discuss
+      connect-fpc)))
+
   ;; (slack-register-team
   ;; :name "emacs-slack"
   ;; :default t
@@ -1087,7 +1118,12 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   ;; :name "test"
   ;; :token "xoxs-yyyyyyyyyy-zzzzzzzzzzz-hhhhhhhhhhh-llllllllll"
   ;; :subscribed-channels '(hoge fuga))
-  )
+  :hook
+  (slack-mode
+   .
+   (lambda ()
+     (linum-mode nil)
+     (variable-pitch-mode 1))))
 
 (use-package helm-slack
   :straight (:type git :host github :repo "yuya373/helm-slack")
@@ -1582,9 +1618,7 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 
 
 (use-package forge
-  :after magit
-  :config
-  (setq auth-sources '("~/.ssh/.authinfo")))
+  :after magit)
 
 (require 'forge)
 
@@ -1592,7 +1626,6 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
   :ensure t
   :after forge
   :config
-  (setq auth-sources '("~/.ssh/.authinfo"))
   (define-key magit-status-mode-map (kbd "g") 'github-review-forge-pr-at-point)
   (define-key magit-mode-map (kbd "g") 'github-review-forge-pr-at-point))
 
@@ -2481,6 +2514,8 @@ buffer's."
     Other buffer group by `centaur-tabs-get-group-name' with project name."
     (list
 	  (cond
+      ((derived-mode-p 'slack-mode)
+       "Slack")
 	   ((or (string-equal "*" (substring (buffer-name) 0 1))
 	        (memq major-mode '(magit-process-mode
 				                  magit-status-mode
