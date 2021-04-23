@@ -960,6 +960,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
   (slack-register-team
    :name "Rally Health"
+   :default t
    :token (auth-source-pick-first-password
            :host "rallyhealth.slack.com"
            :user "david.orme@rallyhealth.com")
@@ -1008,7 +1009,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (use-package helm-slack
   :straight (:type git :host github :repo "yuya373/helm-slack")
-  :after slack)
+  :after (helm slack))
 
 
 ;; Source code comment line(s)
