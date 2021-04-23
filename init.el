@@ -1377,29 +1377,33 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 
 (defun markdown-html (buffer)
   (princ (with-current-buffer buffer
-           (format "<!DOCTYPE html><html><script src=\"https://cdnjs.cloudflare.com/ajax/libs/he/1.1.1/he.js\"></script><link rel=\"stylesheet\" href=\"https://assets-cdn.github.com/assets/github-e6bb18b320358b77abe040d2eb46b547.css\"><link rel=\"stylesheet\" href=\"https://assets-cdn.github.com/assets/frameworks-95aff0b550d3fe338b645a4deebdcb1b.css\"><title>Impatient Markdown</title><div id=\"markdown-content\" style=\"display:none\">%s</div><div class=\"markdown-body\" style=\"max-width:968px;margin:0 auto;\"></div><script>fetch('https://api.github.com/markdown', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ \"text\": document.getElementById('markdown-content').innerHTML, \"mode\": \"gfm\", \"context\": \"knit-pk/homepage-nuxtjs\"}) }).then(response => response.text()).then(response => {document.querySelector('.markdown-body').innerHTML = he.decode(response)}).then(() => { fetch(\"https://gist.githubusercontent.com/FieryCod/b6938b29531b6ec72de25c76fa978b2c/raw/\").then(response => response.text()).then(eval)});</script></html>"
+           (format "<!DOCTYPE html><html><script src=\"https://cdnjs.cloudflare.com/ajax/libs/he/1.1.1/he.js\"></script><link rel=\"stylesheet\" href=\"https://assets-cdn.github.com/assets/github-e6bb18b320358b77abe040d2eb46b547.css\"><link rel=\"stylesheet\" href=\"https://assets-cdn.github.com/assets/frameworks-95aff0b550d3fe338b645a4deebdcb1b.css\"><title>Impatient Markdown</title><div id=\"markdown-content\" style=\"display:none\">%s</div><div class=\"markdown-body\" style=\"max-width:968px;margin:200 auto;\"></div><script>fetch('https://api.github.com/markdown', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ \"text\": document.getElementById('markdown-content').innerHTML, \"mode\": \"gfm\", \"context\": \"knit-pk/homepage-nuxtjs\"}) }).then(response => response.text()).then(response => {document.querySelector('.markdown-body').innerHTML = he.decode(response)}).then(() => { fetch(\"https://gist.githubusercontent.com/FieryCod/b6938b29531b6ec72de25c76fa978b2c/raw/\").then(response => response.text()).then(eval)});</script></html>"
                    (buffer-substring-no-properties (point-min) (point-max))))
          (current-buffer)))
 
-;; Function which enables the impatient mode and automatically sets the imp-user-filter to markdown-html.
+
+(defun markdown-preview-browse! ()
+  "Open an impatient-mode web browser on the `markdown-preview!' port."
+  (interactive)
+  (split-window-horizontally)
+  (other-window 1)
+  (browse-url "http://localhost:8901/imp/")
+  (other-window -1))
 
 (defun markdown-preview! ()
+  "Open a live markdown preview for the current buffer."
   (interactive)
+
+  (httpd-stop)
+  (setq httpd-port 8901)
+  (httpd-start)
+
   (impatient-mode 1)
   (setq imp-user-filter #'markdown-html)
   (cl-incf imp-last-state)
-  (imp--notify-clients))
+  (imp--notify-clients)
+  (markdown-preview-browse!))
 
-;; How to use:
-
-(setq httpd-port 8000)
-;; (httpd-start)
-
-;; (defun markdown-preview-live-start ()
-;;   (interactive)
-;;   (http-start)
-;;   (markdown-preview!))
-;; Then: http://localhost:8080/imp/
 
 (use-package markdown-mode
   :ensure t
