@@ -1261,9 +1261,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (xwwp-follow-link-completion-system 'helm)
   :bind (:map xwidget-webkit-mode-map
               ("l" . xwwp-follow-link)))
-(require 'xwwp)
 
-(use-package xwwp-follow-link-helm :ensure t)
+(use-package xwwp-follow-link-helm
+  :defer t)
 
 (setq browse-url-browser-function 'xwidget-webkit-browse-url)
 
@@ -1294,11 +1294,16 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; (define-key xwidget-webkit-mode-map [end] 'xwidget-webkit-scroll-bottom)
 
 
+(defun make-unique-title (title)
+  "Return a unique TITLE name."
+  (if (get-buffer title)
+      (make-unique-title (concat title "-"))
+    title))
+
 (defun xwidget-webkit-new-doctitle (title)
   "Called when a web browser has a new document TITLE."
   (unless (string-equal title "")
-    (rename-buffer title)
-    ;; (rename-buffer (concat "*w3 " title "*"))
+    (rename-buffer (make-unique-title title))
     (centaur-tabs-get-groups)))
 
 ;; HACK! Forked from xwidget.el: better buffer names!
