@@ -256,11 +256,16 @@ With ARG, do this that many times."
 (add-to-list 'load-path "~/.emacs.d/elisp/graphiql.el")
 (setq exec-path (append exec-path (list "/usr/bin")))
 
-;; Yeah, Mach paths are different
 (setq nodejs-path (executable-find "node"))
 (setq lein-path (executable-find "lein"))
 (setq boot-path (executable-find "boot"))
 (setq clojure-path (executable-find "clj"))
+(setq env-path (executable-find "env"))
+
+;; On Macs the TERM envar is stupidly set to "dumb".
+(setq TERM (if (eq system-type 'darwin)
+               "zsh"
+             "bash"))
 
 ;; In Clojure, Cmd-enter inserts the contents of this file into the current repl
 (setq clojure-repl-init-file "~/.repl.clj")
@@ -868,7 +873,6 @@ Approximates the rules of `clean-buffer-list'."
         "NVM_BIN"
         "NVM_CD_FLAGS"
         "NVM_DIR"
-        "TERM"
         "PERL5LIB"                      ; Needed for edbi
         "PERL_LOCAL_LIB_ROOT"
         "PERL_MB_OPT"
@@ -992,10 +996,26 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   '(define-key ansi-term-raw-map (kbd "C-c C-y") 'term-paste))
 
 
-;; Ctrl-t to launch an ansi-term
+(defvar ansi-term-history nil)
+
+(defun terminal-run (command &optional name)
+  "Run COMMAND in a `term' buffer, optionally named NAME."
+  (interactive
+   (list (read-from-minibuffer "$ " nil nil nil 'ansi-term-history)))
+  (let* ((name (or name command))
+         (switches (split-string-and-unquote command))
+         (command (pop switches))
+         (termbuf (apply 'make-term name command nil switches)))
+    (set-buffer termbuf)
+    (term-mode)
+    (term-char-mode)
+    (switch-to-buffer termbuf)))
+
 (defun ansi-term-with-config ()
-  (ansi-term "/bin/bash" "-l")
-  (term-send-string (get-buffer-process "*ansi-term*") "source /etc/profile\n"))
+  (terminal-run (concat env-path " " TERM " -l") "ansi-term"))
+
+;; handy code recipe
+;; (term-send-string (get-buffer-process "*ansi-term*") "source /etc/profile\n")
 
 (defun terminal ()
   "Switch to terminal.  Launch if nonexistent."
@@ -1014,7 +1034,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (defun named-term (name)
   (interactive "MName: ")
-  (ansi-term "/bin/bash" name))
+  (terminal-run (concat env-path " " TERM " -l") name))
 
 
 ;; Kill term buffers when their process dies
@@ -2515,6 +2535,8 @@ buffer's."
 	  (cond
       ((derived-mode-p 'slack-mode)
        "Slack")
+      ((derived-mode-p 'term-mode)
+       "Terminals")
 	   ((or (string-equal "*" (substring (buffer-name) 0 1))
 	        (memq major-mode '(magit-process-mode
 				                  magit-status-mode
