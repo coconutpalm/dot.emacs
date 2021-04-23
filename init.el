@@ -427,144 +427,6 @@ With ARG, do this that many times."
 (add-hook 'smerge-mode-hook (lambda () (hydra-smerge/body)))
 
 
-;; Projectile / Helm
-;;
-;; @see: http://tuhdo.github.io/helm-intro.html
-
-(use-package helm
-  :config
-  (require 'helm-config)
-  ;; (require 'helm-buffers)
-  ;; (require 'helm-locate)
-  ;; (require 'helm-bookmark)
-  ;; (require 'helm-files)
-
-  (setq
-   helm-boring-buffer-regexp-list
-   '("^diary$"
-     "magit-"
-     "magit:"
-     "helm"
-     "*ag"
-     "*t"
-     "*forge"
-     "*Mini"
-     "*Messages"
-     "*which"
-     "*code"
-     "*straight"
-     "*Slack Log"
-     "*Echo")
-   helm-boring-file-regexp-list
-   '("\\.git$" "\\.hg$" "\\.svn$"  "^\\."  "\\.$"
-     "\\.\\.$" "\\.Plo$" "\\.lo$"  "_source.*"
-     "_8h.*"  "\\.CVS$" "\\._darcs$"  "\\.la$"
-     "\\.o$" "~$"  "^#.*")
-   ;; helm-ff-skip-boring-files t
-   helm-buffer-max-length nil
-   ;; helm-idle-delay 2.0
-   ;; helm-find-files-show-icons t
-   ;; helm-quick-update t
-   helm-candidate-number-limit 40
-   ;; helm-use-standard-keys nil
-   ;; helm-locate-case-fold-search t
-   ))
-
-
-;; Must be set before loading helm-ag
-
-(use-package helm-ag)
-
-(helm-mode 1)
-
-(setq helm-autoresize-max-height 80)
-(helm-autoresize-mode 1)
-
-(use-package helm-descbinds
-  :config
-  (helm-descbinds-mode)
-  (global-set-key (kbd "C-h h") 'describe-bindings))
-
-(global-set-key (kbd "C-x b")
-                (lambda () (interactive)
-                  (ignore-errors
-                    (helm :prompt "Location:"
-                          :sources '( helm-source-buffers-list
-                                      helm-source-locate
-                                      helm-source-bookmarks
-                                      helm-source-recentf
-                                      helm-source-in-buffer
-                                      helm-source-files-in-current-dir)))))
-
-
-;; Sort Helm's switch buffer list
-(add-hook 'ido-make-buffer-list-hook
-          (lambda ()
-            (setq
-             ido-temp-list
-             (cl-sort ido-temp-list #'string<
-                      :key (lambda (b) (with-current-buffer b
-                                         (prin1-to-string major-mode)))))))
-
-(global-set-key (kbd "M-x") 'helm-M-x)
-;; (global-set-key (kbd "C-c C-b") 'helm-buffers-list)
-(global-set-key (kbd "C-x C-f") 'helm-find-files)
-
-(global-set-key (kbd "C-c h") 'helm-command-prefix) ;; Better Helm activation sequence
-(global-unset-key (kbd "C-x c"))
-
-(define-key helm-map (kbd "TAB") 'helm-execute-persistent-action) ; rebind tab to autocomplete
-(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to autocomplete
-(define-key helm-map (kbd "\t") 'helm-execute-persistent-action) ; rebind tab to autocomplete
-(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
-(define-key helm-map (kbd "C-<return>") 'helm-select-action)
-(define-key helm-find-files-map [(control backspace)] #'helm-find-files-up-one-level)
-(define-key helm-read-file-map [(control backspace)] #'helm-find-files-up-one-level)
-
-;; (when (executable-find "curl")
-;;   (setq helm-google-suggest-use-curl-p t))
-(global-set-key (kbd "C-c h g") 'helm-google-suggest)
-
-(setq helm-semantic-fuzzy-match t
-      helm-imenu-fuzzy-match    t)
-
-(use-package projectile :ensure t)
-(use-package helm-projectile
-  :ensure t
-  :config
-  (helm-projectile-on))
-
-(use-package perspective)
-(persp-mode)
-
-(projectile-mode +1)
-(define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map)
-(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-
-(setq projectile-switch-project-action 'treemacs)
-(setq projectile-enable-caching t)
-(setq projectile-completion-system 'helm)
-(setq projectile-indexing-method 'native)
-(setq projectile-globally-ignored-directories
-      '(".git"
-        ".github"
-        ".history"
-        ".log"
-        ".metals"
-        ".storybook"
-        ".vscode"))
-(setq projectile-use-git-grep t)
-
-(global-set-key (kbd "C-x p p") 'projectile-switch-project)
-(global-set-key (kbd "s-f") 'projectile-find-file)
-(global-set-key (kbd "s-F") 'projectile-grep)
-(global-set-key (kbd "C-c C-f") 'projectile-find-file)
-(global-set-key (kbd "C-x M-f") 'projectile-find-file)
-(global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
-(global-set-key (kbd "C-x C-b") 'helm-buffers-list)
-(global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
-
-
 (use-package treemacs
   :ensure t
   :defer t
@@ -2597,7 +2459,150 @@ buffer's."
   )
 
 
+;; Projectile / Helm
+;;
+;; @see: http://tuhdo.github.io/helm-intro.html
+
+(use-package helm
+  :config
+  (require 'helm-config)
+  ;; (require 'helm-buffers)
+  ;; (require 'helm-locate)
+  ;; (require 'helm-bookmark)
+  ;; (require 'helm-files)
+
+  (setq
+   helm-boring-buffer-regexp-list
+   '("^diary$"
+     "magit-"
+     "magit:"
+     "helm"
+     "*ag"
+     "*t"
+     "*forge"
+     "*Mini"
+     "*Messages"
+     "*which"
+     "*code"
+     "*straight"
+     "*Slack Log"
+     "*Echo")
+   helm-boring-file-regexp-list
+   '("\\.git$" "\\.hg$" "\\.svn$"  "^\\."  "\\.$"
+     "\\.\\.$" "\\.Plo$" "\\.lo$"  "_source.*"
+     "_8h.*"  "\\.CVS$" "\\._darcs$"  "\\.la$"
+     "\\.o$" "~$"  "^#.*")
+   ;; helm-ff-skip-boring-files t
+   helm-buffer-max-length nil
+   ;; helm-idle-delay 2.0
+   ;; helm-find-files-show-icons t
+   ;; helm-quick-update t
+   helm-candidate-number-limit 40
+   ;; helm-use-standard-keys nil
+   ;; helm-locate-case-fold-search t
+   ))
+
+
+;; Must be set before loading helm-ag
+
+(use-package helm-ag)
+
+(helm-mode 1)
+
+(setq helm-autoresize-max-height 80)
+(helm-autoresize-mode 1)
+
+(use-package helm-descbinds
+  :config
+  (helm-descbinds-mode)
+  (global-set-key (kbd "C-h h") 'describe-bindings))
+
+(global-set-key (kbd "C-x b")
+                (lambda () (interactive)
+                  (ignore-errors
+                    (helm :prompt "Location:"
+                          :sources '( helm-source-buffers-list
+                                      helm-source-locate
+                                      helm-source-bookmarks
+                                      helm-source-recentf
+                                      helm-source-in-buffer
+                                      helm-source-files-in-current-dir)))))
+
+
+;; Sort Helm's switch buffer list
+(add-hook 'ido-make-buffer-list-hook
+          (lambda ()
+            (setq
+             ido-temp-list
+             (cl-sort ido-temp-list #'string<
+                      :key (lambda (b) (with-current-buffer b
+                                         (prin1-to-string major-mode)))))))
+
+(global-set-key (kbd "M-x") 'helm-M-x)
+;; (global-set-key (kbd "C-c C-b") 'helm-buffers-list)
+(global-set-key (kbd "C-x C-f") 'helm-find-files)
+
+(global-set-key (kbd "C-c h") 'helm-command-prefix) ;; Better Helm activation sequence
+(global-unset-key (kbd "C-x c"))
+
+(define-key helm-map (kbd "TAB") 'helm-execute-persistent-action) ; rebind tab to autocomplete
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to autocomplete
+(define-key helm-map (kbd "\t") 'helm-execute-persistent-action) ; rebind tab to autocomplete
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+(define-key helm-map (kbd "C-<return>") 'helm-select-action)
+(define-key helm-find-files-map [(control backspace)] #'helm-find-files-up-one-level)
+(define-key helm-read-file-map [(control backspace)] #'helm-find-files-up-one-level)
+
+;; (when (executable-find "curl")
+;;   (setq helm-google-suggest-use-curl-p t))
+
+(setq helm-semantic-fuzzy-match t
+      helm-imenu-fuzzy-match    t)
+
+(use-package projectile :ensure t)
+(use-package helm-projectile
+  :ensure t
+  :config
+  (helm-projectile-on))
+
+(use-package perspective)
+(persp-mode)
+
+(projectile-mode +1)
+(define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map)
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+
+(setq projectile-switch-project-action 'treemacs)
+(setq projectile-enable-caching t)
+(setq projectile-completion-system 'helm)
+(setq projectile-indexing-method 'native)
+(setq projectile-globally-ignored-directories
+      '(".git"
+        ".github"
+        ".history"
+        ".log"
+        ".metals"
+        ".storybook"
+        ".vscode"))
+(setq projectile-use-git-grep t)
+
+(global-set-key (kbd "C-x p p") 'projectile-switch-project)
+(global-set-key (kbd "s-f") 'projectile-find-file)
+(global-set-key (kbd "s-F") 'projectile-grep)
+(global-set-key (kbd "C-c C-f") 'projectile-find-file)
+(global-set-key (kbd "C-x M-f") 'projectile-find-file)
+(global-set-key (kbd "s-b") 'projectile-switch-to-buffer)
+(global-set-key (kbd "C-x C-b") 'helm-buffers-list)
+(global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
+
+
+;; Misc global keybindings/overrides
 (global-set-key [tab] 'company-tab-indent-or-complete)
+
+(global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
+(global-set-key (kbd "C-f") 'isearch-forward) ; Was find-file
+(global-set-key (kbd "M-o") 'helm-find-files)
+(global-set-key (kbd "s-o") 'helm-find-files)
 
 (global-set-key [f1] 'terminal)
 (global-set-key [\C-f6] 'other-window) ; Eclipse-like switch to the other buffer
