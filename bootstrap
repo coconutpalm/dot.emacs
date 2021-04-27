@@ -61,7 +61,11 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     brew tap caskroom/cask
 
     brew cask install visual-studio-code
-    brew cask install emacs
+
+    # Custom-compile Emacs because we want the xwidgets-based integrated web browser
+    #brew cask install emacs
+    brew tap daviderestivo/emacs-head
+    brew install emacs-head --with-cocoa --with-imagemagick --with-xwidgets
 
 	 brew install bash \                # Upgrade Mac's BASH to latest
 		gpatch patchelf pkg-config \ # Misc build tools
