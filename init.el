@@ -806,7 +806,7 @@ Approximates the rules of `clean-buffer-list'."
     ("C-c C-c" . term-interrupt-subjob)
     ("C-p" . previous-line)
     ("C-n" . next-line)
-    ("C-s" . isearch-forward)
+    ("C-f" . isearch-forward)
     ("C-r" . isearch-backward)
     ("C-m" . term-send-raw)
     ("M-f" . term-send-forward-word)
@@ -1260,10 +1260,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :custom
   (xwwp-follow-link-completion-system 'helm)
   :bind (:map xwidget-webkit-mode-map
-              ("l" . xwwp-follow-link)))
+              ("l" . xwwp-follow-link))
+  :after (helm))
 
 (use-package xwwp-follow-link-helm
-  :defer t)
+  :after (helm))
 
 (setq browse-url-browser-function 'xwidget-webkit-browse-url)
 
@@ -2482,13 +2483,16 @@ buffer's."
 ;;
 ;; @see: http://tuhdo.github.io/helm-intro.html
 
+(use-package helm-icons
+  :straight (:type git :host github :repo "yyoncho/helm-icons")
+  :config
+  (setq helm-icons-provider #'all-the-icons)
+  (helm-icons-enable))
+
+
 (use-package helm
   :config
   (require 'helm-config)
-  ;; (require 'helm-buffers)
-  ;; (require 'helm-locate)
-  ;; (require 'helm-bookmark)
-  ;; (require 'helm-files)
 
   (setq
    helm-boring-buffer-regexp-list
@@ -2520,9 +2524,6 @@ buffer's."
    ;; helm-use-standard-keys nil
    ;; helm-locate-case-fold-search t
    ))
-
-
-;; Must be set before loading helm-ag
 
 (use-package helm-ag)
 
@@ -2620,6 +2621,7 @@ buffer's."
 
 (global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
 (global-set-key (kbd "C-f") 'isearch-forward) ; Was find-file
+(define-key isearch-mode-map (kbd "C-f") 'isearch-repeat-forward)
 (global-set-key (kbd "M-o") 'helm-find-files)
 (global-set-key (kbd "s-o") 'helm-find-files)
 
