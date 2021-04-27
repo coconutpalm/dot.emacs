@@ -1282,10 +1282,19 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (interactive)
   (browse-url "https://jira.rallyhealth.com/secure/RapidBoard.jspa?rapidView=844"))
 
+(defun web-chat ()
+  "Open my current project's chat app."
+  (interactive)
+  (browse-url "https://rallyhealth.slack.com"))
+
 (global-set-key (kbd "C-c b g") 'helm-google-suggest)
 (global-set-key (kbd "C-c b s") 'web-browse-or-search)
-(global-set-key (kbd "C-c b S") 'web-storyboard)
 (global-set-key (kbd "C-c b b") 'web-bookmark-page)
+
+;; Accelerators to quickly open important web applications
+(global-set-key (kbd "C-c b S") 'web-storyboard)
+(global-set-key (kbd "C-c b C") 'web-chat)
+
 (define-key xwidget-webkit-mode-map (kbd "C-w") 'xwidget-webkit-copy-selection-as-kill)
 (define-key xwidget-webkit-mode-map (kbd "M-w") 'xwidget-webkit-copy-selection-as-kill)
 (define-key xwidget-webkit-mode-map [remap beginning-of-buffer] 'xwidget-webkit-scroll-top)
