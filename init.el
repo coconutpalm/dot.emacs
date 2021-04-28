@@ -1042,6 +1042,10 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :mode
   ("Jenkinsfile.*" . jenkinsfile-mode))
 
+;;
+;; Hyperbole - make everything hypertext  C-h h
+;;
+(use-package hyperbole)
 
 ;;
 ;; JSON and API explorer support
