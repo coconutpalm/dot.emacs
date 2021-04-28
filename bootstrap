@@ -62,6 +62,10 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 
     brew cask install visual-studio-code
 
+    # A nice(r) graphical terminal than the default
+    brew tap wez/wezterm
+    brew install wezterm
+
     # Custom-compile Emacs because we want the xwidgets-based integrated web browser
     #brew cask install emacs
     brew tap daviderestivo/emacs-head
