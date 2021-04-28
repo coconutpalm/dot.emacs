@@ -1853,6 +1853,15 @@ assuming it is in a maven-style project."
 
 
 ;;..............................................................................
+;; Lua
+
+(use-package lua-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.lua$" . lua-mode))
+  (add-to-list 'interpreter-mode-alist '("lua" . lua-mode)))
+
+
+;;..............................................................................
 ;; YAML
 
 (use-package yaml-mode
