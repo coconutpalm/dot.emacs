@@ -339,13 +339,16 @@ With ARG, do this that many times."
   (global-company-mode)
   (define-key company-active-map (kbd "C-c h") #'company-quickhelp-manual-begin)
   (setq
-   company-dabbrev-ignore-case nil
-   company-dabbrev-code-ignore-case nil
+   company-dabbrev-ignore-case t
+   company-dabbrev-code-ignore-case t
    company-dabbrev-downcase nil
    company-idle-delay 0
-   company-minimum-prefix-length 4)
+   company-minimum-prefix-length 3)
+  (setq-local
+   completion-ignore-case t)
   :config
   ;; dabbrev is too slow
+  (add-to-list 'debug-ignored-errors "^Cannot complete at point$")
   (delete 'company-dabbrev company-backends))
 
 (use-package company-quickhelp
