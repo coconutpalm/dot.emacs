@@ -2643,6 +2643,8 @@ buffer's."
 ;; Misc global keybindings/overrides
 (global-set-key [tab] 'company-tab-indent-or-complete)
 
+(global-set-key (kbd "<escape>") 'keyboard-quit)
+
 (global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
 (global-set-key (kbd "C-f") 'isearch-forward) ; Was find-file
 (define-key isearch-mode-map (kbd "C-f") 'isearch-repeat-forward)
