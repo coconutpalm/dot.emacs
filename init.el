@@ -15,7 +15,8 @@
 (load custom-file 'noerror)
 
 ;; Immediately tidy the frame
-(menu-bar-mode -1)
+(unless (eq system-type 'darwin)
+  (menu-bar-mode -1))                   ;Macs keep the menu bar visible so might as well have it populated
 (tool-bar-mode 0)
 (toggle-scroll-bar -1)
 
