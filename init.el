@@ -2443,6 +2443,8 @@ buffer's."
        "Slack")
       ((derived-mode-p 'term-mode)
        "Terminals")
+      ((derived-mode-p 'compilation-mode)
+       "Compiler output")
 	   ((or (string-equal "*" (substring (buffer-name) 0 1))
 	        (memq major-mode '(magit-process-mode
 				                  magit-status-mode
