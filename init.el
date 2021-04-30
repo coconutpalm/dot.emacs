@@ -1296,6 +1296,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (interactive)
   (browse-url "https://rallyhealth.slack.com"))
 
+(defun web-continuous-integration ()
+  "Open my current project's CI server."
+  (interactive)
+  (browse-url "https://ci.rally-dev.com/teams-connect/job/connect/"))
+
 (global-set-key (kbd "C-c b g") 'helm-google-suggest)
 (global-set-key (kbd "C-c b s") 'web-browse-or-search)
 (global-set-key (kbd "C-c b b") 'web-bookmark-page)
@@ -1303,6 +1308,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; Accelerators to quickly open important web applications
 (global-set-key (kbd "C-c b S") 'web-storyboard)
 (global-set-key (kbd "C-c b C") 'web-chat)
+(global-set-key (kbd "C-c b I") 'web-continuous-integration)
 
 (define-key xwidget-webkit-mode-map (kbd "C-w") 'xwidget-webkit-copy-selection-as-kill)
 (define-key xwidget-webkit-mode-map (kbd "M-w") 'xwidget-webkit-copy-selection-as-kill)
@@ -2405,6 +2411,7 @@ buffer's."
           centaur-tabs-style "rounded"
           centaur-tabs-set-bar 'under
           x-underline-at-descent-line t
+          centaur-tabs-cycle-scope 'tabs
           centaur-tabs-show-navigation-buttons t
           centaur-tabs-gray-out-icons 'buffer
           uniquify-separator "/"
