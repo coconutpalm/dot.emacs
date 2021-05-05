@@ -975,23 +975,28 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
       care-ui
       connect-fpc
       domain-unification
-      jenkins-smes
       linux-laptops
-      playproxy
-      reactiflux
       scala-discussions
-      ui-bootcamp
-      ui-gurus
-      care-fpc-engineering
-      engineering
       openapi-codegen
       backend-bootcamp
       backend-geeks
+      clojure)))
+
+  (slack-register-team
+   :name "clojurians"
+   :token (auth-source-pick-first-password
+           :host "clojurians.slack.com"
+           :user "david@coconut-palm-software.com")
+   :full-and-display-names t
+   :subscribed-channels
+   '((announcements
+      beginners
       clojure
-      engineering
-      rally-chi
-      rally-discuss
-      connect-fpc)))
+      clojurescript
+      events
+      liquid
+      news-and-articles
+      remote-jobs)))
 
   ;; (slack-register-team
   ;; :name "emacs-slack"
@@ -1009,7 +1014,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    .
    (lambda ()
      (setq show-trailing-whitespace nil)
-     (linum-mode nil)
      (variable-pitch-mode 1))))
 
 (use-package helm-slack
@@ -2458,6 +2462,8 @@ buffer's."
        "Terminals")
       ((derived-mode-p 'compilation-mode)
        "Compiler output")
+      ((derived-mode-p 'custom-mode)
+       "Customizer")
 	   ((or (string-equal "*" (substring (buffer-name) 0 1))
 	        (memq major-mode '(magit-process-mode
 				                  magit-status-mode
