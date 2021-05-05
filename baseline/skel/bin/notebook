@@ -17,12 +17,19 @@
 
 # Install coursier dependency if it's not already
 HERE=`dirname $0`
-command coursier --help > /dev/null 2>&1 || curl -L -o $HERE/coursier https://git.io/coursier && chmod 755 $HERE/coursier
 
+command cs --help > /dev/null 2>&1 || \
+    curl -fLo cs https://git.io/coursier-cli-"$(uname | tr LD ld)" && \
+        chmod +x cs && \
+        ./cs install cs && \
+        rm -f cs
+
+# Upgrade coursier if needed
+cs update cs || exit 1
 
 # Launch the notebook server
-SCALA=2.11
-MDOC=2.2.9
+SCALA=2.13
+MDOC=2.2.19
 
 IN=.
 OUT=/tmp/notebook-$RANDOM
@@ -36,12 +43,13 @@ touch $LOGFILE
 
 set -m # enable job control inside script
 
-coursier launch "org.scalameta:mdoc_$SCALA:$MDOC" $@ -- \
+cs launch "org.scalameta:mdoc_$SCALA:$MDOC" $@ -- \
   --in $IN --out $OUT \
   --exclude .git \
   --exclude .metals \
   --exclude .idea \
   --exclude .bloop \
+  --classpath $(cs fetch -p org.scala-lang.modules:scala-xml_2.13:2.0.0-RC1) \
   --watch \
     > $LOGFILE 2>&1 &
 
@@ -60,5 +68,5 @@ echo "*****************************************"
 echo "*** Press <enter> to stop the server. ***"
 echo "*****************************************"
 
-fg coursier # Blocks until user hits <enter>
+fg cs # Blocks until user hits <enter>
 kill $PID   # Kill the background tail
