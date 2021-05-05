@@ -19,6 +19,7 @@
   (menu-bar-mode -1))                   ;Macs keep the menu bar visible so might as well have it populated
 (tool-bar-mode 0)
 (toggle-scroll-bar -1)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
 ;; Configure straight.el and use-package
 ;;
@@ -492,8 +493,7 @@ With ARG, do this that many times."
 
   :hook
   (treemacs-mode . (lambda ()
-                     (variable-pitch-mode 1)
-                     (linum-mode nil)))
+                     (variable-pitch-mode 1)))
 
   :bind
   (:map global-map
@@ -2689,13 +2689,6 @@ buffer's."
   )
 
 
-(use-package linum
-  :ensure t
-  :config
-  (global-linum-mode t)
-  (setq linum-format " %4d "))
-
-
 (defun unclutter-window ()
   (interactive)
   (set-face-foreground 'vertical-border (face-background 'default))
@@ -2704,7 +2697,7 @@ buffer's."
 
 (unclutter-window)
 
-;; Dim inactive buffer windows
+;; Dim inactive windows
 (use-package dimmer :ensure t)
 (dimmer-mode 1)
 
