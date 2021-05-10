@@ -363,6 +363,11 @@ With ARG, do this that many times."
 (use-package company-box
   :hook (company-mode . company-box-mode))
 
+;; company-flyspell lives in site elisp directory
+(require 'company-flyspell)
+(add-to-list 'company-backends 'company-flyspell)
+
+
 ;; Resolve conflicts with indenting, completion, and yasnippets
 
 (defun check-expansion ()
@@ -1483,6 +1488,9 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
             (flyspell-mode 1)
             (setq flyspell-generic-check-word-predicate 'markdown-flyspell-check-word-p)))
 
+(require 'flyspell)
+
+
 ;; Hanging indents for bullets in Markdown paragraphs.
 (use-package adaptive-wrap-vp
   :straight (:type git :host github :repo "brentonk/adaptive-wrap-vp"))
@@ -1499,11 +1507,6 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 ;; (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-preview-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-preview-mode))
 
-
-(require 'company-flyspell)
-
-(use-package flyspell-correct
-  :ensure t)
 
 
 ;; AsciiDoc
