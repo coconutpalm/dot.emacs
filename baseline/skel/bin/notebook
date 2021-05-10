@@ -19,10 +19,10 @@
 HERE=`dirname $0`
 
 command cs --help > /dev/null 2>&1 || \
-    curl -fLo cs https://git.io/coursier-cli-"$(uname | tr LD ld)" && \
-        chmod +x cs && \
+    (curl -fLo ./cs https://git.io/coursier-cli-"$(uname | tr LD ld)" && \
+        chmod +x ./cs && \
         ./cs install cs && \
-        rm -f cs
+        rm -f ./cs)
 
 # Upgrade coursier if needed
 cs update cs || exit 1
