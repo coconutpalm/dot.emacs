@@ -1491,7 +1491,6 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 ;; This will compute the TOC at insert it at current position.
 ;; Update existing TOC: C-u M-x markdown-toc-generate-toc
 (use-package markdown-toc)
-(use-package markdown-mode+)
 
 ;; See functions above for MD preview; may bring this back someday?
 
