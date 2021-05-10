@@ -1455,7 +1455,9 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
   (setq markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
   (setq markdown-fontify-code-blocks-natively t)
   (setq markdown-enable-wiki-links t)
-  (setq markdown-wiki-link-search-subdirectories t))
+  (setq markdown-wiki-link-search-subdirectories t)
+;;  (setq markdown-header-scaling t)      ;TODO: Investigate if I should use this over custom.el
+  )
 
 (defun markdown-flyspell-check-word-p ()
   "Return t if `flyspell' should check word just before point."
