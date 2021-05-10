@@ -8,6 +8,7 @@
  '(package-selected-packages
    '(helm-slack websocket alert oauth2 emojify graphiql-mode walkman impostman httprepl npm-mode bookmarks+ bookmark+ xwwp-follow-link-helm xwwp github-review magit-popup magit-gh-pulls redo-plus redoplus redo+ olivetti cider-repl writeroom-mode deft tide weatherline-mode weatherline nyan-mode smart-mode-line-powerline-theme centaur-tabs all-the-icons tree-mode smart-mode-line cider-hydra helm-cider kaocha-runner clojure-mode-extra-font-locking lispy clj-refactor clojure-mode smartparens smart-tabs-mode lsp-ui lsp-metals lsp-mode sbt-mode scala-mode play-routes-mode dockerfile-mode docker-compose-mode docker-api docker popup-imenu goto-chg highlight-symbol treemacs-magit treemacs-icons-dired treemacs-projectile treemacs perspective helm-projectile projectile helm-descbinds helm-ag helm git-timemachine magit git-gutter edbi adoc-mode markdown-mode+ markdown-toc markdown-mode impatient-mode simple-httpd web-mode json-mode sass-mode js-comint prettier-js xref-js2 js2-mode typescript-mode restclient jenkinsfile-mode groovy-mode flycheck-cask flycheck-status-emoji flycheck-pos-tip flycheck-color-mode-line flycheck spinner exec-path-from-shell multiple-cursors discover which-key hydra company-box company-quickhelp company epl dimmer nginx-mode ag base16-theme package-utils use-package)))
 
+;; Use 2*fibonacci number to determine heights
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -15,10 +16,10 @@
  ;; If there is more than one, they won't work right.
  '(markdown-header-delimiter-face ((t (:inherit markdown-markup-face :weight bold))) t)
  '(markdown-header-face ((t (:inherit font-lock-type-face))))
- '(markdown-header-face-1 ((t (:inherit markdown-header-face :height 1.5))) t)
- '(markdown-header-face-2 ((t (:inherit markdown-header-face :height 1.3))) t)
- '(markdown-header-face-3 ((t (:inherit markdown-header-face :height 1.2))) t)
- '(markdown-header-face-4 ((t (:inherit markdown-header-face :height 1.1))) t)
+ '(markdown-header-face-1 ((t (:inherit markdown-header-face :height 2))) t)
+ '(markdown-header-face-2 ((t (:inherit markdown-header-face :height 1.6))) t)
+ '(markdown-header-face-3 ((t (:inherit markdown-header-face :height 1.4))) t)
+ '(markdown-header-face-4 ((t (:inherit markdown-header-face :height 1.2))) t)
  '(markdown-header-face-5 ((t (:inherit markdown-header-face :underline t))) t)
  '(markdown-header-face-6 ((t (:inherit markdown-header-face :underline t))) t)
  '(markdown-link-face ((t (:inherit font-lock-builtin-face :underline nil))))
