@@ -19,7 +19,10 @@
   (menu-bar-mode -1))                   ;Macs keep the menu bar visible so might as well have it populated
 (tool-bar-mode 0)
 (toggle-scroll-bar -1)
-(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+(add-hook 'prog-mode-hook
+          (lambda ()
+            (display-line-numbers-mode 1)
+            (flyspell-mode-off)))
 
 ;; Configure straight.el and use-package
 ;;
@@ -1450,7 +1453,9 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 
   :config
   (setq markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
-  (setq markdown-fontify-code-blocks-natively t))
+  (setq markdown-fontify-code-blocks-natively t)
+  (setq markdown-enable-wiki-links t)
+  (setq markdown-wiki-link-search-subdirectories t))
 
 (defun markdown-flyspell-check-word-p ()
   "Return t if `flyspell' should check word just before point."
@@ -1474,7 +1479,6 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
             (olivetti-mode 1)
             (adaptive-wrap-prefix-vp-mode 1) ; Hanging indents for bullets please!
             (flyspell-mode 1)
-            (flyspell-popup-auto-correct-mode 1)
             (setq flyspell-generic-check-word-predicate 'markdown-flyspell-check-word-p)))
 
 ;; Hanging indents for bullets in Markdown paragraphs.
@@ -1495,10 +1499,10 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 ;; (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-preview-mode))
 
 
-;; Show spellcheck choices as completion options.
-;; Manually enable this per mode using:
-;;   (flyspell-popup-auto-correct-mode 1)
-(use-package flyspell-popup)
+(require 'company-flyspell)
+
+(use-package flyspell-correct
+  :ensure t)
 
 
 ;; AsciiDoc
@@ -1802,7 +1806,7 @@ assuming it is in a maven-style project."
 ;; Use Scala's Metals / lanuage server protocol backend
 
 ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-(setq lsp-keymap-prefix "C-L")
+(setq lsp-keymap-prefix "S-C-l")
 
 (use-package lsp-mode
   :hook
