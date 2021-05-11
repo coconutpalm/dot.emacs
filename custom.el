@@ -22,9 +22,10 @@
  '(markdown-header-face-4 ((t (:inherit font-lock-type-face :height 1.2))) t)
  '(markdown-header-face-5 ((t (:inherit font-lock-type-face :underline t))) t)
  '(markdown-header-face-6 ((t (:inherit font-lock-type-face :underline t))) t)
+
  '(markdown-link-face ((t (:inherit font-lock-builtin-face :underline nil))))
  '(markdown-link-title-face ((t (:inherit font-lock-builtin-face :underline nil))))
- '(markdown-url-face ((t (:inherit font-lock-doc-face :underline nil))))
+ '(markdown-url-face ((t (:inherit font-lock-doc-face :underline nil :height 0.7))))
 
  '(company-scrollbar-bg ((t (:background "#2eae2eae2eae"))))
  '(company-scrollbar-fg ((t (:background "#21e121e121e1"))))
