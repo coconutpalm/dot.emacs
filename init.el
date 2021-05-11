@@ -365,7 +365,9 @@ With ARG, do this that many times."
 
 ;; company-flyspell lives in site elisp directory
 (require 'company-flyspell)
-(add-to-list 'company-backends 'company-flyspell)
+
+;; Company-flyspell should have lowest priority
+(append 'company-backends (list 'company-flyspell))
 
 
 ;; Resolve conflicts with indenting, completion, and yasnippets
@@ -1481,13 +1483,26 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
                                    markdown-markup-face
                                    markdown-url-face))))))))
 
+(defun markdown-pretty-symbols ()
+  "Pretty symbols for Markdown."
+  (setq prettify-symbols-alist
+        '(("->" . ?→)
+          ("<-" . ?←)
+          ("=>" . ?⇒)
+          ("<=" . ?≤)
+          (">=" . ?≥)
+          ("==" . ?≡)
+          ("!=" . ?≠))))
+
 (add-hook 'markdown-mode-hook
           (lambda ()
             (variable-pitch-mode 1)
             (olivetti-mode 1)
             (adaptive-wrap-prefix-vp-mode 1) ; Hanging indents for bullets please!
             (flyspell-mode 1)
+            (markdown-pretty-symbols)
             (setq flyspell-generic-check-word-predicate 'markdown-flyspell-check-word-p)))
+
 
 (require 'flyspell)
 
