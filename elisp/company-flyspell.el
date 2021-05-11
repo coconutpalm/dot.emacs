@@ -42,7 +42,7 @@ Based on `flyspell-correct-word-before-point'."
   (flyspell-accept-buffer-local-defs)
   (let (words ispell-filter)
     ;; now check spelling of word.
-    (ispell-send-string "%\n")  ; put in verbose mode
+    (ispell-send-string "%\n")          ; put in verbose mode
     (ispell-send-string (concat "^" word "\n"))
     ;; wait until Aspell has processed word
     (while (progn
