@@ -1022,6 +1022,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    .
    (lambda ()
      (setq show-trailing-whitespace nil)
+     (olivetti-mode 1)
      (variable-pitch-mode 1))))
 
 (use-package helm-slack
