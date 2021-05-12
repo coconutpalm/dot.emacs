@@ -1843,6 +1843,7 @@ assuming it is in a maven-style project."
 
   :config
   (setq lsp-lens-enable t)
+  (lsp-headerline-breadcrumb-mode nil)
 
   :commands lsp lsp-deferred
 
