@@ -367,7 +367,7 @@ With ARG, do this that many times."
 (require 'company-flyspell)
 
 ;; Company-flyspell should have lowest priority
-(append 'company-backends (list 'company-flyspell))
+(setq company-backends (append company-backends (list 'company-flyspell)))
 
 
 ;; Resolve conflicts with indenting, completion, and yasnippets
