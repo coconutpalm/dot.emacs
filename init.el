@@ -2308,42 +2308,42 @@ buffer's."
           compilation-error-regexp-alist))
 
 
-(if (boundp 'show-trailing-whitespace)
-    (progn
-      (setq-default show-trailing-whitespace t)
+;; (if (boundp 'show-trailing-whitespace)
+;;     (progn
+;;       (setq-default show-trailing-whitespace t)
 
-      (defun ted-hide-trailing-whitespace ()
-        "Do not highlight trailing whitespace in this buffer."
-        (interactive)
-        (setq show-trailing-whitespace nil))
+;;       (defun ted-hide-trailing-whitespace ()
+;;         "Do not highlight trailing whitespace in this buffer."
+;;         (interactive)
+;;         (setq show-trailing-whitespace nil))
 
-      (defun ted-show-trailing-whitespace ()
-        "Highlight trailing whitespace in this buffer."
-        (interactive)
-        (setq show-trailing-whitespace t))
+;;       (defun ted-show-trailing-whitespace ()
+;;         "Highlight trailing whitespace in this buffer."
+;;         (interactive)
+;;         (setq show-trailing-whitespace t))
 
-      (defun ted-toggle-show-trailing-whitespace ()
-        "Highlight trailing whitespace in this buffer."
-        (interactive)
-        (setq show-trailing-whitespace (not show-trailing-whitespace)))
+;;       (defun ted-toggle-show-trailing-whitespace ()
+;;         "Highlight trailing whitespace in this buffer."
+;;         (interactive)
+;;         (setq show-trailing-whitespace (not show-trailing-whitespace)))
 
-      (mapc (lambda (mode-hook)
-              (add-hook mode-hook
-                        'ted-hide-trailing-whitespace))
-            '(Buffer-menu-mode-hook custom-mode-hook text-mode-hook
-              term-mode-hook Info-mode-hook comint-mode-hook
-              buffer-menu-mode-hook apropos-mode-hook
-              tooltip-show-hook gnus-article-mode-hook mail-mode-hook
-              gnus-summary-mode-hook message-mode-hook scala-mode-hook
-              gnus-group-mode-hook eshell-mode-hook w3-mode-hook
-              initial-calendar-window-hook cider-repl-mode-hook))
+;;       (mapc (lambda (mode-hook)
+;;               (add-hook mode-hook
+;;                         'ted-hide-trailing-whitespace))
+;;             '(Buffer-menu-mode-hook custom-mode-hook text-mode-hook
+;;               term-mode-hook Info-mode-hook comint-mode-hook
+;;               buffer-menu-mode-hook apropos-mode-hook
+;;               tooltip-show-hook gnus-article-mode-hook mail-mode-hook
+;;               gnus-summary-mode-hook message-mode-hook scala-mode-hook
+;;               gnus-group-mode-hook eshell-mode-hook w3-mode-hook
+;;               initial-calendar-window-hook cider-repl-mode-hook))
 
-      (mapc (lambda (mode-hook)
-              (add-hook mode-hook
-                        (lambda ()
-                          (setq show-trailing-whitespace t))))
-            '(latex-mode-hook LaTeX-mode-hook html-mode-hook)))
-  (defalias 'ted-hide-trailing-whitespace 'ignore))
+;;       (mapc (lambda (mode-hook)
+;;               (add-hook mode-hook
+;;                         (lambda ()
+;;                           (setq show-trailing-whitespace t))))
+;;             '(latex-mode-hook LaTeX-mode-hook html-mode-hook)))
+;;   (defalias 'ted-hide-trailing-whitespace 'ignore))
 
 
 ;;; I initialize my *scratch* buffer with a random Emacs haiku drawn
