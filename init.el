@@ -2785,6 +2785,7 @@ buffer's."
 (define-key xwidget-webkit-mode-map [escape] 'bury-buffer)
 (define-key pomidor-mode-map [escape] 'bury-buffer)
 (define-key help-mode-map [escape] 'bury-buffer)
+(define-key debugger-mode-map [escape] 'bury-buffer)
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
 (global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
