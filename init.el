@@ -2754,11 +2754,13 @@ buffer's."
 (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
 (define-key transient-map [escape] 'transient-quit-one)
 (define-key magit-mode-map [escape] 'magit-mode-bury-buffer)
+(define-key pomidor-mode-map [escape] 'bury-buffer)
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
 (global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
 (global-set-key (kbd "C-f") 'isearch-forward) ; Was find-file
 (define-key isearch-mode-map (kbd "C-f") 'isearch-repeat-forward)
+(global-set-key (kbd "S-C-f") 'query-replace)
 (global-set-key (kbd "M-o") 'helm-find-files)
 (global-set-key (kbd "s-o") 'helm-find-files)
 
