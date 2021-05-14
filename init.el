@@ -1499,6 +1499,8 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
          ("\\.markdown\\'" . gfm-mode)
          ("\\.txt$" . gfm-mode))
 
+  :bind (("<tab>" . markdown-cycle))
+
   :custom
   (markdown-asymmetric-header t)
   (markdown-split-window-direction 'right)
@@ -1508,7 +1510,7 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
   (setq markdown-fontify-code-blocks-natively t)
   (setq markdown-enable-wiki-links t)
   (setq markdown-wiki-link-search-subdirectories t)
-;;  (setq markdown-header-scaling t)      ;TODO: Investigate if I should use this over custom.el
+  ;;  (setq markdown-header-scaling t)      ;TODO: Investigate if I should use this over custom.el
   )
 
 (defun markdown-flyspell-check-word-p ()
@@ -1592,11 +1594,14 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 (use-package magit
   :commands magit-status magit-blame magit-refresh-all
   :bind (("M-l" . magit-log-current) ;; See git-timemachine bindings below
-         ("\t" . magit-section-toggle-children)
-         ("<tab>" . magit-section-toggle-children)
+         ("\t" . magit-section-toggle)
+         ("<tab>" . magit-section-toggle)
+         ("TAB" . magit-section-toggle)
          ("s-g" . magit-status)
          ("s-b" . magit-blame)))
 
+(define-key magit-mode-map (kbd "TAB") 'magit-section-toggle)
+(define-key magit-mode-map (kbd "<tab>") 'magit-section-toggle)
 (global-set-key (kbd "C-x g") 'magit-status)
 (global-set-key (kbd "C-x C-g") 'magit-status)
 (global-set-key (kbd "C-c C-g") 'magit-status)
@@ -2792,10 +2797,11 @@ buffer's."
 (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
 (define-key transient-map [escape] 'transient-quit-one)
 (define-key magit-mode-map [escape] 'magit-mode-bury-buffer)
-(define-key xwidget-webkit-mode-map [escape] 'bury-buffer)
-(define-key pomidor-mode-map [escape] 'bury-buffer)
-(define-key help-mode-map [escape] 'bury-buffer)
-(define-key debugger-mode-map [escape] 'bury-buffer)
+(define-key xwidget-webkit-mode-map [escape] 'quit-window)
+(define-key pomidor-mode-map [escape] 'quit-window)
+(define-key help-mode-map [escape] 'quit-window)
+(define-key debugger-mode-map [escape] 'quit-window)
+(define-key special-mode-map [escape] 'quit-window)
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
 (global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
