@@ -1839,6 +1839,35 @@ assuming it is in a maven-style project."
   (bind-key "C-c e" 'next-error sbt:mode-map))
 
 
+;; Rust
+
+(use-package rustic
+  :ensure
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; uncomment for less flashiness
+  ;; (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-auto-activate nil)
+
+  ;; comment to disable rustfmt on save
+  (setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
+
+(defun djo/rustic-mode-hook ()
+  "So that run C-c C-c C-r works without having to confirm."
+  (setq-local buffer-save-without-query t))
+
+
+
 ;; Use Scala's Metals / lanuage server protocol backend
 
 ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
@@ -1859,9 +1888,16 @@ assuming it is in a maven-style project."
 
   :config
   (setq lsp-lens-enable t)
-  (lsp-headerline-breadcrumb-mode nil)
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
   :commands lsp lsp-deferred
+
+  :custom
+  ;; what to use when checking on-save. "check" is default, I prefer clippy
+  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-eldoc-render-all t)
+  (lsp-idle-delay 0.6)
+  (lsp-rust-analyzer-server-display-inlay-hints t)
 
   :bind
   ([f3] . 'lsp-goto-implementation))
@@ -1875,8 +1911,11 @@ assuming it is in a maven-style project."
   :bind
   ("C-S-g" . lsp-ui-peek-find-references)
 
-  :config
-  (setq lsp-clients-deno-enable-code-lens-references-all-functions 1))
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t)
+  ;; (lsp-ui-doc-enable nil)
+  (lsp-clients-deno-enable-code-lens-references-all-functions 1))
 
 ;; if you are helm user
 ;; (use-package helm-lsp :commands helm-lsp-workspace-symbol)
