@@ -2746,6 +2746,14 @@ buffer's."
 ;; Misc global keybindings/overrides
 (global-set-key [tab] 'company-tab-indent-or-complete)
 
+;; esc always quits
+(define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
+(define-key transient-map [escape] 'transient-quit-one)
+(define-key magit-mode-map [escape] 'magit-mode-bury-buffer)
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
 (global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
