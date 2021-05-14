@@ -2754,6 +2754,7 @@ buffer's."
 (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
 (define-key transient-map [escape] 'transient-quit-one)
 (define-key magit-mode-map [escape] 'magit-mode-bury-buffer)
+(define-key xwidget-webkit-mode-map [escape] 'bury-buffer)
 (define-key pomidor-mode-map [escape] 'bury-buffer)
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
