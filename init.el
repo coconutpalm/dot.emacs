@@ -333,6 +333,22 @@ With ARG, do this that many times."
 (use-package epl)
 
 
+;; Productivity tools: =============================================================
+
+;;
+;; Pomodoro timers
+;;
+(use-package pomidor
+  :bind (("<f12>" . pomidor))
+  :config (setq pomidor-sound-tick nil
+                pomidor-sound-tack nil)
+  :hook (pomidor-mode . (lambda ()
+                          (display-line-numbers-mode -1) ; Emacs 26.1+
+                          (setq left-fringe-width 0 right-fringe-width 0)
+                          (setq left-margin-width 2 right-margin-width 0)
+                          ;; force fringe update
+                          (set-window-buffer nil (current-buffer)))))
+
 
 ;; Comp(lete)any mode
 
@@ -2489,6 +2505,8 @@ buffer's."
        "Compiler output")
       ((derived-mode-p 'custom-mode)
        "Customizer")
+      ((derived-mode-p 'pomidor-mode)
+       "Pomodoro")
 	   ((or (string-equal "*" (substring (buffer-name) 0 1))
 	        (memq major-mode '(magit-process-mode
 				                  magit-status-mode
