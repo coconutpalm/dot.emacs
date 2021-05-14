@@ -192,17 +192,30 @@ With ARG, do this that many times."
                       (+ (face-attribute 'mode-line :height)
                          delta-points)))
 
+(defun get-buffers-matching-mode (mode)
+  "Return a list of buffers where their `major-mode' is equal to MODE."
+  (let ((buffer-mode-matches '()))
+   (dolist (buf (buffer-list))
+     (with-current-buffer buf
+       (if (eq mode major-mode)
+           (add-to-list 'buffer-mode-matches buf))))
+   buffer-mode-matches))
+
 (defun zoom-in ()
   "Increase font size by 10 points."
   (interactive)
-  (zoom-by 10))
+  (zoom-by 10)
+  (when (get-buffers-matching-mode 'xwidget-webkit-mode)
+    (xwidget-webkit-zoom-in)))
 
 (defun zoom-out ()
   "Decrease font size by 10 points."
   (interactive)
-  (zoom-by -10))
+  (zoom-by -10)
+  (when (get-buffers-matching-mode 'xwidget-webkit-mode)
+    (xwidget-webkit-zoom-out)))
 
-;; change font size, interactively
+;; change font size interactively
 (global-set-key (kbd "C-=") #'zoom-in)
 (global-set-key (kbd "C--") #'zoom-out)
 
