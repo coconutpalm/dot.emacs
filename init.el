@@ -324,7 +324,7 @@ With ARG, do this that many times."
 
 
 (defun starts-with (begins s)
-  "Return non-nil if string S starts with BEGINS."
+  "Return non-nil if string S begins with BEGINS."
   (cond ((>= (length s) (length begins))
          (string-equal (substring s 0 (length begins)) begins))
         (t nil)))
