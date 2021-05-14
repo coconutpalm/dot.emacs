@@ -2770,6 +2770,16 @@ buffer's."
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
 
+(setq project-switch-commands
+        '((?f "File" helm-find-files)
+          (?s "Subdir" prot-project-find-subdir)
+          (?g "Grep" helm-ag)
+          (?d "Dired" project-dired)
+          (?b "Buffer" projectile-switch-to-buffer)
+          (?q "Query replace" project-query-replace-regexp)
+          (?m "Magit" magit-status)
+          (?l "Log VC" magit-log)
+          (?t "Terminal" terminal)))
 
 ;; Misc global keybindings/overrides
 (global-set-key [tab] 'company-tab-indent-or-complete)
