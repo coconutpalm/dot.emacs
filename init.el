@@ -1359,6 +1359,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (define-key xwidget-webkit-mode-map (kbd "M-w") 'xwidget-webkit-copy-selection-as-kill)
 (define-key xwidget-webkit-mode-map [remap beginning-of-buffer] 'xwidget-webkit-scroll-top)
 (define-key xwidget-webkit-mode-map [remap end-of-buffer] 'xwidget-webkit-scroll-bottom)
+(define-key xwidget-webkit-mode-map (kbd "C-=") nil) ; Use global bindings instead
+(define-key xwidget-webkit-mode-map (kbd "C-+") nil)
+(define-key xwidget-webkit-mode-map (kbd "C--") nil)
 ;; (define-key xwidget-webkit-mode-map [home] 'xwidget-webkit-scroll-top)
 ;; (define-key xwidget-webkit-mode-map [end] 'xwidget-webkit-scroll-bottom)
 
@@ -2769,6 +2772,7 @@ buffer's."
 (define-key magit-mode-map [escape] 'magit-mode-bury-buffer)
 (define-key xwidget-webkit-mode-map [escape] 'bury-buffer)
 (define-key pomidor-mode-map [escape] 'bury-buffer)
+(define-key help-mode-map [escape] 'bury-buffer)
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
 (global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
