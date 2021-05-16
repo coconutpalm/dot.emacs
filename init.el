@@ -1458,13 +1458,12 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
   :custom
   (markdown-asymmetric-header t)
   (markdown-split-window-direction 'right)
-
-  :config
-  (setq markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
-  (setq markdown-fontify-code-blocks-natively t)
-  (setq markdown-enable-wiki-links t)
-  (setq markdown-wiki-link-search-subdirectories t)
-;;  (setq markdown-header-scaling t)      ;TODO: Investigate if I should use this over custom.el
+  (markdown-coding-system 'utf-8)
+  (markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
+  (markdown-fontify-code-blocks-natively t)
+  (markdown-enable-wiki-links t)
+  (markdown-wiki-link-search-subdirectories t)
+  ;;  (setq markdown-header-scaling t)      ;TODO: Investigate if I should use this over custom.el
   )
 
 (defun markdown-flyspell-check-word-p ()
@@ -1498,7 +1497,6 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
           (lambda ()
             (variable-pitch-mode 1)
             (olivetti-mode 1)
-            (adaptive-wrap-prefix-vp-mode 1) ; Hanging indents for bullets please!
             (flyspell-mode 1)
             (markdown-pretty-symbols)
             (setq flyspell-generic-check-word-predicate 'markdown-flyspell-check-word-p)))
@@ -1507,9 +1505,19 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 (require 'flyspell)
 
 
-;; Hanging indents for bullets in Markdown paragraphs.
-(use-package adaptive-wrap-vp
-  :straight (:type git :host github :repo "brentonk/adaptive-wrap-vp"))
+;; Hanging indents for bullets in visual-line-mode paragraphs.  Not perfect with variable pitch.
+;;
+;;  See: https://github.com/dirkholz/adaptive-wrap/blob/elpa/adaptive-wrap.el
+;;       https://github.com/brentonk/adaptive-wrap-vp/
+;;
+;;  The second package tries to handle variable pitch but shows ugly visible ^J characters
+;;  when wrapping more than 2 lines of text.
+;;
+;;  It also would be nice to adaptively wrap Markdown header lines, but I don't know how
+;;  to do that yet.
+(use-package adaptive-wrap
+  :hook
+  (visual-line-mode . adaptive-wrap-prefix-mode))
 
 ;; Generate a TOC from a markdown file: M-x markdown-toc-generate-toc
 ;; This will compute the TOC at insert it at current position.
