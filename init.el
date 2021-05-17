@@ -1609,8 +1609,6 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
          ("s-g" . magit-status)
          ("s-b" . magit-blame)))
 
-(define-key magit-mode-map (kbd "TAB") 'magit-section-toggle)
-(define-key magit-mode-map (kbd "<tab>") 'magit-section-toggle)
 (global-set-key (kbd "C-x g") 'magit-status)
 (global-set-key (kbd "C-x C-g") 'magit-status)
 (global-set-key (kbd "C-c C-g") 'magit-status)
