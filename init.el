@@ -192,17 +192,30 @@ With ARG, do this that many times."
                       (+ (face-attribute 'mode-line :height)
                          delta-points)))
 
+(defun get-buffers-matching-mode (mode)
+  "Return a list of buffers where their `major-mode' is equal to MODE."
+  (let ((buffer-mode-matches '()))
+   (dolist (buf (buffer-list))
+     (with-current-buffer buf
+       (if (eq mode major-mode)
+           (add-to-list 'buffer-mode-matches buf))))
+   buffer-mode-matches))
+
 (defun zoom-in ()
   "Increase font size by 10 points."
   (interactive)
-  (zoom-by 10))
+  (zoom-by 10)
+  (when (get-buffers-matching-mode 'xwidget-webkit-mode)
+    (xwidget-webkit-zoom-in)))
 
 (defun zoom-out ()
   "Decrease font size by 10 points."
   (interactive)
-  (zoom-by -10))
+  (zoom-by -10)
+  (when (get-buffers-matching-mode 'xwidget-webkit-mode)
+    (xwidget-webkit-zoom-out)))
 
-;; change font size, interactively
+;; change font size interactively
 (global-set-key (kbd "C-=") #'zoom-in)
 (global-set-key (kbd "C--") #'zoom-out)
 
@@ -324,7 +337,7 @@ With ARG, do this that many times."
 
 
 (defun starts-with (begins s)
-  "Return non-nil if string S starts with BEGINS."
+  "Return non-nil if string S begins with BEGINS."
   (cond ((>= (length s) (length begins))
          (string-equal (substring s 0 (length begins)) begins))
         (t nil)))
@@ -333,6 +346,34 @@ With ARG, do this that many times."
 (use-package epl)
 
 
+;; Productivity tools: =============================================================
+
+;;
+;; Pomodoro timers
+;;
+(use-package pomidor
+  :ensure t
+  :bind (("<f12>" . pomidor))
+  :config
+  (setq pomidor-sound-tick nil
+        pomidor-sound-tack nil
+        pomidor-play-sound-file (lambda (file)
+                                  (if (eq system-type 'darwin)
+                                      (start-process "emacs-pomidor-sound"
+                                                     nil
+                                                     "afplay"
+                                                     file)
+                                    (start-process "emacs-pomidor-sound"
+                                                     nil
+                                                     "mplayer"
+                                                     file))))
+  :hook (pomidor-mode . (lambda ()
+                          (display-line-numbers-mode -1) ; Emacs 26.1+
+                          (setq left-fringe-width 0 right-fringe-width 0)
+                          (setq left-margin-width 2 right-margin-width 0)
+                          ;; force fringe update
+                          (set-window-buffer nil (current-buffer)))))
+(require 'pomidor)
 
 ;; Comp(lete)any mode
 
@@ -1330,6 +1371,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (define-key xwidget-webkit-mode-map (kbd "M-w") 'xwidget-webkit-copy-selection-as-kill)
 (define-key xwidget-webkit-mode-map [remap beginning-of-buffer] 'xwidget-webkit-scroll-top)
 (define-key xwidget-webkit-mode-map [remap end-of-buffer] 'xwidget-webkit-scroll-bottom)
+(define-key xwidget-webkit-mode-map (kbd "C-=") nil) ; Use global bindings instead
+(define-key xwidget-webkit-mode-map (kbd "C-+") nil)
+(define-key xwidget-webkit-mode-map (kbd "C--") nil)
 ;; (define-key xwidget-webkit-mode-map [home] 'xwidget-webkit-scroll-top)
 ;; (define-key xwidget-webkit-mode-map [end] 'xwidget-webkit-scroll-bottom)
 
@@ -1455,14 +1499,17 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
          ("\\.markdown\\'" . gfm-mode)
          ("\\.txt$" . gfm-mode))
 
+  :bind (("<tab>" . markdown-cycle))
+
   :custom
   (markdown-asymmetric-header t)
   (markdown-split-window-direction 'right)
-  (markdown-coding-system 'utf-8)
-  (markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
-  (markdown-fontify-code-blocks-natively t)
-  (markdown-enable-wiki-links t)
-  (markdown-wiki-link-search-subdirectories t)
+
+  :config
+  (setq markdown-command "pandoc -c file:///home/djo/.emacs.d/github-pandoc.css --from markdown_github -t html5 --mathjax --highlight-style pygments --standalone")
+  (setq markdown-fontify-code-blocks-natively t)
+  (setq markdown-enable-wiki-links t)
+  (setq markdown-wiki-link-search-subdirectories t)
   ;;  (setq markdown-header-scaling t)      ;TODO: Investigate if I should use this over custom.el
   )
 
@@ -1556,11 +1603,14 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 (use-package magit
   :commands magit-status magit-blame magit-refresh-all
   :bind (("M-l" . magit-log-current) ;; See git-timemachine bindings below
-         ("\t" . magit-section-toggle-children)
-         ("<tab>" . magit-section-toggle-children)
+         ("\t" . magit-section-toggle)
+         ("<tab>" . magit-section-toggle)
+         ("TAB" . magit-section-toggle)
          ("s-g" . magit-status)
          ("s-b" . magit-blame)))
 
+(define-key magit-mode-map (kbd "TAB") 'magit-section-toggle)
+(define-key magit-mode-map (kbd "<tab>") 'magit-section-toggle)
 (global-set-key (kbd "C-x g") 'magit-status)
 (global-set-key (kbd "C-x C-g") 'magit-status)
 (global-set-key (kbd "C-c C-g") 'magit-status)
@@ -1831,6 +1881,35 @@ assuming it is in a maven-style project."
   (bind-key "C-c e" 'next-error sbt:mode-map))
 
 
+;; Rust
+
+(use-package rustic
+  :ensure
+  :bind (:map rustic-mode-map
+              ("M-j" . lsp-ui-imenu)
+              ("M-?" . lsp-find-references)
+              ("C-c C-c l" . flycheck-list-errors)
+              ("C-c C-c a" . lsp-execute-code-action)
+              ("C-c C-c r" . lsp-rename)
+              ("C-c C-c q" . lsp-workspace-restart)
+              ("C-c C-c Q" . lsp-workspace-shutdown)
+              ("C-c C-c s" . lsp-rust-analyzer-status))
+  :config
+  ;; uncomment for less flashiness
+  ;; (setq lsp-eldoc-hook nil)
+  ;; (setq lsp-enable-symbol-highlighting nil)
+  ;; (setq lsp-signature-auto-activate nil)
+
+  ;; comment to disable rustfmt on save
+  (setq rustic-format-on-save t)
+  (add-hook 'rustic-mode-hook 'rk/rustic-mode-hook))
+
+(defun djo/rustic-mode-hook ()
+  "So that run C-c C-c C-r works without having to confirm."
+  (setq-local buffer-save-without-query t))
+
+
+
 ;; Use Scala's Metals / lanuage server protocol backend
 
 ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
@@ -1851,9 +1930,16 @@ assuming it is in a maven-style project."
 
   :config
   (setq lsp-lens-enable t)
-  (lsp-headerline-breadcrumb-mode nil)
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
   :commands lsp lsp-deferred
+
+  :custom
+  ;; what to use when checking on-save. "check" is default, I prefer clippy
+  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-eldoc-render-all t)
+  (lsp-idle-delay 0.6)
+  (lsp-rust-analyzer-server-display-inlay-hints t)
 
   :bind
   ([f3] . 'lsp-goto-implementation))
@@ -1867,8 +1953,11 @@ assuming it is in a maven-style project."
   :bind
   ("C-S-g" . lsp-ui-peek-find-references)
 
-  :config
-  (setq lsp-clients-deno-enable-code-lens-references-all-functions 1))
+  :custom
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover t)
+  ;; (lsp-ui-doc-enable nil)
+  (lsp-clients-deno-enable-code-lens-references-all-functions 1))
 
 ;; if you are helm user
 ;; (use-package helm-lsp :commands helm-lsp-workspace-symbol)
@@ -2497,6 +2586,8 @@ buffer's."
        "Compiler output")
       ((derived-mode-p 'custom-mode)
        "Customizer")
+      ((derived-mode-p 'pomidor-mode)
+       "Pomodoro")
 	   ((or (string-equal "*" (substring (buffer-name) 0 1))
 	        (memq major-mode '(magit-process-mode
 				                  magit-status-mode
@@ -2693,15 +2784,39 @@ buffer's."
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x b") 'projectile-switch-to-buffer)
 
+(setq project-switch-commands
+        '((?f "File" helm-find-files)
+          (?s "Subdir" prot-project-find-subdir)
+          (?g "Grep" helm-ag)
+          (?d "Dired" project-dired)
+          (?b "Buffer" projectile-switch-to-buffer)
+          (?q "Query replace" project-query-replace-regexp)
+          (?m "Magit" magit-status)
+          (?l "Log VC" magit-log)
+          (?t "Terminal" terminal)))
 
 ;; Misc global keybindings/overrides
 (global-set-key [tab] 'company-tab-indent-or-complete)
 
+;; esc always quits
+(define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
+(define-key transient-map [escape] 'transient-quit-one)
+(define-key magit-mode-map [escape] 'magit-mode-bury-buffer)
+(define-key xwidget-webkit-mode-map [escape] 'quit-window)
+(define-key pomidor-mode-map [escape] 'quit-window)
+(define-key help-mode-map [escape] 'quit-window)
+(define-key debugger-mode-map [escape] 'quit-window)
+(define-key special-mode-map [escape] 'quit-window)
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
 (global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
 (global-set-key (kbd "C-f") 'isearch-forward) ; Was find-file
 (define-key isearch-mode-map (kbd "C-f") 'isearch-repeat-forward)
+(global-set-key (kbd "S-C-f") 'query-replace)
 (global-set-key (kbd "M-o") 'helm-find-files)
 (global-set-key (kbd "s-o") 'helm-find-files)
 
