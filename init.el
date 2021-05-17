@@ -228,6 +228,8 @@ With ARG, do this that many times."
 (global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
 (global-set-key [home] 'beginning-of-line)
 (global-set-key [end] 'end-of-line)
+(define-key visual-line-mode-map [end] 'end-of-visual-line)
+(define-key visual-line-mode-map [home] 'beginning-of-visual-line)
 
 (when (boundp 'aquamacs-version)
   (define-key osx-key-mode-map [home] 'beginning-of-line)
