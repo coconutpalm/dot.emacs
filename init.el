@@ -2727,18 +2727,24 @@ buffer's."
 (global-set-key (kbd "C-S-z") 'redo)
 
 
-                                        ; Set default font sizes
-(when window-system
-  ;; (global-unset-key "\C-z")    ; We reset C-z to 'undo just above here
-  (set-frame-size (selected-frame) 120 60)
-
+(defun set-local-fonts ()
+  "Override fonts."
   ;; default Latin font (e.g. Consolas)
   (set-face-font 'default (format "Noto Mono:size=%d" (normalize-pts 10)))
   (set-face-font 'variable-pitch (format "Noto Sans:size=%d" (normalize-pts 10)))
   (set-face-font 'mode-line (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 12)))
 
-  (set-face-attribute 'region nil :background "#777" :foreground "#ffffff") ; Fix for Emacs on KDE/Plasma
-  )
+  ;; Modern color UTF-8 glyphs/emoji
+  (set-fontset-font t 'symbol "Noto Color Emoji")
+  (set-fontset-font t 'symbol "Symbola" nil 'append))
+
+(when window-system
+  (if (daemonp)
+      (add-hook 'server-after-make-frame-hook #'set-local-fonts)
+    (set-local-fonts))
+
+  (set-frame-size (selected-frame) 120 60)
+  (set-face-attribute 'region nil :background "#777" :foreground "#ffffff"))
 
 
 (defun unclutter-window ()
