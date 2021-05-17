@@ -2863,7 +2863,7 @@ buffer's."
       (add-hook 'server-after-make-frame-hook #'set-local-fonts)
     (set-local-fonts))
 
-  (set-frame-size (selected-frame) 120 60)
+  (set-frame-size (selected-frame) 120 42)
   (set-face-attribute 'region nil :background "#777" :foreground "#ffffff"))
 
 
