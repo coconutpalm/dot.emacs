@@ -1604,6 +1604,11 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 
 (use-package magit
   :commands magit-status magit-blame magit-refresh-all
+  :config
+  (define-key magit-mode-map (kbd "<tab>") 'magit-section-toggle)
+  (define-key magit-mode-map (kbd "TAB") 'magit-section-toggle)
+  (define-key magit-mode-map (kbd "\t") 'magit-section-toggle)
+
   :bind (("M-l" . magit-log-current) ;; See git-timemachine bindings below
          ("\t" . magit-section-toggle)
          ("<tab>" . magit-section-toggle)
