@@ -2928,7 +2928,14 @@ buffer's."
 (unclutter-window)
 
 ;; Dim inactive windows
-(use-package dimmer :ensure t)
+(use-package dimmer
+  :ensure t
+  :config
+  (dimmer-configure-company-box)
+  (dimmer-configure-helm)
+  (dimmer-configure-hydra)
+  (dimmer-configure-magit)
+  (dimmer-configure-which-key))
 (dimmer-mode 1)
 
 
