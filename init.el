@@ -788,6 +788,7 @@ Approximates the rules of `clean-buffer-list'."
         "SERVICE_LOCATOR_CONVENTION_SCHEME"
         "SERVICE_LOCATOR_CONVENTION_DNS_PATTERN"
         "TERM"
+        "CLICOLOR"
         "PATH"
         "JAVA_HOME"
         "NVM_BIN"
@@ -933,6 +934,21 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 (defun ansi-term-with-config ()
   (terminal-run (concat env-path " " TERM " -l") "ansi-term"))
+
+
+;; Native terminals WIP
+;;
+;;  Installation prereqs: cmake, libtool
+;;
+;;  Still need to bind arrow keys, backspace, delete
+;;
+(use-package eterm-256color :ensure t)
+(use-package vterm
+  :ensure t
+  :config
+  (setq vterm-term-environment-variable "xterm-256color")
+  (setq vterm-buffer-name-string "* vterm %s *"))
+
 
 ;; handy code recipe
 ;; (term-send-string (get-buffer-process "*ansi-term*") "source /etc/profile\n")
