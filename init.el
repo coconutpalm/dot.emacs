@@ -947,7 +947,28 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :ensure t
   :config
   (setq vterm-term-environment-variable "xterm-256color")
-  (setq vterm-buffer-name-string "* vterm %s *"))
+  (setq vterm-buffer-name-string "* vterm %s *")
+  ;; :bind (:map vterm-mode-map
+  ;;             ("C-c C-i" . impostman-import-string)
+  ;;             ("C-c C-f" . json-mode-beautify)
+  ;;             ("C-c C-r" . httprepl))
+  :hook
+  (vterm-mode
+   .
+   (lambda ()
+     ;; Close buffer and window when shell exits
+     (let* ((buff (current-buffer))
+            (proc (get-buffer-process buff)))
+       (set-process-sentinel
+        proc
+        `(lambda (process event)
+           (if (or (string= event "finished\n")
+                   (starts-with? event "exited"))
+               (progn
+                 (kill-buffer ,buff)
+                 (delete-window)
+                 (previous-window))
+             (message event))))))))
 
 
 ;; handy code recipe
@@ -959,11 +980,24 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (split-window)
   (other-window 1 nil)
 
-  (if (get-buffer "*ansi-term*")
-      (switch-to-buffer "*ansi-term*")
-    (ansi-term-with-config))
+  (if (get-buffer "*vterm*")
+      (switch-to-buffer "*vterm*")
+    (vterm))
 
-  (get-buffer-process "*ansi-term*"))
+  (get-buffer-process "*vterm*"))
+
+
+;; (defun terminal ()
+;;   "Switch to terminal.  Launch if nonexistent."
+;;   (interactive)
+;;   (split-window)
+;;   (other-window 1 nil)
+
+;;   (if (get-buffer "*ansi-term*")
+;;       (switch-to-buffer "*ansi-term*")
+;;     (ansi-term-with-config))
+
+;;   (get-buffer-process "*ansi-term*"))
 
 (defalias 'tt 'terminal)
 (global-set-key "\C-t" 'terminal)
