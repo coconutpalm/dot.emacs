@@ -1534,7 +1534,9 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 (defun markdown-pretty-symbols ()
   "Pretty symbols for Markdown."
   (setq prettify-symbols-alist
-        '(("->" . ?→)
+        '(("* " . ?•)
+          (" * " . ?•)
+          ("->" . ?→)
           ("<-" . ?←)
           ("=>" . ?⇒)
           ("<=" . ?≤)
