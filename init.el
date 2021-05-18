@@ -266,6 +266,7 @@ With ARG, do this that many times."
 ;;; Configuration settings
 ;;;
 (require 'cl-lib)   ;; Common Lisp compatibility layer
+(use-package general :ensure t)
 
 (setq debug-on-error t)
 
@@ -389,8 +390,8 @@ With ARG, do this that many times."
    company-dabbrev-ignore-case t
    company-dabbrev-code-ignore-case t
    company-dabbrev-downcase nil
-   company-idle-delay 0
-   company-minimum-prefix-length 3)
+   company-idle-delay 0.0
+   company-minimum-prefix-length 2)
   (setq-local
    completion-ignore-case t)
   :config
@@ -945,13 +946,12 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (use-package eterm-256color :ensure t)
 (use-package vterm
   :ensure t
+
   :config
   (setq vterm-term-environment-variable "xterm-256color")
   (setq vterm-buffer-name-string "* vterm %s *")
-  ;; :bind (:map vterm-mode-map
-  ;;             ("C-c C-i" . impostman-import-string)
-  ;;             ("C-c C-f" . json-mode-beautify)
-  ;;             ("C-c C-r" . httprepl))
+  (setq vterm-max-scrollback 10000)
+
   :hook
   (vterm-mode
    .
@@ -1230,6 +1230,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
        (electric-indent-mode -1)))
 
   (typescript-mode . setup-tide-mode)
+
+  :config
+  (setq typescript-indent-level 4)
 
   :mode (rx ".ts" (? "x") string-end))
 
@@ -1780,11 +1783,6 @@ _q_uit _RET_: current
   (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 
 
-;;
-;; Scala/ensime
-;;
-
-
 ;; Java / Scala support for templates
 (defun mvn-package-for-buffer ()
   "Calculate the expected package name for the buffer;
@@ -1967,8 +1965,12 @@ assuming it is in a maven-style project."
   (js2-mode . lsp)
   (typescript-mode . lsp)
 
+  :init
+  (setq lsp-keymap-prefix "C-c l")
+
   :config
   (setq lsp-lens-enable t)
+  (lsp-enable-which-key-integration t)
   (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
   :commands lsp lsp-deferred
@@ -1983,7 +1985,12 @@ assuming it is in a maven-style project."
   :bind
   ([f3] . 'lsp-goto-implementation))
 
+;; Scala
 (use-package lsp-metals)
+
+(use-package lsp-java
+  :config
+  (setq lsp-java-vmargs '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true" "-Xmx2G" "-Xms100m")))
 
 ;; optionally
 (use-package lsp-ui
@@ -1995,20 +2002,59 @@ assuming it is in a maven-style project."
   :custom
   (lsp-ui-peek-always-show t)
   (lsp-ui-sideline-show-hover t)
+  (lsp-ui-sideline-update-mode 'point)
   ;; (lsp-ui-doc-enable nil)
   (lsp-clients-deno-enable-code-lens-references-all-functions 1))
 
 ;; if you are helm user
 ;; (use-package helm-lsp :commands helm-lsp-workspace-symbol)
-(use-package lsp-treemacs :commands lsp-treemacs-errors-list)
+(use-package lsp-treemacs
+  :after '(lsp))
+
+(use-package nvm
+  :straight (:type git :host github :repo "rejeep/nvm.el")
+  :ensure t)
 
 (use-package posframe)                  ; Popups for debug mode
 
 ;; optionally if you want to use debugger
 (use-package dap-mode
+  :after (nvm)
+
   :hook
-  (lsp-mode . dap-mode)
-  (lsp-mode . dap-ui-mode))
+  (lsp . dap-mode)
+  (lsp . dap-ui-mode)
+
+  ;; Uncomment custom/config below if you want all UI panes to be hidden by default!
+  :custom
+  (lsp-enable-dap-auto-configure nil)
+
+  :config
+  (nvm-use "12")
+  (dap-ui-mode 1)
+  (dap-tooltip-mode 1)
+  (tooltip-mode 1)
+  (dap-ui-controls-mode 1)
+
+  ;; Configure some specific languages up-front
+  (require 'dap-node)
+  (dap-node-setup)
+
+  (require 'dap-chrome)
+  (dap-chrome-setup)
+
+  (dap-register-debug-template "Rust::GDB Run Configuration"
+                               (list :type "gdb"
+                                     :request "launch"
+                                     :name "GDB::Run"
+                                     :gdbpath "rust-gdb"
+                                     :target nil
+                                     :cwd nil))
+
+  (general-define-key
+   :keymaps 'lsp-mode-map
+   :prefix lsp-keymap-prefix
+   "d" '(dap-hydra t :wk "debugger")))
 
 ;; Old, but maybe still useful
 ;;
