@@ -986,25 +986,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
   (get-buffer-process "*vterm*"))
 
-
-;; (defun terminal ()
-;;   "Switch to terminal.  Launch if nonexistent."
-;;   (interactive)
-;;   (split-window)
-;;   (other-window 1 nil)
-
-;;   (if (get-buffer "*ansi-term*")
-;;       (switch-to-buffer "*ansi-term*")
-;;     (ansi-term-with-config))
-
-;;   (get-buffer-process "*ansi-term*"))
-
-(defalias 'tt 'terminal)
 (global-set-key "\C-t" 'terminal)
-
-(defun named-term (name)
-  (interactive "MName: ")
-  (terminal-run (concat env-path " " TERM " -l") name))
 
 
 ;; Kill term buffers when their process dies
@@ -2637,7 +2619,8 @@ buffer's."
 	  (cond
       ((derived-mode-p 'slack-mode)
        "Slack")
-      ((derived-mode-p 'term-mode)
+      ((or (derived-mode-p 'term-mode)
+           (derived-mode-p 'vterm-mode))
        "Terminals")
       ((derived-mode-p 'compilation-mode)
        "Compiler output")
@@ -2676,33 +2659,7 @@ buffer's."
 			                 diary-mode))
 	    "OrgMode")
 	   (t (or (vc-root-dir)
-	          (centaur-tabs-get-group-name (current-buffer)))))))
-
-  ;; (defun centaur-tabs-buffer-groups ()
-  ;;   "Return the name of the tab group names the current buffer belongs to."
-  ;;   (list (cond ((starts-with "*sbt*" (buffer-name)) "System")
-  ;;               ((starts-with "*terminal" (buffer-name)) "System")
-  ;;               ((eq major-mode 'org-mode) "Notes")
-  ;;               ((eq major-mode 'clojure-mode) "Clojure")
-  ;;               ((eq major-mode 'clojurescript-mode) "Clojure")
-  ;;               ((eq major-mode 'xwidget-webkit-mode) "Web-page")
-  ;;               ((starts-with "*w3" (buffer-name)) "Web-page")
-  ;;               ((starts-with "TAGS" (buffer-name)) "Emacs")
-  ;;               ((starts-with "*cider-error" (buffer-name)) "Emacs")
-  ;;               ((starts-with "*cider" (buffer-name)) "User")
-  ;;               ((starts-with "*nrepl-server" (buffer-name)) "User")
-  ;;               ((string-equal "*eshell*" (buffer-name)) "User")
-  ;;               ((starts-with "*term" (buffer-name)) "User")
-  ;;               ((string-equal "*scratch*" (buffer-name)) "ELisp")
-  ;;               ((eq major-mode 'emacs-lisp-mode) "ELisp")
-  ;;               ((starts-with "magit" (buffer-name)) "Magit")
-  ;;               ((starts-with "*magit" (buffer-name)) "Magit")
-  ;;               ((starts-with "*helm" (buffer-name)) "Helm")
-  ;;               ((starts-with "*Helm" (buffer-name)) "Helm")
-  ;;               ((string-equal "*" (substring (buffer-name) 0 1)) "Emacs")
-  ;;               ((derived-mode-p 'dired-mode) "DirEd")
-  ;;               (t (centaur-tabs-get-group-name (current-buffer))))))
-  )
+	          (centaur-tabs-get-group-name (current-buffer))))))))
 
 
 ;; Projectile / Helm
