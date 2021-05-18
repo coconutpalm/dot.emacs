@@ -2896,7 +2896,10 @@ buffer's."
 (dimmer-mode 1)
 
 
-(find-file (concat (file-name-as-directory "~/_NOTES") "NOTES.md" ))
+(find-file (concat (expand-file-name "~/_NOTES") "/NOTES.md" ))
+(split-window)
+(other-window 1 nil)
+(pomidor)
 
 
 (provide 'init)
