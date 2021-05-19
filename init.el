@@ -16,7 +16,7 @@
 
 
 ;; Make it easy to visit the init.el file
-(defun init-el ()
+(defun init-visit ()
   "Load the user init.el file."
   (interactive)
   (find-file (concat (expand-file-name "~/.emacs.d") "/init.el" )))
