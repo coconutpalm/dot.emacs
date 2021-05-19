@@ -28,7 +28,7 @@
 (tool-bar-mode 0)
 (toggle-scroll-bar -1)
 (blink-cursor-mode 1)
-(setq blink-cursor-blinks 0)
+(setq blink-cursor-blinks 0)            ; Blink forever
 
 (add-hook 'prog-mode-hook
           (lambda ()
