@@ -14,11 +14,22 @@
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file 'noerror)
 
+
+;; Make it easy to visit the init.el file
+(defun init-el ()
+  "Load the user init.el file."
+  (interactive)
+  (find-file (concat (expand-file-name "~/.emacs.d") "/init.el" )))
+
+
 ;; Immediately tidy the frame
 (unless (eq system-type 'darwin)
-  (menu-bar-mode -1))                   ;Macs keep the menu bar visible so might as well have it populated
+  (menu-bar-mode -1))     ;Macs keep the menu bar visible so might as well have it populated
 (tool-bar-mode 0)
 (toggle-scroll-bar -1)
+(blink-cursor-mode 1)
+(setq blink-cursor-blinks 0)
+
 (add-hook 'prog-mode-hook
           (lambda ()
             (display-line-numbers-mode 1)
