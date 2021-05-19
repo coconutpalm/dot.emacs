@@ -1320,10 +1320,14 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode))
 
-  :hook ((web-mode-hook . (lambda ()
-                            (when (or (string-equal "tsx" (file-name-extension buffer-file-name))
-                                      (string-equal "jsx" (file-name-extension buffer-file-name)))
-                              (setup-tide-mode))))))
+  :hook ((web-mode-hook
+          .
+          (lambda ()
+            (when (or (string-equal "ejs" (file-name-extension buffer-file-name))
+                      (string-equal "tsx" (file-name-extension buffer-file-name))
+                      (string-equal "jsx" (file-name-extension buffer-file-name)))
+              (setq web-mode-code-indent-offset 4)
+              (setup-tide-mode))))))
 
 ;; enable typescript-tslint checker
 (flycheck-add-mode 'typescript-tslint 'web-mode)
