@@ -2814,9 +2814,6 @@ buffer's."
   :config
   (helm-projectile-on))
 
-(use-package perspective)
-(persp-mode)
-
 (projectile-mode +1)
 (define-key projectile-mode-map (kbd "C-x p") 'projectile-command-map)
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
@@ -2835,7 +2832,6 @@ buffer's."
         ".vscode"))
 (setq projectile-use-git-grep t)
 
-(global-set-key (kbd "C-x p p") 'projectile-switch-project)
 (global-set-key (kbd "s-f") 'projectile-find-file)
 (global-set-key (kbd "s-F") 'projectile-grep)
 (global-set-key (kbd "C-c C-f") 'projectile-find-file)
@@ -2854,6 +2850,21 @@ buffer's."
           (?m "Magit" magit-status)
           (?l "Log VC" magit-log)
           (?t "Terminal" terminal)))
+
+
+(use-package perspective
+  :config
+  (persp-mode))
+
+
+;; Save window layout perspectives per projectile project please
+(use-package persp-projectile
+  :straight (:type git :host github :repo "bbatsov/persp-projectile")
+  :config
+  (global-set-key (kbd "C-x p p") 'projectile-persp-switch-project)
+  (global-set-key (kbd "C-c p p") 'projectile-persp-switch-project))
+
+
 
 ;; Misc global keybindings/overrides
 (global-set-key [tab] 'company-tab-indent-or-complete)
@@ -2942,10 +2953,9 @@ buffer's."
 (dimmer-mode 1)
 
 
+
+(pomidor)  ; Start the pomidor timer; [F12] to interact
 (find-file (concat (expand-file-name "~/_NOTES") "/NOTES.md" ))
-(split-window)
-(other-window 1 nil)
-(pomidor)
 
 
 (provide 'init)
