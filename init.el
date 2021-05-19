@@ -1632,7 +1632,7 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 ;; (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-preview-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-preview-mode))
 
-
+(use-package ascii-art-to-unicode :ensure t)
 
 ;; AsciiDoc
 
