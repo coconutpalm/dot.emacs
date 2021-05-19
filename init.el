@@ -2923,6 +2923,10 @@ buffer's."
 (global-set-key [C-M-up] 'windmove-up)              ; move to upper window
 (global-set-key [C-M-down] 'windmove-down)          ; move to lower window
 
+(global-set-key (kbd "C-S-x") 'kill-region)
+(global-set-key (kbd "C-S-c") 'ns-copy-including-secondary)
+(global-set-key (kbd "C-S-v") 'yank)
+
 (require 'redo+)
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-S-z") 'redo)
