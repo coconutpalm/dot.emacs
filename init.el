@@ -2924,7 +2924,7 @@ buffer's."
 (global-set-key [C-M-down] 'windmove-down)          ; move to lower window
 
 (global-set-key (kbd "C-S-x") 'kill-region)
-(global-set-key (kbd "C-S-c") 'ns-copy-including-secondary)
+(global-set-key (kbd "C-S-c") 'kill-ring-save)
 (global-set-key (kbd "C-S-v") 'yank)
 
 (require 'redo+)
