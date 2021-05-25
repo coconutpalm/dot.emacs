@@ -42,3 +42,10 @@ transient
 bookmarks
 .dap-breakpoints
 .DS_Store
+
+emojis/
+project/
+request/
+*.persp
+target/
+url/
