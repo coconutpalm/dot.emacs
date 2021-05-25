@@ -2894,6 +2894,7 @@ buffer's."
 (define-key magit-mode-map [escape] 'magit-mode-bury-buffer)
 (define-key xwidget-webkit-mode-map [escape] 'quit-window)
 (define-key pomidor-mode-map [escape] 'quit-window)
+(define-key deft-mode-map [escape] 'bury-buffer)
 (define-key help-mode-map [escape] 'quit-window)
 (define-key debugger-mode-map [escape] 'quit-window)
 (define-key special-mode-map [escape] 'quit-window)
