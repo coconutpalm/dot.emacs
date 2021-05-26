@@ -1661,7 +1661,7 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
                (string-match-p ISSUEKEY current-branch))
           (replace-regexp-in-string
            (concat ".*?\\(" ISSUEKEY "\\).*")
-           "- \\1: "
+           "\\1: "
            (magit-get-current-branch))
         "")))
 
