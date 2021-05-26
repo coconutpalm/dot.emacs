@@ -1655,8 +1655,10 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
   :config
   (defun find-jira-ticket-id-in-branchname ()
     "Return any `JIRA-##' string from the branch name or the empty string."
-    (let ((ISSUEKEY "[[:upper:]]+-[[:digit:]]+"))
-      (if (string-match-p ISSUEKEY (magit-get-current-branch))
+    (let ((ISSUEKEY "[[:upper:]]+-[[:digit:]]+")
+          (current-branch (magit-get-current-branch)))
+      (if (and current-branch
+               (string-match-p ISSUEKEY current-branch))
           (replace-regexp-in-string
            (concat ".*?\\(" ISSUEKEY "\\).*")
            "- \\1: "
