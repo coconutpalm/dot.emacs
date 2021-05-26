@@ -595,11 +595,6 @@ With ARG, do this that many times."
   (which-key-mode t))
 
 
-(use-package discover
-  :config
-  (global-discover-mode 1))
-
-
 ;; Multiple cursors
 (use-package multiple-cursors)
 
