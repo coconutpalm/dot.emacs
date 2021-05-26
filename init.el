@@ -584,6 +584,7 @@ With ARG, do this that many times."
   :ensure t
   :config (treemacs-icons-dired-mode))
 
+
 (use-package treemacs-magit
   :after treemacs magit
   :ensure t)
@@ -1652,9 +1653,21 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 (use-package magit
   :commands magit-status magit-blame magit-refresh-all
   :config
+  (defun find-jira-ticket-id-in-branchname ()
+    "Return any `JIRA-##' string from the branch name or the empty string."
+    (let ((ISSUEKEY "[[:upper:]]+-[[:digit:]]+"))
+      (if (string-match-p ISSUEKEY (magit-get-current-branch))
+          (replace-regexp-in-string
+           (concat ".*?\\(" ISSUEKEY "\\).*")
+           "- \\1: "
+           (magit-get-current-branch))
+        "")))
+
   (define-key magit-mode-map (kbd "<tab>") 'magit-section-toggle)
   (define-key magit-mode-map (kbd "TAB") 'magit-section-toggle)
   (define-key magit-mode-map (kbd "\t") 'magit-section-toggle)
+  (add-hook 'git-commit-setup-hook
+            (lambda () (insert (find-jira-ticket-id-in-branchname))))
 
   :bind (("M-l" . magit-log-current) ;; See git-timemachine bindings below
          ("\t" . magit-section-toggle)
@@ -1685,8 +1698,8 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 
 (use-package forge
   :after magit)
-
 (require 'forge)
+
 
 (use-package github-review
   :ensure t
@@ -1694,7 +1707,6 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
   :config
   (define-key magit-status-mode-map (kbd "g") 'github-review-forge-pr-at-point)
   (define-key magit-mode-map (kbd "g") 'github-review-forge-pr-at-point))
-
 (require 'github-review)
 
 
@@ -2889,7 +2901,7 @@ buffer's."
 (define-key magit-mode-map [escape] 'magit-mode-bury-buffer)
 (define-key xwidget-webkit-mode-map [escape] 'quit-window)
 (define-key pomidor-mode-map [escape] 'quit-window)
-(define-key deft-mode-map [escape] 'bury-buffer)
+;; (define-key deft-mode-map [escape] 'bury-buffer)
 (define-key help-mode-map [escape] 'quit-window)
 (define-key debugger-mode-map [escape] 'quit-window)
 (define-key special-mode-map [escape] 'quit-window)
