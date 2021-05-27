@@ -854,7 +854,8 @@ Approximates the rules of `clean-buffer-list'."
   :init (global-flycheck-mode))
 
 (use-package flycheck-color-mode-line)
-(use-package flycheck-pos-tip)
+(use-package flycheck-pos-tip
+  :ensure t :after flycheck)
 (use-package flycheck-status-emoji)
 
 (use-package flycheck-cask              ;ELisp support
