@@ -2358,12 +2358,19 @@ assuming it is in a maven-style project."
            (if (> (length namespace) 20)
                (cider-repl-prompt-abbreviated namespace)
              (cider-repl-prompt-default namespace))))
+
   :hook
   (cider-mode-hook . eldoc-mode)
   (cider-mode-hook . cider-company-enable-fuzzy-completion)
   (cider-repl-mode-hook . cider-company-enable-fuzzy-completion)
   (cider-mode-hook . company-mode)
   (cider-repl-mode . company-mode))
+
+
+(use-package flycheck-clojure
+  :defer t
+  :config
+  (flycheck-clojure-setup))
 
 
 (defun init-ns ()
@@ -2906,6 +2913,7 @@ buffer's."
 (define-key xwidget-webkit-mode-map [escape] 'quit-window)
 (define-key pomidor-mode-map [escape] 'quit-window)
 ;; (define-key deft-mode-map [escape] 'bury-buffer)
+(setq help-window-select t)             ; Help gains focus when it shows so ESC behaves as expected
 (define-key help-mode-map [escape] 'quit-window)
 (define-key debugger-mode-map [escape] 'quit-window)
 (define-key special-mode-map [escape] 'quit-window)
