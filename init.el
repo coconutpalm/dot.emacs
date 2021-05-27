@@ -70,9 +70,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Color theme
 (use-package base16-theme
-  :ensure t)
-
-(load-theme 'base16-chalk t)
+  :ensure t
+  :demand
+  :config
+  (load-theme 'base16-chalk t))
 
 
 ;; Ag searching
@@ -2662,6 +2663,7 @@ buffer's."
           centaur-tabs-cycle-scope 'tabs
           centaur-tabs-show-navigation-buttons t
           centaur-tabs-gray-out-icons 'buffer
+          centaur-tabs-label-fixed-length 35
           uniquify-separator "/"
           uniquify-buffer-name-style 'forward)
     (centaur-tabs-headline-match)
