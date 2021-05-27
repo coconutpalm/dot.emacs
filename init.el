@@ -2899,6 +2899,7 @@ buffer's."
 (define-key help-mode-map [escape] 'quit-window)
 (define-key debugger-mode-map [escape] 'quit-window)
 (define-key special-mode-map [escape] 'quit-window)
+(define-key lisp-interaction-mode-map [escape] 'quit-window)
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
 (global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
