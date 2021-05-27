@@ -70,9 +70,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Color theme
 (use-package base16-theme
-  :ensure t)
-
-(load-theme 'base16-chalk t)
+  :ensure t
+  :demand
+  :config
+  (load-theme 'base16-chalk t))
 
 
 ;; Ag searching
@@ -581,6 +582,7 @@ With ARG, do this that many times."
   :ensure t
   :config (treemacs-icons-dired-mode))
 
+
 (use-package treemacs-magit
   :after treemacs magit
   :ensure t)
@@ -590,11 +592,6 @@ With ARG, do this that many times."
   :config
   (set-face-attribute 'which-key-local-map-description-face nil :weight 'bold)
   (which-key-mode t))
-
-
-(use-package discover
-  :config
-  (global-discover-mode 1))
 
 
 ;; Multiple cursors
@@ -854,7 +851,8 @@ Approximates the rules of `clean-buffer-list'."
   :init (global-flycheck-mode))
 
 (use-package flycheck-color-mode-line)
-(use-package flycheck-pos-tip)
+(use-package flycheck-pos-tip
+  :ensure t :after flycheck)
 (use-package flycheck-status-emoji)
 
 (use-package flycheck-cask              ;ELisp support
@@ -1108,7 +1106,13 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    (lambda ()
      (setq show-trailing-whitespace nil)
      (olivetti-mode 1)
-     (variable-pitch-mode 1))))
+     (variable-pitch-mode 1)
+
+     (add-hook 'buffer-list-update-hook  ; Fires on window focus; see doc for select-window
+               (lambda ()
+                 (when (string-match "slack" (downcase mode-name))
+                   (set-buffer-modified-p nil)))))))
+
 
 (use-package helm-slack
   :straight (:type git :host github :repo "yuya373/helm-slack")
@@ -1654,9 +1658,23 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 (use-package magit
   :commands magit-status magit-blame magit-refresh-all
   :config
+  (defun find-jira-ticket-id-in-branchname ()
+    "Return any `JIRA-##' string from the branch name or the empty string."
+    (let ((ISSUEKEY "[[:upper:]]+-[[:digit:]]+")
+          (current-branch (magit-get-current-branch)))
+      (if (and current-branch
+               (string-match-p ISSUEKEY current-branch))
+          (replace-regexp-in-string
+           (concat ".*?\\(" ISSUEKEY "\\).*")
+           "\\1: "
+           (magit-get-current-branch))
+        "")))
+
   (define-key magit-mode-map (kbd "<tab>") 'magit-section-toggle)
   (define-key magit-mode-map (kbd "TAB") 'magit-section-toggle)
   (define-key magit-mode-map (kbd "\t") 'magit-section-toggle)
+  (add-hook 'git-commit-setup-hook
+            (lambda () (insert (find-jira-ticket-id-in-branchname))))
 
   :bind (("M-l" . magit-log-current) ;; See git-timemachine bindings below
          ("\t" . magit-section-toggle)
@@ -1687,8 +1705,8 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 
 (use-package forge
   :after magit)
-
 (require 'forge)
+
 
 (use-package github-review
   :ensure t
@@ -1696,7 +1714,6 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
   :config
   (define-key magit-status-mode-map (kbd "g") 'github-review-forge-pr-at-point)
   (define-key magit-mode-map (kbd "g") 'github-review-forge-pr-at-point))
-
 (require 'github-review)
 
 
@@ -2338,12 +2355,19 @@ assuming it is in a maven-style project."
            (if (> (length namespace) 20)
                (cider-repl-prompt-abbreviated namespace)
              (cider-repl-prompt-default namespace))))
+
   :hook
   (cider-mode-hook . eldoc-mode)
   (cider-mode-hook . cider-company-enable-fuzzy-completion)
   (cider-repl-mode-hook . cider-company-enable-fuzzy-completion)
   (cider-mode-hook . company-mode)
   (cider-repl-mode . company-mode))
+
+
+(use-package flycheck-clojure
+  :defer t
+  :config
+  (flycheck-clojure-setup))
 
 
 (defun init-ns ()
@@ -2420,6 +2444,7 @@ buffer's."
         '(("fn" . 955)                  ; lambda
           ("comp" . ?∘)               ; dot
           ("->" . ?→)
+          ("->>" . ?↠)
           ("<-" . ?←)
           ("=>" . ?⇒)
           ("<=" . ?≤)
@@ -2650,6 +2675,7 @@ buffer's."
           centaur-tabs-cycle-scope 'tabs
           centaur-tabs-show-navigation-buttons t
           centaur-tabs-gray-out-icons 'buffer
+          centaur-tabs-label-fixed-length 35
           uniquify-separator "/"
           uniquify-buffer-name-style 'forward)
     (centaur-tabs-headline-match)
@@ -2675,10 +2701,11 @@ buffer's."
     Other buffer group by `centaur-tabs-get-group-name' with project name."
     (list
 	  (cond
-      ((derived-mode-p 'slack-mode)
+      ((string-match "slack" (downcase mode-name))
        "Slack")
       ((or (derived-mode-p 'term-mode)
-           (derived-mode-p 'vterm-mode))
+           (derived-mode-p 'vterm-mode)
+           (derived-mode-p 'cider-repl-mode))
        "Terminals")
       ((derived-mode-p 'compilation-mode)
        "Compiler output")
@@ -2693,8 +2720,7 @@ buffer's."
 				                  magit-log-mode
 				                  magit-file-mode
 				                  magit-blob-mode
-				                  magit-blame-mode
-				                  )))
+				                  magit-blame-mode)))
 	    "Emacs")
 	   ((derived-mode-p 'prog-mode)
 	    "Programming")
@@ -2705,16 +2731,8 @@ buffer's."
 	   ((memq major-mode '(helpful-mode
 			                 help-mode))
 	    "Help")
-	   ((memq major-mode '(org-mode
-			                 org-agenda-clockreport-mode
-			                 org-src-mode
-			                 org-agenda-mode
-			                 org-beamer-mode
-			                 org-indent-mode
-			                 org-bullets-mode
-			                 org-cdlatex-mode
-			                 org-agenda-log-mode
-			                 diary-mode))
+	   ((or (string-match "org" (downcase mode-name))
+           (derived-mode-p 'diary-mode))
 	    "OrgMode")
 	   (t (or (vc-root-dir)
 	          (centaur-tabs-get-group-name (current-buffer))))))))
@@ -2891,9 +2909,12 @@ buffer's."
 (define-key magit-mode-map [escape] 'magit-mode-bury-buffer)
 (define-key xwidget-webkit-mode-map [escape] 'quit-window)
 (define-key pomidor-mode-map [escape] 'quit-window)
+;; (define-key deft-mode-map [escape] 'bury-buffer)
+(setq help-window-select t)             ; Help gains focus when it shows so ESC behaves as expected
 (define-key help-mode-map [escape] 'quit-window)
 (define-key debugger-mode-map [escape] 'quit-window)
 (define-key special-mode-map [escape] 'quit-window)
+(define-key lisp-interaction-mode-map [escape] 'quit-window) ; Scratch buffer
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
 (global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward

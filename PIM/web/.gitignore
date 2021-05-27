@@ -1,0 +1,9 @@
+.DS_Store
+.rebel_readline_history
+.nrepl-port
+.calva
+.clj-kondo
+.history
+.lsp
+.vscode
+out

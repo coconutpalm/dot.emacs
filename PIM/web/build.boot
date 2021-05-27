@@ -1,32 +1,53 @@
 ;;
-;; Hoplon CLJ(S) application skeleton with SASS support
+;; Requires Java 11
 ;;
 (set-env!
  :dependencies '[[nrepl                     "0.8.3" :scope "test"]
+                 [adzerk/boot-cljs          "2.1.5" :scope "test"]
+                 [adzerk/boot-cljs-repl     "0.4.0" :scope "test"]
+                 [adzerk/boot-reload        "0.6.0" :scope "test"]
+                 [deraen/boot-sass          "0.5.3" :scope "test"]
+                 [cider/piggieback          "0.5.2" :scope "test"]
+                 [weasel                    "0.7.1" :scope "test" :exclusions [org.clojure/clojurescript]]
                  [org.slf4j/slf4j-nop       "1.7.13" :scope "test"]
-                 [adzerk/boot-jar2bin       "1.2.0" :scope "test"]
-                 [adzerk/boot-reload        "0.6.1" :scope "test"]
 
-                 ;; Client and server
+                 ;; Both front/back-end
                  [org.clojure/core.async    "1.3.610"]
                  [juji/editscript           "0.5.4"]
 
+                 ;; Front-end
+                 [org.clojure/clojurescript "1.10.773"]
+                 [hoplon/hoplon             "7.2.0"]
+                 [hoplon/javelin            "3.9.0"]
+                 [prismatic/dommy           "1.1.0"]
+                 [binaryage/oops            "0.7.0"]   ; Switch to goog.object/get, etc.
+                 #_[clj-commons/secretary     "1.2.4"] ; Needed if browser-side routing gets more complex
+
                  ;; Server-side dependencies
                  [org.clojure/clojure       "1.10.3"]
-                 [clj-commons/pomegranate   "1.2.1"]]
+                 [clj-commons/pomegranate   "1.2.0"]
+                 [compojure                 "1.6.2"]
+                 [ring                      "1.9.1"]
+                 [ring/ring-defaults        "0.3.2"]
+                 [info.sunng/ring-jetty9-adapter "0.15.0"]]
 
 
  :source-paths #{"src"}
+ :asset-paths  #{"assets"}
  :resource-paths #{"assets" "src"})
+
 
 (require
  '[boot.pod :as pod]
- '[boot.task.built-in :refer [target uber]]
- '[adzerk.boot-jar2bin :refer :all]
+ '[boot.task.built-in :refer [target]]
  '[boot.core :as boot]
  '[clojure.java.io :as io]
 
- '[adzerk.boot-reload       :refer [reload]])
+ '[adzerk.boot-cljs         :refer [cljs]]
+ '[adzerk.boot-cljs-repl    :refer [cljs-repl cljs-repl-env start-repl]]
+ '[adzerk.boot-reload       :refer [reload]]
+ '[hoplon.boot-hoplon       :refer [hoplon]]
+ '[deraen.boot-sass         :refer [sass]])
 
 
 (deftask ui-scale [m multiplier VAL str "The user interface scale multiplier for Swing and JavaFX"]
@@ -44,6 +65,7 @@
                   [refactor-nrepl "2.5.1"]])
   (swap! @(resolve 'boot.repl/*default-middleware*)
          concat '[cider.nrepl/cider-middleware
+                  cider.piggieback/wrap-cljs-repl
                   refactor-nrepl.middleware/wrap-refactor])
   identity)
 
@@ -154,6 +176,7 @@
       fileset)))
 
 
+
 (deftask dev
   "Build for local development."
   []
@@ -163,18 +186,23 @@
    (speak)
    (kaocha)
    (reload)
+   (sass :source-map true)
    (repl
     :port 8008
     :server true
     :init-ns 'server.handler
-    :eval '(-main))))
+    :eval '(-main))
+   (hoplon)
+   (cljs-repl-env)
+   (cljs :optimizations :none)))
 
 
 (deftask prod
   "Build for production deployment."
   []
-  (comp (aot)
-     (pom)
-     (uber)
-     (jar)
-     (bin :output-dir "bin")))
+  (comp
+   (sass :output-dir "assets/css"
+         :output-style "compressed")
+   (hoplon)
+   (cljs :optimizations :none)
+   (target :dir #{"target"})))

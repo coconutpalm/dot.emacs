@@ -1,0 +1,5 @@
+{:store
+ {:backend :file
+  :path "../datahike/"
+  :id "PIM"}
+ :schema-flexibility :read}
