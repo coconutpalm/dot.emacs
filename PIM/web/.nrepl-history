@@ -1,0 +1,3 @@
+(range 10)
+(.setProperty System "hello" "world")
+System

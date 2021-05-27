@@ -1,0 +1,8 @@
+#kaocha/v1
+{:tests [{:id :unit
+          :test-paths ["src"]
+          :ns-patterns [".*"]}]
+
+ :reporter kaocha.report/documentation
+
+ :theme    :dark}
