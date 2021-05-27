@@ -2687,7 +2687,7 @@ buffer's."
     Other buffer group by `centaur-tabs-get-group-name' with project name."
     (list
 	  (cond
-      ((derived-mode-p 'slack-mode)
+      ((string-match "slack" (downcase mode-name))
        "Slack")
       ((or (derived-mode-p 'term-mode)
            (derived-mode-p 'vterm-mode)
@@ -2706,8 +2706,7 @@ buffer's."
 				                  magit-log-mode
 				                  magit-file-mode
 				                  magit-blob-mode
-				                  magit-blame-mode
-				                  )))
+				                  magit-blame-mode)))
 	    "Emacs")
 	   ((derived-mode-p 'prog-mode)
 	    "Programming")
@@ -2718,16 +2717,8 @@ buffer's."
 	   ((memq major-mode '(helpful-mode
 			                 help-mode))
 	    "Help")
-	   ((memq major-mode '(org-mode
-			                 org-agenda-clockreport-mode
-			                 org-src-mode
-			                 org-agenda-mode
-			                 org-beamer-mode
-			                 org-indent-mode
-			                 org-bullets-mode
-			                 org-cdlatex-mode
-			                 org-agenda-log-mode
-			                 diary-mode))
+	   ((or (string-match "org" (downcase mode-name))
+           (derived-mode-p 'diary-mode))
 	    "OrgMode")
 	   (t (or (vc-root-dir)
 	          (centaur-tabs-get-group-name (current-buffer))))))))
