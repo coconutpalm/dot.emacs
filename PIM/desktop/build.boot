@@ -13,7 +13,7 @@
 
                  ;; Server-side dependencies
                  [org.clojure/clojure       "1.10.3"]
-                 [clj-commons/pomegranate   "1.2.0"]]
+                 [clj-commons/pomegranate   "1.2.1"]]
 
 
  :source-paths #{"src"}
