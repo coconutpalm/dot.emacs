@@ -230,6 +230,8 @@ With ARG, do this that many times."
 ;; change font size interactively
 (global-set-key (kbd "C-=") #'zoom-in)
 (global-set-key (kbd "C--") #'zoom-out)
+(global-set-key (kbd "<C-wheel-down>") #'zoom-out)
+(global-set-key (kbd "<C-wheel-up>") #'zoom-in)
 
 
 
