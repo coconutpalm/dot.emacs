@@ -38,40 +38,32 @@
                          require-params)))
 
 
-(defmacro macro->fn
-  "Convert a macro to a function."
-  [macro]
-  `(fn [& args#] (eval (cons '~macro args#))))
-
-(defn ^:private import-one [clazzes]
-  (println clazzes)
-  ((macro->fn import) clazzes))
-
-
-(defn import-dependencies
+;; This has to be a macro because `import` is a macro and has to
+;; be executed inside the namespace into which the class will be imported.
+(defmacro import-dependencies
   "Download and require classes directly from Maven-style dependencies.
 
-  [classloader coordinates import-params] or
   [coordinates import-params] where
-
-  classloader - the parent classloader for the new class files
   coordinates - A vector of '[maven.style/coordinates \"1.0.0\"]
   import-params - A vector of parameters to pass to clojure.core/import
                   Or a vector of vectors to sequentially pass to clojure.core/import"
 
-  ([classloader coordinates import-params]
-   (add-dependencies :classloader classloader
-                     :coordinates coordinates
-                     :repositories (merge cemerick.pomegranate.aether/maven-central
-                                          {"clojars" "https://clojars.org/repo"}
-                                          *extra-repositories*))
-   (when-not (empty? import-params)
-     (if (every? sequential? import-params)
-       (map import-one import-params)
-       (import-one import-params))))
+  [coordinates import-params]
+  (let [imports (if (empty? import-params)
+                  []
+                  (if (every? sequential? import-params)
+                    (map (fn [i] `(import ~i)) import-params)
+                    [~(import import-params)]))]
+    `(do
+       (add-dependencies :classloader (-> (Thread/currentThread)
+                                         (.getContextClassLoader))
+                         :coordinates ~coordinates
+                         :repositories (merge cemerick.pomegranate.aether/maven-central
+                                              {"clojars" "https://clojars.org/repo"}
+                                              *extra-repositories*))
+       ~@imports)))
 
-  ([coordinates import-params]
-   (import-dependencies (-> (Thread/currentThread)
-                           (.getContextClassLoader))
-                        coordinates
-                        import-params)))
+
+(comment
+
+  ,)
