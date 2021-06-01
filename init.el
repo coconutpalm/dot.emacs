@@ -1057,6 +1057,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (setq slack-buffer-emojify t) ;; if you want to enable emoji, default nil
   (setq slack-prefer-current-team t)
 
+  ;; Default code fonts aren't readable in the base16-chalk theme
+  (set-face-foreground 'slack-preview-face "LightSalmon")
+  (set-face-foreground 'slack-mrkdwn-code-face "LightSalmon")
+  (set-face-foreground 'slack-mrkdwn-code-block-face "LightSalmon")
+
   (slack-register-team
    :name "Rally Health"
    :default t
@@ -1111,7 +1116,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
      (olivetti-mode 1)
      (variable-pitch-mode 1)
 
-     (add-hook 'buffer-list-update-hook  ; Fires on window focus; see doc for select-window
+     (add-hook 'buffer-list-update-hook ; Fires on window focus; see doc for select-window
                (lambda ()
                  (when (string-match "slack" (downcase mode-name))
                    (set-buffer-modified-p nil)))))))
