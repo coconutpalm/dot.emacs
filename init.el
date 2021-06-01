@@ -233,11 +233,6 @@ With ARG, do this that many times."
 (global-set-key (kbd "<C-wheel-down>") #'zoom-out)
 (global-set-key (kbd "<C-wheel-up>") #'zoom-in)
 
-
-
-(use-package nginx-mode)
-
-
 ;; More global keybinding adjustments
 (global-set-key (kbd "C-/") 'comment-or-uncomment-region-or-line)
 (global-set-key [home] 'beginning-of-line)
@@ -359,6 +354,8 @@ With ARG, do this that many times."
          (string-equal (substring s 0 (length begins)) begins))
         (t nil)))
 
+
+(use-package nginx-mode)
 
 (use-package epl)
 
@@ -3002,7 +2999,9 @@ buffer's."
 
 
 (pomidor)  ; Start the pomidor timer; [F12] to interact
-(find-file (concat (expand-file-name "~/_NOTES") "/NOTES.md" ))
+(if (eq system-type 'darwin)
+    (find-file (concat (expand-file-name "~/_NOTES") "/NOTES-WIP.md" ))
+  (find-file (concat (expand-file-name "~/_NOTES") "/NOTES.md" )))
 
 
 (provide 'init)

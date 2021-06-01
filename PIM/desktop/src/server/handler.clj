@@ -2,13 +2,13 @@
   "A service-oriented network hub and switch."
   (:require
    [clojure.java.io                :as    io]
-   [compojure.core                 :refer [defroutes GET]]
-   [compojure.route                :refer [resources not-found]]
-   [ring.middleware.defaults       :refer [wrap-defaults api-defaults]]
-   [ring.middleware.anti-forgery   :refer [wrap-anti-forgery]]
-   [ring.middleware.resource       :refer [wrap-resource]]
-   [ring.util.response             :refer [content-type resource-response]]
-   [ring.adapter.jetty9            :as j9]
+   ;; [compojure.core                 :refer [defroutes GET]]
+   ;; [compojure.route                :refer [resources not-found]]
+   ;; [ring.middleware.defaults       :refer [wrap-defaults api-defaults]]
+   ;; [ring.middleware.anti-forgery   :refer [wrap-anti-forgery]]
+   ;; [ring.middleware.resource       :refer [wrap-resource]]
+   ;; [ring.util.response             :refer [content-type resource-response]]
+   ;; [ring.adapter.jetty9            :as j9]
    [clojure.core.async             :refer [go <! put! chan]]
 
    [util.maps                      :refer [letfn-map]]
@@ -24,7 +24,7 @@
     (go
       (loop []
         (let [next-msg (<! conn)]
-          (when @ws-to-web-tier
+          #_(when @ws-to-web-tier
             (j9/send! @ws-to-web-tier next-msg)))
         (recur)))
     conn))
@@ -71,23 +71,23 @@
 ;; --------------------------------------------------------------------------------
 
 ;; HTTP server endpoints
-(defroutes app-routes
-  (GET "/" req (-> "index.html"
-                  (resource-response)
-                  (content-type "text/html")))
+;; (defroutes app-routes
+;;   (GET "/" req (-> "index.html"
+;;                   (resource-response)
+;;                   (content-type "text/html")))
 
-  (resources "/" {:root ""})
+;;   (resources "/" {:root ""})
 
-  (not-found (or (io/resource "public/404.html")
-                 "Oups! This page doesn't exist! (404 error)")))
+;;   (not-found (or (io/resource "public/404.html")
+;;                  "Oups! This page doesn't exist! (404 error)")))
 
 
 ;; HTTP universal request handler
-(def app
-  (-> app-routes
-     (wrap-defaults api-defaults)
-     (wrap-anti-forgery)
-     (wrap-resource "public")))
+;; (def app
+;;   (-> app-routes
+;;      (wrap-defaults api-defaults)
+;;      (wrap-anti-forgery)
+;;      (wrap-resource "public")))
 
 ;; The web-tier's state + start/stop
 (defonce web-tier (atom nil))
@@ -95,7 +95,7 @@
 
 (defn start! []
   (when-not @web-tier
-    (reset! web-tier (j9/run-jetty app {:join? false :port 8000 :websockets {"/ws/" web-tier-ws-events}}))))
+    (reset! web-tier true #_(j9/run-jetty app {:join? false :port 8000 :websockets {"/ws/" web-tier-ws-events}}))))
 
 (defn stop! []
   (when @web-tier
