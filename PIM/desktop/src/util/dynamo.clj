@@ -9,6 +9,26 @@
   {})
 
 
+;; Encapsulate cemerick.pomegranate
+(defn dependencies
+  "Download and add the specified dependencies to the classpath.  If
+  a classloader is specified, use that as the parent classloader else
+  use the thread's context classloader.  Default repositories are
+  Maven Central and Clojars.  Bind the *extra-repositories* dynamic
+  var to add additional repositories beyond these."
+
+  ([classloader coordinates]
+   (add-dependencies :classloader classloader
+                     :coordinates coordinates
+                     :repositories (merge cemerick.pomegranate.aether/maven-central
+                                          {"clojars" "https://clojars.org/repo"}
+                                          *extra-repositories*)))
+  ([coordinates]
+   (dependencies (-> (Thread/currentThread)
+                    (.getContextClassLoader))
+                 coordinates)))
+
+
 (defn require-dependencies
   "Download and require namespace(s) directly from Maven-style dependencies.
 
@@ -21,11 +41,7 @@
                    Or a vector of vectors to sequentially pass to clojure.core/require"
 
   ([classloader coordinates require-params]
-   (add-dependencies :classloader classloader
-                     :coordinates coordinates
-                     :repositories (merge cemerick.pomegranate.aether/maven-central
-                                          {"clojars" "https://clojars.org/repo"}
-                                          *extra-repositories*))
+   (dependencies classloader coordinates)
    (when-not (empty? require-params)
      (if (every? sequential? require-params)
        (map require require-params)
@@ -55,12 +71,7 @@
                     (map (fn [i] `(import ~i)) import-params)
                     [~(import import-params)]))]
     `(do
-       (add-dependencies :classloader (-> (Thread/currentThread)
-                                         (.getContextClassLoader))
-                         :coordinates ~coordinates
-                         :repositories (merge cemerick.pomegranate.aether/maven-central
-                                              {"clojars" "https://clojars.org/repo"}
-                                              *extra-repositories*))
+       (dependencies ~coordinates)
        ~@imports)))
 
 
