@@ -49,3 +49,6 @@ request/
 *.persp
 target/
 url/
+/.emacs.desktop
+/eclipse.jdt.ls/
+/*.lock

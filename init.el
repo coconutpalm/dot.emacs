@@ -402,6 +402,7 @@ With ARG, do this that many times."
    company-dabbrev-code-ignore-case t
    company-dabbrev-downcase nil
    company-idle-delay 0.0
+   company-tooltip-align-annotations t
    company-minimum-prefix-length 2)
   (setq-local
    completion-ignore-case t)
@@ -1248,8 +1249,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
          'grep-find-ignored-directories) "build")
        (electric-indent-mode -1)))
 
-  (typescript-mode . setup-tide-mode)
-
   :config
   (setq typescript-indent-level 4)
 
@@ -1259,7 +1258,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (use-package js2-mode
   :config
   (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
-  (add-hook 'js2-mode-hook #'setup-tide-mode)
 
   :custom
   (js2-include-node-externs t)
@@ -1285,67 +1283,70 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (require 'npm+-mode)
 
 
-(defun setup-tide-mode ()
-  (interactive)
-  (tide-setup)
-  (flycheck-mode t)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode t)
-  (tide-hl-identifier-mode t)
-  (company-mode +1))
+;; (defun setup-tide-mode ()
+;;   (interactive)
+;;   (tide-setup)
+;;   (flycheck-mode t)
+;;   (setq flycheck-check-syntax-automatically '(save mode-enabled))
+;;   (eldoc-mode t)
+;;   (tide-hl-identifier-mode t)
+;;   (company-mode +1))
 
-(use-package tide
-  :ensure t
-  :after (typescript-mode company flycheck)
-  :config
-  (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
-  (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)
+;; (use-package tide
+;;   :ensure t
+;;   :after (typescript-mode company flycheck)
+;;   :config
+;;   (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+;;   (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)
 
-  :hook ((typescript-mode . setup-tide-mode)
-         (typescript-mode . tide-hl-identifier-mode)
-         (before-save . tide-format-before-save)))
-
-
-;; aligns annotation to the right hand side
-(setq company-tooltip-align-annotations t)
+;;   :hook ((typescript-mode . setup-tide-mode)
+;;          (typescript-mode . tide-hl-identifier-mode)
+;;          (before-save . tide-format-before-save)))
 
 
-;; Web-mode
-(use-package web-mode
-  :ensure t
-  :after (tide)
-  :config
-  (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode))
 
-  :hook ((web-mode-hook
-          .
-          (lambda ()
-            (when (or (string-equal "ejs" (file-name-extension buffer-file-name))
-                      (string-equal "tsx" (file-name-extension buffer-file-name))
-                      (string-equal "jsx" (file-name-extension buffer-file-name)))
-              (setq web-mode-code-indent-offset 4)
-              (setup-tide-mode))))))
+
+;; Web-mode -- superseded by LSP-mode
+;; (use-package web-mode
+;;   :ensure t
+;;   :after (tide)
+;;   :config
+;;   (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode))
+
+;;   :hook ((web-mode-hook
+;;           .
+;;           (lambda ()
+;;             (when (or (string-equal "ejs" (file-name-extension buffer-file-name))
+;;                       (string-equal "tsx" (file-name-extension buffer-file-name))
+;;                       (string-equal "jsx" (file-name-extension buffer-file-name)))
+;;               (setq web-mode-code-indent-offset 4)
+;;               (setup-tide-mode))))))
 
 ;; enable typescript-tslint checker
-(flycheck-add-mode 'typescript-tslint 'web-mode)
-(flycheck-add-mode 'javascript-eslint 'web-mode)
+;; (flycheck-add-mode 'typescript-tslint 'web-mode)
+;; (flycheck-add-mode 'javascript-eslint 'web-mode)
 
 
 (use-package prettier-js
   :ensure t
+  :after js2-mode
+  :config
+  (setq prettier-js-args '("--trailing-comma" "all"))
   :hook
-  (web-mode-hook . prettier-js-mode)
+  (typescript-mode-hook . prettier-js-mode)
+  (typescript-tsx-mode-hook . prettier-js-mode)
+  (json-mode-hook . prettier-js-mode)
   (js2-mode-hook . prettier-js-mode))
 
 
@@ -1851,7 +1852,8 @@ assuming it is in a maven-style project."
 
 (use-package scala-mode
   :interpreter
-  ("drydoc" . scala-mode) ;; Since the 'scala' command is deprecated
+  ("scala" . scala-mode)
+  ;; ("drydoc" . scala-mode) ;; Since the 'scala' command is deprecated
 
   :mode "\\.s\\(cala\\|bt\\)$"
 
@@ -1863,7 +1865,7 @@ assuming it is in a maven-style project."
 
   :bind
   (("RET"     . reindent-then-newline-and-indent)
-   ("C-<tab>" . dabbrev-expand)              ; ???? Do I still want this?
+   ("C-<tab>" . dabbrev-expand)         ; ???? Do I still want this?
    ("C-c c"   . 'sbt-hydra)
    ("C-c e"   . 'next-error)
 
@@ -1982,16 +1984,14 @@ assuming it is in a maven-style project."
   (setq-local buffer-save-without-query t))
 
 
-
-;; Use Scala's Metals / lanuage server protocol backend
-
 ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
 (setq lsp-keymap-prefix "S-C-l")
 
 (use-package lsp-mode
   :hook
-  ;; (lsp-mode . lsp-enable-which-key-integration)
   (lsp-mode . lsp-lens-mode)
+  (lsp-mode . lsp-ui-mode)
+
   (java-mode . lsp)
   (scala-mode . lsp)
   (sbt-mode . lsp)
@@ -2000,14 +2000,20 @@ assuming it is in a maven-style project."
   (javascript-mode . lsp)
   (js2-mode . lsp)
   (typescript-mode . lsp)
+  (yaml-mode . lsp)
+  (json-mode . lsp)
+  (css-mode . lsp)
+
+  (dockerfile-mode . lsp)
 
   :init
   (setq lsp-keymap-prefix "C-c l")
 
   :config
-  (setq lsp-lens-enable t)
+  (setq
+   lsp-lens-enable t
+   lsp-completion-provider :capf)
   (lsp-enable-which-key-integration t)
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
   :commands lsp lsp-deferred
 
@@ -2045,7 +2051,10 @@ assuming it is in a maven-style project."
 ;; if you are helm user
 ;; (use-package helm-lsp :commands helm-lsp-workspace-symbol)
 (use-package lsp-treemacs
-  :after '(lsp))
+  :after '(lsp)
+  :commands lsp-treemacs-errors-list)
+
+(use-package helm-lsp :commands helm-lsp-workspace-symbol)
 
 (use-package nvm
   :straight (:type git :host github :repo "rejeep/nvm.el")
@@ -2055,15 +2064,14 @@ assuming it is in a maven-style project."
 
 ;; optionally if you want to use debugger
 (use-package dap-mode
-  :after (nvm)
+  :after (nvm lsp)
 
   :hook
-  (lsp . dap-mode)
-  (lsp . dap-ui-mode)
+  (lsp-mode . dap-mode)
+  (lsp-mode . dap-ui-mode)
 
-  ;; Uncomment custom/config below if you want all UI panes to be hidden by default!
-  :custom
-  (lsp-enable-dap-auto-configure nil)
+  ;; :custom
+  ;; (lsp-enable-dap-auto-configure nil)
 
   :config
   (nvm-use "12")
@@ -2078,6 +2086,14 @@ assuming it is in a maven-style project."
 
   (require 'dap-chrome)
   (dap-chrome-setup)
+
+  (require 'dap-edge)
+  (dap-edge-setup)
+
+  (require 'dap-firefox)
+  (dap-firefox-setup)
+
+  (require 'dap-java)
 
   (dap-register-debug-template "Rust::GDB Run Configuration"
                                (list :type "gdb"
@@ -2492,7 +2508,9 @@ buffer's."
   (yas/load-directory "~/.snippets")
   (yas-global-mode 1))
 
-
+(use-package yasnippet-snippets)
+;; (use-package doom-snippets
+;;   :straight (:type git :host github :repo "hlissner/doom-snippets"))
 
 ;; Modeline things
 ;; (use-package nyan-mode :ensure t)   ; Cat in modeline!
@@ -2701,14 +2719,11 @@ buffer's."
     ("M-<right>" . centaur-tabs-forward))
 
   (defun centaur-tabs-buffer-groups ()
-    "`centaur-tabs-buffer-groups' control buffers' group rules.
-
-    Group centaur-tabs with mode if buffer is derived from `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
-    All buffer name start with * will group to \"Emacs\".
-    Other buffer group by `centaur-tabs-get-group-name' with project name."
+    "`centaur-tabs-buffer-groups' control buffers' group rules."
     (list
 	  (cond
-      ((string-match "slack" (downcase mode-name))
+      ((ignore-errors                   ; Sometimes mode-name contains unprintable chars, which blow up the search
+         (string-match-p (regexp-quote "slack") (downcase mode-name)))
        "Slack")
       ((or (derived-mode-p 'term-mode)
            (derived-mode-p 'vterm-mode)
@@ -2729,8 +2744,12 @@ buffer's."
 				                  magit-blob-mode
 				                  magit-blame-mode)))
 	    "Emacs")
-	   ((derived-mode-p 'prog-mode)
+	   ((or (derived-mode-p 'prog-mode)
+           (derived-mode-p 'html-mode)
+           (derived-mode-p 'xml-mode))
 	    "Programming")
+      ((derived-mode-p 'text-mode)
+       "Text/writing")
 	   ((derived-mode-p 'dired-mode)
 	    "Dired")
       ((derived-mode-p 'xwidget-webkit-mode)
@@ -2741,8 +2760,9 @@ buffer's."
 	   ((or (string-match "org" (downcase mode-name))
            (derived-mode-p 'diary-mode))
 	    "OrgMode")
-	   (t (or (vc-root-dir)
-	          (centaur-tabs-get-group-name (current-buffer))))))))
+	   (t (or (centaur-tabs-get-group-name (current-buffer))
+             (vc-root-dir)
+             mode-name))))))
 
 
 ;; Projectile / Helm
@@ -2918,6 +2938,7 @@ buffer's."
 (define-key pomidor-mode-map [escape] 'quit-window)
 ;; (define-key deft-mode-map [escape] 'bury-buffer)
 (setq help-window-select t)             ; Help gains focus when it shows so ESC behaves as expected
+(define-key comint-mode-map [escape] 'delete-window)
 (define-key help-mode-map [escape] 'quit-window)
 (define-key debugger-mode-map [escape] 'quit-window)
 (define-key special-mode-map [escape] 'quit-window)
@@ -2951,6 +2972,7 @@ buffer's."
 (global-set-key (kbd "C-S-x") 'kill-region)
 (global-set-key (kbd "C-S-c") 'kill-ring-save)
 (global-set-key (kbd "C-S-v") 'yank)
+(global-set-key (kbd "C-S-a") 'mark-whole-buffer)
 
 (require 'redo+)
 (global-set-key (kbd "C-z") 'undo)
@@ -3003,6 +3025,8 @@ buffer's."
     (find-file (concat (expand-file-name "~/_NOTES") "/NOTES-WIP.md" ))
   (find-file (concat (expand-file-name "~/_NOTES") "/NOTES.md" )))
 
+;; Restore the desktop / open files
+(desktop-save-mode 1)
 
 (provide 'init)
 ;;; init.el ends here
