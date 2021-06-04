@@ -820,9 +820,11 @@ Approximates the rules of `clean-buffer-list'."
 ;; No trailing whitespace, please...
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-;; Word-wrap text buffers
+;; Word-wrap text buffers except for HTML
 (add-hook 'text-mode-hook
-          (lambda () (visual-line-mode 1)))
+          (lambda ()
+            (unless (derived-mode-p 'html-mode)
+              (visual-line-mode 1))))
 
 ;; backup
 (setq make-backup-files nil) ; stop making backup ~ files
