@@ -1,4 +1,6 @@
-(ns ui.nrepl)
+(ns insideout.nrepl
+  "Namespace to dynamically load and init an nRepl in
+  the dynamo supervisor or in a dynamo service.")
 
 (def ^:dynamic *coordinates*
   {:nrepl
