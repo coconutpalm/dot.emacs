@@ -166,7 +166,7 @@
    (repl
     :port 8008
     :server true
-    :init-ns 'server.handler
+    :init-ns 'main.core
     :eval '(-main))))
 
 
@@ -176,5 +176,5 @@
   (comp (aot)
      (pom)
      (uber)
-     (jar)
-     (bin :output-dir "bin")))
+     (jar :main "main.core")
+     (bin :output-dir "bin" :file "clapp" :jvm-opt "-XstartOnFirstThread")))

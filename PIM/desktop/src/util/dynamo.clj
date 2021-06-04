@@ -1,11 +1,12 @@
 (ns util.dynamo
   (:require
    [clojure.core :refer :all]
+   [classlojure.core :refer [base-classloader]]
    [cemerick.pomegranate :refer [add-dependencies]]))
 
 
 (def ^:dynamic *extra-repositories*
-  "Extra repositories to add to Maven Central and Clojars. Default={}"
+  "Extra repositories in addition to Maven Central and Clojars. Default={}"
   {})
 
 
@@ -24,9 +25,7 @@
                                           {"clojars" "https://clojars.org/repo"}
                                           *extra-repositories*)))
   ([coordinates]
-   (dependencies (-> (Thread/currentThread)
-                    (.getContextClassLoader))
-                 coordinates)))
+   (dependencies base-classloader coordinates)))
 
 
 (defn require-dependencies
@@ -48,8 +47,7 @@
        (require require-params))))
 
   ([coordinates require-params]
-   (require-dependencies (-> (Thread/currentThread)
-                            (.getContextClassLoader))
+   (require-dependencies base-classloader
                          coordinates
                          require-params)))
 

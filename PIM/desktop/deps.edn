@@ -1,5 +1,7 @@
 {:aliases
 
+ {:database/fluree :???}
+
  {:database/crux
   {:extra-deps
    {juxt/crux-core        {:mvn/version "21.02-1.15.0-beta"}
