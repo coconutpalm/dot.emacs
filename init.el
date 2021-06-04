@@ -855,7 +855,54 @@ Approximates the rules of `clean-buffer-list'."
           (lambda () (not (member (buffer-name) '("*scratch*" "scratch.el")))))
 
 
-;; Content-assist package
+;; TODO: Migrate from mmm to polymode for TSX; add JSX support too
+;; (use-package polymode)
+;; (use-package mmm-mode
+;;   :config
+;;   (setq mmm-global-mode t)
+;;   (setq mmm-submode-decoration-level 0)) ;; Turn off background highlight
+
+;; ;; Add css mode for CSS in JS blocks
+;; (mmm-add-classes
+;;   '((mmm-styled-mode
+;;     :submode css-mode
+;;     :front "\\(styled\\|css\\)[.()<>[:alnum:]]?+`"
+;;     :back "`;")))
+
+;; (mmm-add-mode-ext-class 'typescript-mode nil 'mmm-styled-mode)
+
+;; ;; Add submodule for graphql blocks
+;; (mmm-add-classes
+;;   '((mmm-graphql-mode
+;;     :submode graphql-mode
+;;     :front "gr?a?p?h?ql`"
+;;     :back "`;")))
+
+;; (mmm-add-mode-ext-class 'typescript-mode nil 'mmm-graphql-mode)
+
+;; ;; Add JSX submodule, because typescript-mode is not that great at it
+;; (mmm-add-classes
+;;   '((mmm-jsx-mode
+;;      :front "\\(return\s\\|n\s\\|(\n\s*\\)<"
+;;      :front-offset -1
+;;      :back ">\n?\s*)"
+;;      :back-offset 1
+;;      :submode web-mode)))
+
+;; (mmm-add-mode-ext-class 'typescript-mode nil 'mmm-jsx-mode)
+
+;; (defun mmm-reapply ()
+;;   "Toggle mmm-mode."
+;;   (mmm-mode 0)
+;;   (mmm-mode 1))
+
+;; (add-hook 'after-save-hook
+;;           (lambda ()
+;;             (when (string-match-p "\\.tsx?" buffer-file-name)
+;;               (mmm-reapply))))
+
+
+;; error/warning-checking package
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode))
@@ -1247,6 +1294,18 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;   https://dev.to/viglioni/how-i-set-up-my-emacs-for-typescript-3eeh
 ;;   https://news.ycombinator.com/item?id=24119611  (rjsx configs; react stuff generally)
 
+
+;; Tree-sitter supplies AST-based syntax highlighting
+;; https://github.com/emacs-typescript/typescript.el/issues/4#issuecomment-849355222
+(use-package tree-sitter
+  :config
+  (setf (alist-get 'typescript-tsx-mode tree-sitter-major-mode-language-alist) 'tsx)
+
+  :hook
+  (typescript-mode . tree-sitter-hl-mode))
+(use-package tree-sitter-langs)
+
+
 (use-package typescript-mode
   :hook
   (typescript-mode
@@ -1256,34 +1315,40 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
          'grep-find-ignored-directories) "build")
        (electric-indent-mode -1)))
 
+  :init
+  (define-derived-mode typescript-tsx-mode typescript-mode "typescript-tsx")
+  (add-to-list 'auto-mode-alist (cons (rx ".tsx" string-end) #'typescript-tsx-mode))
+
   :config
   (setq typescript-indent-level 4)
 
-  :mode (rx ".ts" (? "x") string-end))
+  :mode (rx ".ts" string-end))
 
 
-(use-package js2-mode
-  :config
-  (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
+;; Built-in Javascript mode is supposed to be better as-of Emacs 27.1...
 
-  :custom
-  (js2-include-node-externs t)
-  (js2-global-externs '("customElements"))
-  (js2-highlight-level 3)
-  (js2r-prefer-let-over-var t)
-  (js2r-prefered-quote-type 2)
-  (js-indent-align-list-continuation t))
+;; (use-package js2-mode
+;;   :config
+;;   (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
 
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+;;   :custom
+;;   (js2-include-node-externs t)
+;;   (js2-global-externs '("customElements"))
+;;   (js2-highlight-level 3)
+;;   (js2r-prefer-let-over-var t)
+;;   (js2r-prefered-quote-type 2)
+;;   (js-indent-align-list-continuation t))
+
+;; (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
 
-(use-package xref-js2
-  :bind
-  ("C-S-g" . xref-find-references)
+;; (use-package xref-js2
+;;   :bind
+;;   ("C-S-g" . xref-find-references)
 
-  :hook
-  (js2-mode
-   . (lambda () (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
+;;   :hook
+;;   (js2-mode
+;;    . (lambda () (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
 
 
 ;; Use my fork of npm-mode that fixes jump to error
