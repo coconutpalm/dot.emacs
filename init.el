@@ -467,6 +467,11 @@ With ARG, do this that many times."
    `(company-tooltip-common ((t (:inherit font-lock-constant-face))))))
 
 
+;; Eclipse-like line moving/duplication
+(use-package move-dup
+  :config
+  (global-move-dup-mode))
+
 
 (use-package hydra
   :commands defhydra
