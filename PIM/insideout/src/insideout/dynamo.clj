@@ -1,4 +1,5 @@
-(ns util.dynamo
+(ns insideout.dynamo
+  "A component/module system for InsideOut built on classlojure."
   (:require
    [clojure.core :refer :all]
    [classlojure.core :refer [base-classloader]]
@@ -55,24 +56,31 @@
 ;; This has to be a macro because `import` is a macro and has to
 ;; be executed inside the namespace into which the class will be imported.
 (defmacro import-dependencies
-  "Download and require classes directly from Maven-style dependencies.
+  "Download and import classes directly from Maven-style dependencies.
 
-  [coordinates import-params] where
+  [classloader coordinates import-params] where
+  classloader - The parent classloader
   coordinates - A vector of '[maven.style/coordinates \"1.0.0\"]
   import-params - A vector of parameters to pass to clojure.core/import
                   Or a vector of vectors to sequentially pass to clojure.core/import"
 
-  [coordinates import-params]
+  [classloader coordinates import-params]
   (let [imports (if (empty? import-params)
                   []
                   (if (every? sequential? import-params)
                     (map (fn [i] `(import ~i)) import-params)
                     [~(import import-params)]))]
     `(do
-       (dependencies ~coordinates)
+       (dependencies ~classloader ~coordinates)
        ~@imports)))
 
 
-(comment
+(def services (atom {}))
 
+
+(comment
+  ;; Need service classloader management life cycle
+  ;;      add deps to service classloader
+  ;;      event bus for service comms
+  ;;      "atomic" pubsub across services
   ,)

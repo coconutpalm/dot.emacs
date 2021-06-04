@@ -176,5 +176,5 @@
   (comp (aot)
      (pom)
      (uber)
-     (jar :main "main.core")
-     (bin :output-dir "bin" :file "clapp" :jvm-opt "-XstartOnFirstThread")))
+     (jar :main "insideout.core")
+     (bin :output-dir "bin" :file "io" :jvm-opt "-XstartOnFirstThread")))
