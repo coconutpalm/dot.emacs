@@ -1173,7 +1173,13 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
      (add-hook 'buffer-list-update-hook ; Fires on window focus; see doc for select-window
                (lambda ()
                  (when (string-match "slack" (downcase mode-name))
-                   (set-buffer-modified-p nil)))))))
+                   (set-buffer-modified-p nil))))))
+
+  (slack-message-buffer-mode
+   .
+   (lambda ()
+     (olivetti-mode 1)
+     (variable-pitch-mode 1))))
 
 
 (use-package helm-slack
