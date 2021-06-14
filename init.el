@@ -1933,7 +1933,7 @@ assuming it is in a maven-style project."
   ("scala" . scala-mode)
   ;; ("drydoc" . scala-mode) ;; Since the 'scala' command is deprecated
 
-  :mode "\\.s\\(cala\\|bt\\)$"
+  :mode "\\.s\\(c\\|cala\\|bt\\)$"
 
   :init
   (setq
