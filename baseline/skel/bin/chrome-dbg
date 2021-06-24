@@ -6,4 +6,3 @@ case "$(uname -s)" in
     Darwin*)    /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222;;
     *)          echo machine = "UNKNOWN:${unameOut}"
 esac
-
