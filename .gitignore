@@ -37,6 +37,8 @@ idea.sbt
 preloaded
 network-security.data
 
+.extension
+.cpcache
 .cache
 transient
 bookmarks
@@ -52,3 +54,4 @@ url/
 /.emacs.desktop
 /eclipse.jdt.ls/
 /*.lock
+*#

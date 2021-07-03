@@ -1,6 +1,6 @@
 # Working from the InsideOut
 
-Most coding happens from the outside-in.  We scaffold our applications inside a dedicated layer of construction tooling like an ocean liner in a dry dock.  When we're done, we press a button and the ship is launched into the water--and sinks.
+Most coding happens from the outside-in.  We scaffold our applications inside a dedicated layer of construction machinery like an ocean liner in a dry dock.  When we're done, we press a button, our mighty ship is launched into the water--and sinks.
 
 So we drag the ship back to our "dry dock", try to understand what went wrong, and try again.
 
@@ -30,8 +30,8 @@ And since sometimes you need to deliver a user interface for your app:
 
 ## Why?
 
-*  Because I want something as fast and low-ceremony to use as Babashka, that scales up and out like an application server, that weighs just few megs as a self-executing uberjar.
-*  Because I believe our development environments have become too heavyweight.  With dynamic dependency resolution and an embedded nRepl, build tools become obsolete and all we need then is an editor.
+*  Because I want something as fast and low-ceremony to use as Babashka, that scales up and out like an application server, that weighs just a few megs as a self-executing uberjar.
+*  Because I believe our development and deployment pipelines have become too heavyweight.  With dynamic dependency resolution and an embedded nRepl, build tools become obsolete and all we need then is an editor.
 
 ## And the big question...
 

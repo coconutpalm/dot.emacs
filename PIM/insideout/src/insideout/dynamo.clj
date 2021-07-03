@@ -3,7 +3,8 @@
   (:require
    [clojure.core :refer :all]
    [classlojure.core :refer [base-classloader]]
-   [cemerick.pomegranate :refer [add-dependencies]]))
+   [cemerick.pomegranate :refer [add-dependencies add-classpath]])
+  (:import [java.io File]))
 
 
 (def ^:dynamic *extra-repositories*
@@ -12,7 +13,7 @@
 
 
 ;; Encapsulate cemerick.pomegranate
-(defn dependencies
+(defn resolve-libs
   "Download and add the specified dependencies to the classpath.  If
   a classloader is specified, use that as the parent classloader else
   use the thread's context classloader.  Default repositories are
@@ -26,7 +27,7 @@
                                           {"clojars" "https://clojars.org/repo"}
                                           *extra-repositories*)))
   ([coordinates]
-   (dependencies base-classloader coordinates)))
+   (resolve-libs base-classloader coordinates)))
 
 
 (defn require-dependencies
@@ -41,7 +42,7 @@
                    Or a vector of vectors to sequentially pass to clojure.core/require"
 
   ([classloader coordinates require-params]
-   (dependencies classloader coordinates)
+   (resolve-libs classloader coordinates)
    (when-not (empty? require-params)
      (if (every? sequential? require-params)
        (map require require-params)
@@ -71,11 +72,19 @@
                     (map (fn [i] `(import ~i)) import-params)
                     [~(import import-params)]))]
     `(do
-       (dependencies ~classloader ~coordinates)
+       (resolve-libs ~classloader ~coordinates)
        ~@imports)))
 
 
-(def services (atom {}))
+(def ^:dynamic *default-srcdirs*
+  (flatten
+   [[(take 1 (filter #(->> (File. %) (.exists)) ["src/main/clojure" "src/clojure" "src"]))]
+    [(take 1 (filter #(->> (File. %) (.exists)) ["src/test/clojure" "test/clojure" "test"]))]]))
+
+(defn resolve-sources []
+  (map add-classpath *default-srcdirs*))
+
+#_(def services (atom {}))
 
 
 (comment

@@ -17,7 +17,7 @@
 
 
  :source-paths #{"src"}
- :resource-paths #{"assets" "src"})
+ :resource-paths #{"src"})
 
 (require
  '[boot.pod :as pod]
@@ -166,7 +166,7 @@
    (repl
     :port 8008
     :server true
-    :init-ns 'main.core
+    :init-ns 'insideout.core
     :eval '(-main))))
 
 

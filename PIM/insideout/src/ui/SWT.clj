@@ -1,8 +1,13 @@
 (ns ui.SWT
   (:require
    [clojure.core :refer :all]
-   [util.dynamo :as dynamo]))
+   [classlojure.core :refer [base-classloader]]
+   [insideout.dynamo :as dynamo]))
 
+
+;; ============================================================================
+;; Dynamically resolve/load SWT lib when this namespace is required
+;; ============================================================================
 
 (defonce os-code
   (let [os-fullname (System/getProperty "os.name")]
@@ -10,31 +15,33 @@
        (.substring 0 3)
        (.toLowerCase))))
 
-
 ;; Sure would be nice to have a newer version available through Maven...
 (def swt-version "4.3")
-(defn swt-lib [platform]
+
+(defn swt-coordinates [platform]
   [(symbol "org.eclipse.swt" (str "org.eclipse.swt." (str platform))) swt-version])
 
+(def swt-libs
+  {"lin" (swt-coordinates 'gtk.linux.x86_64)
+   "mac" (swt-coordinates 'cocoa.macosx.x86_64)
+   "win" (swt-coordinates 'win32.win32.x86_64)})
 
-(def platform-swt-lib
-  "The Maven coordinates of the current platform's SWT library."
-  (cond
-    (= os-code "lin") (swt-lib 'gtk.linux.x86_64)
-    (= os-code "mac") (swt-lib 'cocoa.macosx.x86_64)
-    (= os-code "win") (swt-lib 'win32.win32.x86_64)
-    :else              (throw (ex-info (str "Unsupported OS: " (System/getProperty "os.name"))))))
-
+(def swt-lib (get swt-libs os-code
+                  (str "Unsupported OS: " (System/getProperty "os.name"))))
 
 (defonce swt-lib-resolution
-  (dynamo/import-dependencies [platform-swt-lib]
+  (dynamo/import-dependencies base-classloader
+                              [swt-lib]
                               ['[org.eclipse.swt.widgets Display Shell]
                                '[org.eclipse.swt SWT]]))
 
-(defonce display
-  (if-not (= os-code "mac")
-    (Display/getDefault)))
+(def display (Display/getDefault))
 
+;; ============================================================================
+;; UI DSL for SWT based on XSWT and XScalaWT
+;; ============================================================================
+
+;; f: [parent setups] child
 
 (comment
   (clojure.core/require

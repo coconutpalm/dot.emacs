@@ -5,6 +5,7 @@
    [clojure.core.async             :refer [go <! put! chan]]
 
    [insideout.dynamo               :as    dyn]
+   [insideout.nrepl                :as    nr]
    [ui.SWT                         :as    swt]
 
    [util.maps                      :refer [letfn-map]]
@@ -15,18 +16,19 @@
 ;;
 ;; Grab Boot's task framework and -main argument parser.
 ;; Then `nrepl` becomes a task; `dynamo` (maybe) becomes a task.
-;; Programmers can write their own tasks.
+;; Programmers can write their own tasks.  `params` is a
+;; task for passing command-line arguments?
 
 ;; Find sources via searching `src/main/clojure` and `src`.
 ;; `app.clj` is the program's main.  Search for it in the
-;; source folders, require it, and call its `-main`.
+;; source folders, require it, and call its `app-main`.
 
 ;; Make a small fast native executable that communicates with
 ;; dynamo over a unix domain socket (?) for monitoring/operability?
 
-(defn start! []
-  (println "Starting..."))
 
 (defn -main
   "public static void main..."
-  [args] (start!))
+  [args]
+  (dyn/resolve-sources)
+  (nr/start!))
