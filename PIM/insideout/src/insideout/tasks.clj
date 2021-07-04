@@ -1,7 +1,22 @@
 (ns insideout.tasks
-  "Shamelessly ripped-off from Boot's tasks, except that insideOut maintains
-  state using a simple Map.")
+  "Shamelessly ripped-off from `boot.core', except that insideOut maintains
+  state using a simple Map."
+  (:require
+   [clojure.java.io              :as io]
+   [clojure.set                  :as set]
+   [clojure.walk                 :as walk]
+   [clojure.repl                 :as repl]
+   [clojure.string               :as string]
+   [boot.cli                     :as cli2]
+   [boot.util                    :as util]
+   [boot.from.io.aviso.exception :as ex]
+   [boot.from.clojure.tools.cli  :as cli]
+   [boot.from.backtick           :as bt])
+  (:import
+   [java.util.concurrent LinkedBlockingQueue TimeUnit Semaphore ExecutionException]))
 
+(def ^:dynamic *warnings* (atom 0))
+(def ^:dynamic *default-state* {})
 
 ;; Defining Tasks ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -77,8 +92,8 @@
   state, and runs the pipeline."
   [task-stack]
   (binding [*warnings* (atom 0)]
-    (let [fs (commit! (reset-fileset))]
-      ((task-stack #(do (sync-user-dirs!) %)) fs))))
+    (let [state *default-state*]
+      (task-stack state))))
 
 (defn boot
   "The REPL equivalent to the command line 'boot'. If all arguments are
@@ -93,8 +108,7 @@
                     :else (throw (IllegalArgumentException.
                                    "Arguments must be either all strings or all fns"))))))
        (catch ExecutionException e
-         (throw (.getCause e)))
-       (finally (do-cleanup!))))
+         (throw (.getCause e)))))
 
 ;; Low-Level Tasks, Helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

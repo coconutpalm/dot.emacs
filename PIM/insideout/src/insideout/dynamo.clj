@@ -3,7 +3,7 @@
   (:require
    [clojure.core :refer :all]
    [classlojure.core :refer [base-classloader]]
-   [cemerick.pomegranate :refer [add-dependencies add-classpath]])
+   [cemerick.pomegranate :as pom])
   (:import [java.io File]))
 
 
@@ -21,11 +21,11 @@
   var to add additional repositories beyond these."
 
   ([classloader coordinates]
-   (add-dependencies :classloader classloader
-                     :coordinates coordinates
-                     :repositories (merge cemerick.pomegranate.aether/maven-central
-                                          {"clojars" "https://clojars.org/repo"}
-                                          *extra-repositories*)))
+   (pom/add-dependencies :classloader classloader
+                         :coordinates coordinates
+                         :repositories (merge cemerick.pomegranate.aether/maven-central
+                                              {"clojars" "https://clojars.org/repo"}
+                                              *extra-repositories*)))
   ([coordinates]
    (resolve-libs base-classloader coordinates)))
 
@@ -82,9 +82,8 @@
     [(take 1 (filter #(->> (File. %) (.exists)) ["src/test/clojure" "test/clojure" "test"]))]]))
 
 (defn resolve-sources []
-  (map add-classpath *default-srcdirs*))
+  (map pom/add-classpath *default-srcdirs*))
 
-#_(def services (atom {}))
 
 
 (comment

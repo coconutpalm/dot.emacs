@@ -1,6 +1,3 @@
-;;
-;; Hoplon CLJ(S) application skeleton with SASS support
-;;
 (set-env!
  :dependencies '[[nrepl                     "0.8.3" :scope "test"]
                  [org.slf4j/slf4j-nop       "1.7.13" :scope "test"]
@@ -13,6 +10,7 @@
 
                  ;; Server-side dependencies
                  [org.clojure/clojure       "1.10.3"]
+                 [org.clojure/tools.namespace "1.1.0"]
                  [clj-commons/pomegranate   "1.2.1"]]
 
 

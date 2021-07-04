@@ -1,21 +1,12 @@
-(ns insideout.core
-  "InsideOut program launcher."
+(ns boot.main
   (:require
-   [clojure.java.io             :as io]
-   [clojure.string              :as string]
-   [clojure.pprint              :as pp]
-
-   [boot.file                   :as file]
-   [boot.util                   :as util]
-   [boot.from.clojure.tools.cli :as cli]
-
-   [insideout.tasks             :as tasks]
-   [insideout.dynamo            :as dyn]
-   [insideout.nrepl             :as nr]
-   [ui.SWT                      :as swt]))
-
-(def ^:dynamic *boot-opts* {})
-(def ^:dynamic *boot-script* "")
+    [clojure.java.io             :as io]
+    [clojure.string              :as string]
+    [clojure.pprint              :as pp]
+    [boot.core              :as core]
+    [boot.file                   :as file]
+    [boot.util                   :as util]
+    [boot.from.clojure.tools.cli :as cli]))
 
 (def cli-opts
   [["-a" "--asset-paths PATH"    "Add PATH to set of asset directories."
@@ -59,7 +50,6 @@
   ((juxt :errors :options :arguments)
    (cli/parse-opts args cli-opts :in-order true)))
 
-
 (defn- with-comments [tag forms]
   (string/join
    "\n"
@@ -73,28 +63,29 @@
     (let [[op & [msg & more]] form]
       (with-out-str (pp/write form :dispatch pp/code-dispatch)))))
 
-(defn emit [boot? argv localscript bootscript inits]
+(defn emit [boot? argv userscript localscript bootscript import-ns inits]
   (let [boot-use '[boot.core boot.util boot.task.built-in]]
     (str
      (string/join
       "\n\n"
       (remove
        nil?
-       [(pr-boot-form `(ns insideout.user (:use ~@boot-use)))
+       [(pr-boot-form `(ns insideout.user (:use ~@import-ns)))
+        (when userscript (with-comments "global profile" userscript))
         (when localscript (with-comments "local profile" localscript))
         (when inits (with-comments "--init exprs" inits))
         (with-comments "boot script" bootscript)
         (pr-boot-form
          `(let [boot?# ~boot?]
             (if-not boot?#
-              (when-let [main# (resolve 'insideout.user/-main)] (main# ~@argv))
-              (tasks/boot ~@(or (seq argv) ["insideout.standard-tasks/help"])))))]))
+              (when-let [main# (resolve 'boot.user/-main)] (main# ~@argv))
+              (core/boot ~@(or (seq argv) ["boot.task.built-in/help"])))))]))
      "\n")))
 
 (defn shebang? [arg]
   (when (and (<= 0 (.indexOf arg (int \/))) (.exists (io/file arg)))
     (let [bang-line (str (first (string/split (slurp arg) #"\n")))
-          full-path (System/getProperty "insideout.app.path")
+          full-path (System/getProperty "boot.app.path")
           base-path (.getName (io/file full-path))
           full-pat  (re-pattern (format "^#!\\s*\\Q%s\\E(?:\\s+.*)?$" full-path))
           base-pat  (re-pattern (format "^#!\\s*/usr/bin/env\\s+\\Q%s\\E(?:\\s+.*)?$" base-path))]
@@ -104,12 +95,11 @@
   (when (.isFile f)
     (->> (string/split (slurp f) #"\n") (remove string/blank?) (map re-pattern) set)))
 
-
 (defn -main [arg0 & args*]
   (let [[arg0 args args*] (if (seq args*)
-                            [arg0 nil args*]
+                            [arg0 [] args*]
                             ["--help" nil ["--help"]])
-        bootscript        (util/config "BOOT_FILE" "startup.clj")
+        bootscript        (App/config "BOOT_FILE" "startup.clj")
         exists?           #(when (.isFile (io/file %)) %)
         have-bootscript?  (exists? bootscript)
         [arg0 args]       (cond
@@ -144,26 +134,36 @@
 
     (binding [*out*               (util/auto-flush *out*)
               *err*               (util/auto-flush *err*)
-              *boot-opts*    opts
-              *boot-script*  arg0]
+              core/*boot-opts*    opts
+              core/*boot-script*  arg0]
 
       (util/exit-ok
-       (let [localscript (exists? (io/file "profile.clj"))
+       (let [userscript (exists? (io/file (App/getBootDir) "profile.clj"))
+             localscript (exists? (io/file "profile.clj"))
              profile?    (not (:no-profile opts))
              bootstr     (some->> arg0 slurp)
+             userstr     (when profile?
+                           (some->> userscript slurp))
              localstr    (when profile?
                            (some->> localscript slurp))
              initial-env (->> [:source-paths :resource-paths :asset-paths
                              :dependencies :exclusions :checkouts :offline?]
                             (reduce #(if-let [v (opts %2)] (assoc %1 %2 v) %1) {})
                             (merge {} (:set-env opts)))
+             import-ns   (export-task-namespaces initial-env)
              scriptstr   (binding [*print-meta* true]
-                           (emit boot? args localstr bootstr (:init opts)))]
+                           (emit boot? args userstr localstr bootstr import-ns (:init opts)))]
 
          (when (:boot-script opts) (util/exit-ok (print scriptstr)))
 
          (when (:version opts) (util/exit-ok (boot.App/printVersion)))
 
+         (reset! core/bootignore (parse-bootignore (io/file ".bootignore")))
+
+         (#'core/init!)
+
+         (apply core/set-env! (->> initial-env (mapcat identity) seq))
+         (reset! @#'core/cli-base initial-env)
          (try (load-string scriptstr)
               (catch clojure.lang.Compiler$CompilerException cx
                 (let [l (.-line cx)
@@ -171,25 +171,3 @@
                       m (.getMessage (or c cx))
                       x (or c cx)]
                   (throw (ex-info m (merge (sorted-map :line l) (ex-data c)) x))))))))))
-
-
-;; TODO
-;;
-;; Grab Boot's task framework and -main argument parser.
-;; Then `nrepl` becomes a task; `dynamo` (maybe) becomes a task.
-;; Programmers can write their own tasks.  `params` is a
-;; task for passing command-line arguments?
-
-;; Find sources via searching `src/main/clojure` and `src`.
-;; `app.clj` is the program's main.  Search for it in the
-;; source folders, require it, and call its `app-main`.
-
-;; Make a small fast native executable that communicates with
-;; dynamo over a unix domain socket (?) for monitoring/operability?
-
-
-#_(defn -main
-    "public static void main..."
-    [args]
-    (dyn/resolve-sources)
-    (nr/start!))
