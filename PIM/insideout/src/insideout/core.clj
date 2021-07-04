@@ -14,6 +14,7 @@
    [insideout.nrepl             :as nr]
    [ui.SWT                      :as swt]))
 
+
 (def ^:dynamic *boot-opts* {})
 (def ^:dynamic *boot-script* "")
 

@@ -58,6 +58,4 @@
                               '[[org.eclipse.swt.widgets Display Shell]
                                 [org.eclipse.swt SWT]])
 
-  (add-dependencies :coordinates (conj [] platform-swt-lib)
-                    :repositories cemerick.pomegranate.aether/maven-central)
   ,)

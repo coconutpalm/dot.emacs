@@ -1,6 +1,6 @@
-(ns insideout.tasks
+(ns insideout.boot
   "Shamelessly ripped-off from `boot.core', except that insideOut maintains
-  state using a simple Map."
+  state using a simple Map instead of Boot's filesystem abstraction."
   (:require
    [clojure.java.io              :as io]
    [clojure.set                  :as set]
