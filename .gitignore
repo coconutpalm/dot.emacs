@@ -28,6 +28,7 @@ launchers
 .lsp-session-*
 .metals
 .vscode
+*.nrepl-port
 
 build.sbt
 idea.sbt
