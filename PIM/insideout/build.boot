@@ -1,17 +1,18 @@
 (set-env!
- :dependencies '[[nrepl                     "0.8.3" :scope "test"]
-                 [org.slf4j/slf4j-nop       "1.7.13" :scope "test"]
-                 [adzerk/boot-jar2bin       "1.2.0" :scope "test"]
-                 [adzerk/boot-reload        "0.6.1" :scope "test"]
+ :dependencies '[[nrepl                       "0.8.3" :scope "test"]
+                 [org.slf4j/slf4j-nop         "1.7.13" :scope "test"]
+                 [adzerk/boot-jar2bin         "1.2.0" :scope "test"]
+                 [adzerk/boot-reload          "0.6.1" :scope "test"]
 
                  ;; Client and server
-                 [org.clojure/core.async    "1.3.610"]
-                 [juji/editscript           "0.5.4"]
+                 [org.clojure/core.async      "1.3.610"]
+                 [juji/editscript             "0.5.4"]
 
                  ;; Server-side dependencies
-                 [org.clojure/clojure       "1.10.3"]
+                 [org.clojure/clojure         "1.10.3"]
                  [org.clojure/tools.namespace "1.1.0"]
-                 [clj-commons/pomegranate   "1.2.1"]]
+                 [potemkin                    "0.4.3"]
+                 [clj-commons/pomegranate     "1.2.1"]]
 
 
  :source-paths #{"src"}
