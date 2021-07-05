@@ -6,9 +6,9 @@
   used to decompose decimals or rationals > 1 into mixed numbers with easy access to the whole and
   fractional parts."
 
-  (require [clj-foundation.patterns :refer [let-map]])
+  (:require [clj-foundation.patterns :refer [let-map]])
 
-  (import [clojure.lang Ratio Numbers]))
+  (:import [clojure.lang Ratio Numbers]))
 
 
 (defprotocol INumberParts
@@ -16,17 +16,17 @@
   (decompose [this] "Returns a map consisting of the parts that make up 'this' number."))
 
 
-(defschema MixedNumberParts
+(def MixedNumberParts
   "Formally define a MixedNumber's Map representation as returned by the (.decompose num)
    method."
-  {:whole s/Num
-   :frac s/Num})
+  {:whole :s/Num
+   :frac :s/Num})
 
 
-(s/defn rationalize! :- Ratio
+(defn rationalize!
   "Like clojure.core.rationalize, but always returns a Ratio, even if the number can be reduced to n/1
   See also: http://dev.clojure.org/jira/browse/CLJ-1435?page=com.atlassian.jira.plugin.system.issuetabpanels:all-tabpanel"
-  [n :- s/Num]
+  [n]
   (Numbers/toRatio (rationalize n)))
 
 

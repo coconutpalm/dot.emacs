@@ -1,11 +1,9 @@
 (ns clj-foundation.patterns-test
   (:require [clojure.test :refer :all]
-            [schema.core :as s :refer [=> =>*]]
             [clj-foundation.unit-test-common :as common]
             [clj-foundation.data :refer [identity->nil]]
             [clj-foundation.patterns :refer :all]
             [clj-foundation.errors :refer [try*]]))
-
 
 (common/register-fixtures)
 

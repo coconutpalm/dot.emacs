@@ -1,17 +1,15 @@
 (ns clj-foundation.errors-test
   (:require [clojure.test :refer :all]
-            [schema.core :as s :refer [=> =>*]]
             [clj-foundation.unit-test-common :as common]
             [clj-foundation.io :as io :refer [with-err-str]]
             [clj-foundation.errors :refer :all]
-            [clj-foundation.data :refer [any?]]
+            [clj-foundation.data :refer [elem-satisfies?]]
             [clj-foundation.patterns :as p]
             [clj-foundation.millis :as millis]
             [clj-foundation.errors :as err]
             [clojure.string :as str])
   (:import [java.util Date]
            [clojure.lang ExceptionInfo]))
-
 
 (common/register-fixtures)
 
@@ -177,7 +175,7 @@
     (let [r0 (new-default-job "abort-test"
                               4
                               (millis/<-seconds 1)
-                              #(any? (fn [x] (instance? Throwable x)) %))
+                              #(elem-satisfies? (fn [x] (instance? Throwable x)) %))
           r1 (update-in r0 [:retries] inc)
           r2 (update-in r1 [:retries] inc)
           r3 (update-in r2 [:retries] inc)]

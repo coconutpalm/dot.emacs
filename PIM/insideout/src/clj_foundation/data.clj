@@ -7,7 +7,7 @@
   * Various functions for parsing and processing XML"
   (:require [clojure.data.xml :as xml]
             [clojure.string :as str]
-            [clj-foundation.patterns :as p :refer [types f]]
+            [clj-foundation.patterns :as p :refer [f]]
             [clj-foundation.errors :as err]
             [potemkin :refer [def-map-type]])
   (:import [java.io StringReader]
@@ -17,14 +17,14 @@
 
 ;; Predicates and data conversion functions -------------------------------------------------
 
-(defn any?
+(defn elem-satisfies?
   "Returns coll if any element in coll satisfies predicate."
   [predicate coll]
   (when (not-empty (filter predicate coll))
     coll))
 
 
-(s/defn replace-if :- s/Any
+(defn replace-if
   "In the binary form, replace value with the result of running predicate against value
    if that result is truthy.  In the terniary form, replace value with replacement if
    the result of running predicate against value is truthy.
@@ -32,28 +32,28 @@
    An idiomatic way to use this function is to pass a set of disallowed values as
    predicate, and a replacement value as replacement."
 
-  ([value :- s/Any, predicate :- (=> s/Any [s/Any])]
+  ([value predicate]
    (let [maybe-result (predicate value)]
      (or
        maybe-result
        value)))
 
-  ([value :- s/Any, predicate :- (=> s/Any [s/Any]), replacement :- s/Any]
+  ([value predicate replacement]
    (if (predicate value)
      replacement
      value)))
 
 
-(s/defn replace-nil :- s/Any
+(defn replace-nil
   "Accepts a value that cannot be nil; if it is not nil it returns it, else it
   returns its replacement."
-  [maybe-nil :- s/Any, replacement :- s/Any]
+  [maybe-nil replacement]
   (if (nil? maybe-nil)
     replacement
     maybe-nil))
 
 
-(s/defn nothing->identity :- s/Any
+(defn nothing->identity
   "Takes nil or Nothing to the specified identity value for the type and computation in context,
   otherwise returns value.  An identity value can be applied to a value of the given type under the
   operation in context without affecting the result.  For example 0 is the identity value for rational
@@ -63,14 +63,14 @@
   for types where the Nothing type is ill-behaved (e.g.: Strings, Numbers, ...) for a given operation.
 
   Another name for this concept is the monadic zero for the type/operation."
-  [identity-value :- s/Any, value :- s/Any]
+  [identity-value value]
 
   (if (p/something? value)
     value
     identity-value))
 
 
-(s/defn identity->nil :- s/Any
+(defn identity->nil
   "Synopsis:
      (identity->nil [])                                  --> nil
      (identity->nil \"\")                                --> nil
@@ -83,44 +83,41 @@
   * Non-numeric values are empty iff (empty? value).
   * Numbers default to zero as their identity value.
   * The identity predicate may optionally be overridden in the second parameter."
-  ([value      :- s/Any
-    identity-p :- (=> s/Bool [s/Any])]
+  ([value identity-p #_(=> [Any] Bool)]
    (when-not (identity-p value) value))
 
-  ([value      :- s/Any]
+  ([value]
    (cond
      (number? value) (identity->nil value zero?)
      :else           (identity->nil value empty?))))
 
 
-;; FIXME: The following two do roughly the same thing.  Consolidate.
-
-(s/defn value-or :- s/Any
+(defn translate-nothingness
   "If value is nil or an instance of Nothing, run f and return its result.  Else, return value."
-  [value :- s/Any, f :- (=> s/Any [s/Any])]
+  [value f]
   (if (or (nil? value)
           (instance? (p/Nothing!) value))
     (f value)
     value))
 
 
-(s/defn something-or :- s/Any
+(defn translate-something
   "If value is not Nothing return value, else run f and return its result."
-  [value :- s/Any, f :- (=> s/Any [s/Any])]
+  [value f]
   (if (p/something? value)
     value
     (f value)))
 
 
 
-(s/defn undasherize :- s/Str
+(defn undasherize
   "Replace all instances of '-' or '_' with replacement"
-  [replacement :- s/Str,  value :- (types s/Str Named)]
+  [replacement value]
   (str/replace (name value) #"[\-_]" replacement))
 
 
-(s/defn getter :- s/Str
-  [property-name :- s/Str]
+(defn getter
+  [property-name]
   "Translate property-name to its Java getter syntax.  Handles hyphenated-names and underscore_names as well as
   names that are already camelCase."
   (->> (str/split property-name #"[\_-]")
@@ -131,15 +128,15 @@
        (str "get")))
 
 
-(s/defn ->SNAKE_CASE :- s/Str
+(defn ->SNAKE_CASE
   "Convert any Named or String object to SNAKE_CASE.  Does not handle camelCase."
-  [value :- (types s/Str Named)]
+  [value]
   (str/upper-case (undasherize "_" (name value))))
 
 
-(s/defn ->uppercase-with-spaces :- s/Str
+(defn ->uppercase-with-spaces
   "Convert - or _ to ' ' and captialize string."
-  [value :- (types s/Str Named)]
+  [value]
   (str/upper-case (undasherize " " (name value))))
 
 
@@ -167,15 +164,15 @@
        (keyword)))
 
 
-(s/defn string->keyword :- s/Keyword
+(defn string->keyword
   "Convert string name to a keyword respecting naming-exceptions.
+  naming-exceptions is a predicate (or set or other predicate-like thing).
    Ex. some_name -> :some-name"
-  ([name :- s/Str
-    naming-exceptions :- #{s/Str}]
+  ([name naming-exceptions]
    (if-let [name-exception (naming-exceptions name)]
      name-exception
      (keywordize name)))
-  ([name :- s/Str]
+  ([name]
    (keywordize name)))
 
 
@@ -195,11 +192,9 @@
   (lazy-seq (cons c (constant-seq c))))
 
 
-(s/defn set-map-entries :- {s/Any s/Any}
+(defn set-map-entries
   "Returns a new copy of m where for all [k v] => if k is in entries, v is set to new-value."
-  [m         :- {s/Keyword s/Any}
-   entries   :- [s/Keyword]
-   new-value :- s/Any]
+  [m entries new-value]
   (let [new-entries (zipmap entries (constant-seq new-value))]
     (merge m new-entries)))
 

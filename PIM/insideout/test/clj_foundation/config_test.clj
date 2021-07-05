@@ -1,7 +1,6 @@
 (ns clj-foundation.config-test
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
-            [schema.core :as s :refer [=> =>*]]
             [clj-foundation.unit-test-common :as common]
             [clj-foundation.config :refer :all]))
 
@@ -9,6 +8,7 @@
 
 ;; Make sure our test data is in /tmp
 (io/copy (-> "_test-config-prod.edn" io/resource slurp) (io/file "/tmp/_test-config-prod.edn"))
+(System/setProperty "CONFIG_PROD" "/tmp/_test-config-prod.edn")
 
 (defconfig conf-prod-bad-nvar "PROOOOOD" "_test-config.edn"
   :ENGLISH-GREETING "heyo")

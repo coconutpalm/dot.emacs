@@ -4,13 +4,11 @@
   of ${VAR}.  Also, given a string s can return the names of the variables that must be
   resolved in s."
   (:require [clojure.string :as str]
-            [schema.core :as s :refer [=> =>* defschema]]
-            [clj-foundation.patterns :as p :refer [types nothing]]
+            [clj-foundation.patterns :as p :refer [nothing]]
             [clj-foundation.errors :as err :refer [try*]]
-            [clj-foundation.data :refer [value-or]])
+            [clj-foundation.data :refer [translate-nothingness]])
   (:import [clojure.lang ISeq]
-           [java.io BufferedReader StringReader])
-  (:gen-class))
+           [java.io BufferedReader StringReader]))
 
 
 (defn subst-map<-
@@ -37,30 +35,28 @@
     (throw (IllegalArgumentException. (str (type v) " isn't a seq.")))))
 
 
-(s/defn lines :- ISeq
+(defn lines
   "Like clojure.core/line-seq but accepts String in addition to java.io.BufferedReader."
-  [source :- (types BufferedReader s/Str)]
+  [source]
   (let [source' (if (string? source)
                   (BufferedReader. (StringReader. source))
                   source)]
     (line-seq source')))
 
 
-(s/defn resolve-var :- s/Any
+(defn resolve-var
   "Resolves (template) variable values using the following precedence:
 
   * (System/getProperty)
   * (System/getenv)
-  * default-substitutions map
+  * default-substitutions map {Any Any}
 
   Options are key/value pairs.
 
   If Options contains :partial-resolve true, returns err/nothing if a variable cannot
   be resolved.  Otherwise, if a variable cannot be resolved, throws ExceptionInfo."
 
-  [default-substitutions :- {s/Any s/Any}
-   var-name              :- s/Keyword
-   & options             :- [s/Any]]
+  [default-substitutions var-name & options]
 
   (let [opts (subst-map<- options)
         lookup-string (name var-name)
@@ -87,14 +83,12 @@
       keyword))
 
 
-(s/defn try-resolve-var :- s/Any
+(defn try-resolve-var   ;; :- Any
   "Resolve variable using resolve-var semantics.  If :partial-resolve true is in options,
   unsuccessful variable resolutions are converted back to the variable's string representation
   and returned."
-  [substitutions :- {s/Keyword s/Any}
-   var           :- s/Keyword
-   & options     :- [s/Any]]
-  (value-or
+  [substitutions var & options]
+  (translate-nothingness
    (apply resolve-var substitutions var options)
    (fn [_] (str "${" (name var) "}"))))
 
@@ -102,7 +96,7 @@
 (defn- re-seq-key->value
   "Returns a function closing over substitution-map for translating
   lookup keys (from the second element of re-seq tuples) to values
-  using templates/resolve-var.  If resolve-var returns err/nothing,
+  using templateresolve-var.  If resolve-var returns err/nothing,
   returns the original lookup key text.
 
   If :partial-resolve true is specified in options, resolves as many
@@ -117,14 +111,14 @@
 (def ^:private var-subst-regex #"\$\{(.*?)\}")
 
 
-(s/defn parameters<- :- [s/Any]
+(defn parameters<-
   "Parse template string and return the parameter list variables in the order in
   which they are defined in the string."
-  [template :- s/Str]
+  [template]
   (map subst-var-match->subst-var-keyword (re-seq var-subst-regex template)))
 
 
-(s/defn parameter-list<- :- [s/Any]
+(defn parameter-list<-
   "Generates a parameter list seq with variable values in the order in which variables are
   encountered in variable-source using resolve-var.
 
@@ -133,9 +127,7 @@
 
   If :partial-resolve true is specified in options, resolves as many
   variables as possible.  Unresolved variables are returned as ${var-name}."
-  [parameter-source :- (types String clojure.lang.ASeq)
-   substitution-map :- {s/Any s/Any}
-   & options        :- [s/Any]]
+  [parameter-source substitution-map & options]
   (let [re-match->value (apply re-seq-key->value substitution-map options)]
     (cond
       (string? parameter-source)     (map re-match->value (re-seq var-subst-regex parameter-source))
@@ -160,14 +152,14 @@
     [fstr fargs]))
 
 
-(s/defn kv-vector<- :- [s/Keyword s/Any]
+(defn kv-vector<-
   "Translate a map of Keywords -> anything to a vector in the form:
   [:key1 val1 :key2 val2 ... :keyn valn]"
-  [m :- {s/Keyword s/Any}]
+  [m]
   (flatten (vec m)))
 
 
-(s/defn sql-vars :- [s/Str []]
+(defn sql-vars  ;; [Str []]
   "Converts resource string using substitution-map into a tuple vector [String [binding arguments]]
   where the String is the SQL with binding question marks replacing the template variables and
   the binding arguments vector containing the variable name corresponding to each ? binding."
@@ -180,7 +172,7 @@
 
 (defn subst<-
   "Given a string containing variables of the form ${variable-name}
-  and a map with keywords corresponding to the variable names/values
+  and a map with keywords corresponding to the variable namevalues
   where the values specified in the map represent default values
   to be used if the variable's value is not discovered via another
   method.

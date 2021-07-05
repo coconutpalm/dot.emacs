@@ -10,26 +10,9 @@
   (:gen-class))
 
 
-;; Schema/type utilities ------------------------------------------------------------------------------------
-
-(defn types
-  "Returns a schema that matches the listed surface types only (e.g.: primitive or collection types but
-  not contents).  Only designed for schemas that are (instance? java.lang.Class)."
-  [& schemas]
-  (let [type-names (map #(.getName %) schemas)
-        type-name-string (str/join ", " type-names)]
-    (s/named (apply s/cond-pre schemas) type-name-string)))
-
-
-(def KeywordValuePairs
-  "A schema for keyword-value pairs.  Currently unsupported by Schema so defining once here so that once support lands,
-  there is only one place to change to enforce it everywhere."
-  [s/Keyword s/Any])
-
-
-(s/defn get-package :- s/Str
+(defn get-package
   "Returns the package name for the specified Class"
-  [clazz :- Class]
+  [clazz]
   (->> (.split (.getName clazz) "\\.")
        reverse
        rest
@@ -38,9 +21,9 @@
        (apply str)))
 
 
-(s/defn get-class-name :- s/Str
+(defn get-class-name
   "Returns the unqualified class name for the specified Class"
-  [clazz :- Class]
+  [clazz]
   (->> (.split (.getName clazz) "\\.")
        reverse
        first
@@ -110,10 +93,9 @@
   (Nothing. "No result error {}" {}))
 
 
-(s/defn no-result :- Nothing
+(defn no-result
   "Create custom Nothingness with a specified (.toString n) and (.why n) value."
-  [string-value :- s/Str
-   reason       :- s/Any]
+  [string-value reason]
   (Nothing. string-value reason))
 
 
@@ -123,15 +105,15 @@
   nothing)
 
 
-(s/defn Nothing! :- Class
+(defn Nothing!
   "Return the Nothing type (mainly for use in Schemas)"
   []
   Nothing)
 
 
-(s/defn something? :- s/Any
+(defn something?
   "Returns value if value is not nothing ; else returns nil."
-  [value :- s/Any]
+  [value]
   (when-not (instance? Nothing value)
     value))
 

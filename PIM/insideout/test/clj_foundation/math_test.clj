@@ -1,6 +1,5 @@
 (ns clj-foundation.math-test
   (:require [clojure.test :refer :all]
-            [schema.core :as s :refer [=> =>*]]
             [clj-foundation.unit-test-common :as common]
             [clj-foundation.math :refer :all]))
 
@@ -17,10 +16,8 @@
     (let [whole+frac (.decompose (->MixedNumber 13/4))
           frac-only  (.decompose (->MixedNumber 0.25))]
 
-      (is (s/validate MixedNumberParts whole+frac))
       (is (= 3 (:whole whole+frac)))
       (is (= 1/4 (:frac whole+frac)))
 
-      (is (s/validate MixedNumberParts frac-only))
       (is (= 0 (:whole frac-only)))
       (is (= 1/4 (:frac frac-only))))))

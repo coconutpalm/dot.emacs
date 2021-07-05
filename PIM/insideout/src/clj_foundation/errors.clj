@@ -7,13 +7,11 @@
   Error handling is rarely clean, but this namespace provides some handy utilities to
   centralize some of the concerns and solve them once, reliably.  ;-)"
   (:require [clojure.string          :as str]
-            [io.aviso.exception      :as prettyexception]
+            [boot.from.io.aviso.exception      :as prettyexception]
             [clj-foundation.patterns :refer :all]
             [clj-foundation.millis   :as millis])
 
-  (:import [java.util Date])
-
-  (:gen-class))
+  (:import [java.util Date]))
 
 
 ;; Traceability ---------------------------------------------------------------------
@@ -58,17 +56,17 @@
   (instance? Throwable val))
 
 
-(s/defn exception<- :- Throwable
+(defn exception<-
   "If x is already Throwable return it, else convert it into an exception using ex-info.  The
   (:error-object result) will be the original value.  This is intended--though not strictly
   required--to be used for values where (failure? value) is true."
-  [x :- s/Any]
+  [x]
   (cond
     (instance? Throwable x) x
     :else                   (ex-info (str x) {:error-obj x})))
 
 
-(s/defn seq<- :- [Throwable]
+(defn seq<-
   "Converts failures into seqs of exceptions.  If the failure is already an exception (the common case),
   it returns a seq starting with the root exception, and recursively including (.getCause e)
   until there are no more causes.
@@ -77,7 +75,7 @@
 
   If the failure isn't already an exception or a seq, it is converted into one first using ex-info.  In this case,
   the :cause in the ex-info map will be the original failure object."
-  [failure :- (s/pred failure? "(failure? failure) is truthy")]
+  [failure]
   (cond
     (seq? failure)                (map exception<- failure)
     (instance? Throwable failure) (if (instance? Iterable failure)
@@ -87,13 +85,13 @@
 
 
 (def exception-seq
-  "Deprecated.  Use errors/seq<- instead."
+  "Deprecated.  Use errorseq<- instead."
   seq<-)
 
 
-(s/defn stack-trace<- :- s/Str
+(defn stack-trace<-
   "Returns the stack trace(s) associated with e and its (.getCause)s as a String."
-  [e :- Throwable]
+  [e]
   (binding [prettyexception/*fonts* nil
             prettyexception/*traditional* true]
     (->> e
@@ -112,15 +110,57 @@
    `(try ~body (catch Throwable e# ~default-value-if-failure))))
 
 
+;; (dis)allowed values ------------------------------------------------------------------
+
+(defn not-nil
+  "If value is not nil, returns it, else throws IllegalArgumentException with
+  the message \"${name} cannot be nil\""
+  [value name]
+  (if (nil? value)
+    (throw (java.lang.IllegalArgumentException. (str name " cannot be nil")))
+    value))
+
+
+(defn not-failure
+  "If value is not a failure, returns it, else throws IllegalStateExceoption with
+  the specified message"
+  [value message]
+  (if (nil? value)
+    (if (instance? Throwable value)
+      (throw (java.lang.IllegalStateException. message value))
+      (throw (java.lang.IllegalStateException. (str "[" value "]: " message))))
+    value))
+
+
+(defn throw-or
+  "If value is a failure, wrap and throw it in an IllegalStateException
+  with the specified message, else run function on the value and return the
+  result"
+  [value message f]
+  (cond
+    (failure? value) (throw (IllegalStateException. message value))
+    :else            (f value)))
+
+
+(defmacro must-be
+  "If body is truthy returns result of evaluating body, else throws IllegalArgumentException with message."
+  [message & body]
+  (let [line-col (vec (meta &form))
+        ns       *ns*]
+    `(let [result# (do ~@body)]
+       (if result#
+         result#
+         (throw (IllegalArgumentException. (str ~ns ~line-col " " ~message)))))))
+
+
 ;; Metalog.  Because we can't depend on any log library without breaking clients. --
 
-
-(s/defn log-string :- s/Str
+(defn log-string
   "Create a log string from a sequence of log objects.  Parameters are reordered
   so that non-Throwables are first followed by Throwable objects.  Non-Throwables
   are returned as their toString representation separated by commas.  Throwables
   are represented by their stack traces, separated by \"\n==>\n\"."
-  [log-objects :- [s/Any]]
+  [log-objects]
   (let [{exceptions true
          others     false} (group-by #(instance? Throwable %) log-objects)
         messages           (str/join ", "   (map str others))
@@ -156,20 +196,19 @@
   metalog)
 
 
-(s/defn set-global-metalogger :- s/Any
+(defn set-global-metalogger
   "Set the clj-foundation metalogger globally.  f must be a function of type
-  (=> s/Any [s/Keyword s/Any])"
-  [f :- (=> s/Any [s/Keyword s/Any])]
+  (=> [Keyword Any] Any)"
+  [f]
   (alter-var-root #'*log* (constantly f)))
 
 
-(s/defn log :- s/Any
+(defn log
   "Synopsis: (log :log-level & more)
 
   The initial :log-level must be one of the keywords in log-levels.  The remainder
   of the arguments are the objects that will be logged using log-string."
-  [level :- s/Keyword
-   & more :- [s/Any]]
+  [level & more]
   (let [args (cond (sequential? more)  more
                    :else              [more])]
      (apply *log* level args)))
@@ -177,11 +216,11 @@
 
 ;; Various retry/timeout strategies ---------------------------------------------------
 
-(s/defn expect-within :- s/Any
+(defn expect-within
   "Expect the condition specified by predicate to become true within timeout-millis. If this
   does not happen, throws IllegalStateException including the error-message.  On success, returns
   the truthy value that predicate returned."
-  [timeout-millis :- s/Num, predicate :- (=> s/Any []), error-message :- s/Str]
+  [timeout-millis predicate error-message]
 
   (let [before (.getTime (Date.))]
     (loop [completed (predicate)]
@@ -256,7 +295,7 @@
 
 
 (defn timeout?
-  "True if (= TIMEOUT-ERROR e)"
+  "True iff (= TIMEOUT-ERROR e)"
   [e]
   (= TIMEOUT-ERROR e))
 
@@ -273,11 +312,10 @@
           TIMEOUT-ERROR))
 
 
-(s/defn retry? :- (s/enum :ABORT-MAX-RETRIES :ABORT-FATAL-ERROR :RETRY-FAILURE :RETRY-TIMEOUT)
+(defn retry?  ;; Returns one of (enum :ABORT-MAX-RETRIES :ABORT-FATAL-ERROR :RETRY-FAILURE :RETRY-TIMEOUT)
   "Something failed.  Examine the retry count and exact failure cause and determine if we can
   retry the operation.  Internal API only; public so we can document using Schema and test."
-  [job                         ; Conforms to map returned by new-default-job
-   failure-value :- s/Any]
+  [job failure-value]
   (let [job-abort?       (:abort?-fn job)
         result-exception (exception<- failure-value)]
     (cond
@@ -298,14 +336,14 @@
    :retry-pause-millis pause-millis})
 
 
-(s/defrecord RetrySettings
-    [tries          :- s/Num
-     timeout-millis :- s/Num
-     pause-millis   :- s/Num
-     abort?-fn      :- (=> s/Bool [[Throwable]])])
+(defrecord RetrySettings
+    [tries          ;; :- Num
+     timeout-millis ;; :- Num
+     pause-millis   ;; :- Num
+     abort?-fn])    ;; (=> [[Throwable]] Bool)
 
 
-(s/defn ^:always-validate retry-with-timeout :- s/Any
+(defn retry-with-timeout
   "Retry (apply f args) up to tries times with pause-millis time in between invocation and a
   timeout value of timeout-millis.  On failure, abort?-fn is called with a vector containing the
   unwrapped exception stack.
@@ -322,12 +360,15 @@
   If the last result is a TIMEOUT-ERROR, a runtime exception is thrown.  Otherwise, the failure
   value itself is returned as the result."
 
-  [job-name       :- String
-   settings       :- RetrySettings
-   f              :- (=> s/Any [s/Any])
-   & args         :- [s/Any]]
+  [job-name settings f & args]
 
-  (s/validate RetrySettings settings)
+  (if-not (and job-name settings f)
+    (throw (ex-info "null argument detected" {})))
+
+  (let [expected-keys [:tries :timeout-millis :pause-millis :abort?-fn]]
+    (doseq [key expected-keys]
+      (if-not (get settings key)
+        (throw (ex-info (str key " key not found.  Found keys: " (keys settings)) {})))))
 
   (let [tries          (:tries settings)
         timeout-millis (:timeout-millis settings)
@@ -349,47 +390,3 @@
               :else              (throw (IllegalStateException. "Program Error!  We should never get here.")))
             (recur (update-in j [:retries] inc)))
           result)))))
-
-
-;; (dis)allowed values ------------------------------------------------------------------
-
-
-(s/defn not-nil :- s/Any
-  "If value is not nil, returns it, else throws IllegalArgumentExceoption with
-  the message \"${name} cannot be nil\""
-  [value :- s/Any, name :- s/Str]
-  (if (nil? value)
-    (throw (java.lang.IllegalArgumentException. (str name " cannot be nil")))
-    value))
-
-
-(s/defn not-failure :- s/Any
-  "If value is not a failure, returns it, else throws IllegalStateExceoption with
-  the specified message"
-  [value :- s/Any, message :- s/Str]
-  (if (nil? value)
-    (if (instance? Throwable value)
-      (throw (java.lang.IllegalStateException. message value))
-      (throw (java.lang.IllegalStateException. (str "[" value "]: " message))))
-    value))
-
-
-(s/defn throw-or :- s/Any
-  "If value is a failure, wrap and throw it in an IllegalStateException
-  with the specified message, else run function on the value and return the
-  result"
-  [value :- s/Any, message :- s/Str, f :- (=> s/Any [s/Any])]
-  (cond
-    (failure? value) (throw (IllegalStateException. message value))
-    :else            (f value)))
-
-
-(defmacro must-be
-  "If body is truthy returns result of evaluating body, else throws IllegalArgumentException with message."
-  [message & body]
-  (let [line-col (vec (meta &form))
-        ns       *ns*]
-    `(let [result# (do ~@body)]
-       (if result#
-         result#
-         (throw (IllegalArgumentException. (str ~ns ~line-col " " ~message)))))))

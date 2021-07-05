@@ -56,9 +56,9 @@
   `(.println ~stream ~thing))
 
 
-(s/defn string-input-stream :- InputStream
+(defn string-input-stream
   "Return a java.io.InputStream containing the input string"
-  [input :- s/Str]
+  [input]
   (ByteArrayInputStream. (.getBytes input)))
 
 
@@ -86,43 +86,49 @@
         (.readObject inp)))
 
 
+;; Schema stubs - Leaving these in because they make good documentation
+
+(defn one [& xs])
+(defn optional-key [& xs] (first xs))
+(defn cond-pre [& xs])
+(defn explain [schema] (.toString schema))
+
 ;; Data types / schemas specifying the kinds of types from which we can stream data
 
 (def ByteArray (Class/forName "[B"))
 (def clojure-file-inputs
   "The data types allowed as input to io/input-stream"
-  [s/Str InputStream File URI URL Socket ByteArray])
-
+  [String InputStream File URI URL Socket ByteArray])
 
 (def ResourcePath
   "A path to a JAR file resource on the classapth."
-  s/Str)
+  String)
 
 (def EnvironmentVariable
   "The name of a java system variable or O/S environment variable (in that order) that may override
   a ResourcePath."
-  s/Str)
+  String)
 
-(s/defschema ResourceOverrideVector
+(def ResourceOverrideVector
   "Read the resource at ResourcePath unless a Java system variable or an O/S EnvironmentVariable
    is present with the specified name.  In that case, use the value referenced by EnvironmentVariable
    as a file system path to the actual file."
-  [(s/one EnvironmentVariable "Java system or O/S environment variable that may override the recource")
-   (s/one ResourcePath "JAR resource on the classpath")])
+  [(one EnvironmentVariable "Java system or O/S environment variable that may override the recource")
+   (one ResourcePath "JAR resource on the classpath")])
 
-(s/defschema ResourceOverrideMap
+(def ResourceOverrideMap
   "Read the file specified by :file or the resource specified by :resource.  If both entries are defined,
   the :file entry takes precedence over the :resource entry."
-  {(s/optional-key :file) s/Str
-   (s/optional-key :resource) s/Str})
+  {(optional-key :file) String
+   (optional-key :resource) String})
 
-(s/defschema ClojureFileInputs
+(def ClojureFileInputs
   "The set of types Clojure allows for opening files/streams"
-  (apply s/cond-pre clojure-file-inputs))
+  (apply cond-pre clojure-file-inputs))
 
-(s/defschema ExtendedFileInputs
+(def ExtendedFileInputs
   "Clojure's file inputs plus extensions for reading from either Jar resources or Files."
-  (apply s/cond-pre ResourceOverrideVector ResourceOverrideMap clojure-file-inputs))
+  (apply cond-pre ResourceOverrideVector ResourceOverrideMap clojure-file-inputs))
 
 
 (defn- resolve-envar-override
@@ -147,58 +153,51 @@
     :else    (throw (IllegalArgumentException. (str "Don't know how to open a file from: " map)))))
 
 
-(defn- matches [schema value]
-  (not (s/check schema value)))
-
-
 ;; File reading...
 
-(s/defn normalize-file-input :- ClojureFileInputs
+(defn normalize-file-input
   "If the file-input is a string and can be converted to a resource URL, return that.
   If the file-input is a FileLocation, translate the :resource string to a URL and return that,
   otherwise return a File object wrapping the :file entry.  Otherwise, return the original file-input."
-  [file-input :- ExtendedFileInputs]
+  [file-input]
 
   (let [result
         (cond
-          (matches ResourceOverrideVector file-input) (apply resolve-envar-override file-input)
-          (matches ResourceOverrideMap file-input)    (resolve-override-map file-input)
+          (vector? file-input) (apply resolve-envar-override file-input)
+          (map? file-input)    (resolve-override-map file-input)
           :else file-input)]
 
     (try
-      (s/validate ClojureFileInputs result)
       (if (string? result)
         (data/replace-nil (io/resource result) result)
         result)
       (catch Throwable e
         (throw (IllegalArgumentException.
-                (str "Expected result to be one of " (s/explain ClojureFileInputs)
+                (str "Expected result to be one of " (explain ClojureFileInputs)
                      " but found " result)
                 e))))))
 
 
 
-(s/defn input-stream :- InputStream
+(defn input-stream
   "Read and return a text file as an InputStream.  Supported sources are the same as io/input-stream, with
-  the following additions: ResourceOverrideMap and ResourceOverrideVector.  See: (doc schema-name)
-  for more information on these schema types."
-  [file-input :- ExtendedFileInputs]
+  the following additions: ResourceOverrideMap and ResourceOverrideVector.  See ExtendedFileInputs for details."
+  [file-input]
   (io/input-stream (normalize-file-input file-input)))
 
 
-(s/defn read-file :- s/Str
+(defn read-file
   "Read and return a text file as a String.  Supported sources are the same as io/input-stream, with
-  the following additions: ResourceOverrideMap and ResourceOverrideVector.  See: (doc schema-name)
-  for more information on these types."
-  [file-input :- ExtendedFileInputs]
+  the following additions: ResourceOverrideMap and ResourceOverrideVector.    See ExtendedFileInputs for details."
+  [file-input]
   (with-open [input (input-stream file-input)]
     (slurp input)))
 
 
-(s/defn resource-as-string :- s/Str
+(defn resource-as-string
   "1-arg variant: Reads the specified classpath resource and returns its contents as a string.
    2-arg variant: [\"ENVAR\" \"resource-file.txt\"] - Allows resource-file to be overridden as-in read-file."
-  [& resource-spec :- [s/Str]]
+  [& resource-spec]
   (let [argc (count resource-spec)]
     (cond
       (= argc 1) (read-file {:resource (first resource-spec)})
@@ -213,15 +212,14 @@
     [input subs]))
 
 
-(s/defn read-template :- s/Str
+(defn read-template
   "Read a file from file-location, applying any variable substitutions specified
   in the file using the keyword/value pairs in substitutions.
 
   Supported sources are the same as io/input-stream, with the following additions:
-  ResourceOverrideMap and ResourceOverrideVector.  See: (doc schema-name) and (explain schema-name)
-  for more information on these types."
+  ResourceOverrideMap and ResourceOverrideVector."
 
-  [file-location :- ExtendedFileInputs & ex-substitutions]
+  [file-location & ex-substitutions]
 
   (let [[extended-file-location substitutions] (parse-extended-file-location file-location ex-substitutions)
         symbol-table (template/subst-map<- substitutions)

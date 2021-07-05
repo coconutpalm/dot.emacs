@@ -6,8 +6,7 @@
             [clojure.set :as set]
             [clj-foundation.patterns :as p])
   (:import [clojure.lang IPersistentSet IPersistentList IPersistentVector IPersistentMap ISeq]
-           [java.util Map Map$Entry])
-  (:gen-class))
+           [java.util Map Map$Entry]))
 
 
 (defmulti tree-branch? class)
@@ -44,15 +43,17 @@
   (loop [node start-node
          state start-state
          [first-visitor & rest-visitors] visitors]
-    (let [context (merge {:node node, :state state, :stop false, :next false}
-                         (first-visitor node state loc))
-          {new-node :node
-           new-state :state
-           :keys (stop next)} context]
+
+    (let [context   (merge {:node node :state state :stop false :next false}
+                           (first-visitor node state loc))
+          new-node  (:node context)
+          new-state (:state context)
+          stop      (:stop context)
+          next      (:next context)]
+
       (if (or next stop (nil? rest-visitors))
         {:node new-node, :state new-state, :stop stop}
         (recur new-node new-state rest-visitors)))))
-
 
 (defn tree-visitor
   ([zipper visitors]

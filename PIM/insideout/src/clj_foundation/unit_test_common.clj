@@ -1,8 +1,7 @@
 (ns clj-foundation.unit-test-common
   "A common place to put code that we always want to run before / after tests."
   (:require [clojure.test :refer :all]
-            [clj-foundation.errors :refer [log]]
-            [schema.core :as s :refer [=> =>*]])
+            [clj-foundation.errors :refer [log]])
   (:import  [java.util TimeZone]))
 
 
@@ -11,8 +10,7 @@
   []
   ;; Set time zone to UTC to normalize timestamps, remove the need for DST conversions,
   ;; and to allow unit tests to run with the same timezone as jobs / application code
-  (TimeZone/setDefault (TimeZone/getTimeZone "UTC"))
-  (s/set-compile-fn-validation! true))
+  (TimeZone/setDefault (TimeZone/getTimeZone "UTC")))
 
 
 (defn common-once-cleanup

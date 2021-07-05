@@ -2,7 +2,6 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [schema.core :as s :refer [=> =>*]]
             [clj-foundation.unit-test-common :as common]
             [clj-foundation.data :refer :all]))
 
@@ -10,27 +9,27 @@
 (common/register-fixtures)
 
 
-(deftest any?-test
+(deftest elem-satisfies?-test
   (testing "One element, no match"
-    (is (not (any? even? [1]))))
+    (is (not (elem-satisfies? even? [1]))))
 
   (testing "One element, matches"
-    (is (= [2] (any? even? [2]))))
+    (is (= [2] (elem-satisfies? even? [2]))))
 
   (testing "Two elements, no match"
-    (is (nil? (any? even? [1 3]))))
+    (is (nil? (elem-satisfies? even? [1 3]))))
 
   (testing "Two elements, second matches"
-    (is (any? even? [1 4])))
+    (is (elem-satisfies? even? [1 4])))
 
   (testing "Five elements, no match"
-    (is (nil? (any? even? [1 3 5 7 9]))))
+    (is (nil? (elem-satisfies? even? [1 3 5 7 9]))))
 
   (testing "Five elements, second-to-last matches"
-    (is (any? even? [1 3 5 8 9])))
+    (is (elem-satisfies? even? [1 3 5 8 9])))
 
   (testing "Five elements, multiple matches"
-    (is (any? even? [1 10 5 8 9]))))
+    (is (elem-satisfies? even? [1 10 5 8 9]))))
 
 
 (deftest replace-if-test

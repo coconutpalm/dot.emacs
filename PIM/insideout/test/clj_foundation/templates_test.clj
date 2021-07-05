@@ -1,7 +1,6 @@
 (ns clj-foundation.templates-test
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
-            [schema.core :as s :refer [=> =>*]]
             [clj-foundation.unit-test-common :as common]
             [clj-foundation.templates :refer :all])
   (:import [clojure.lang ExceptionInfo]))

@@ -1,6 +1,5 @@
 (ns clj-foundation.millis-test
   (:require [clojure.test :refer :all]
-            [schema.core :as s :refer [=> =>*]]
             [clj-foundation.unit-test-common :as common]
             [clj-foundation.millis :refer :all]))
 
