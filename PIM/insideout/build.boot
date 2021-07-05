@@ -15,8 +15,8 @@
                  [clj-commons/pomegranate     "1.2.1"]]
 
 
- :source-paths #{"src"}
- :resource-paths #{"src"})
+ :source-paths #{"src" "test" "resources"}
+ :resource-paths #{"resources"})
 
 (require
  '[boot.pod :as pod]
