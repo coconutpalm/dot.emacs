@@ -2,14 +2,12 @@
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [schema.core :as s :refer [=> =>*]]
             [clj-foundation.unit-test-common :as common]
             [clj-foundation.io :refer :all])
 
   (:import [java.io File FileNotFoundException]
            [java.net URL]
            [clojure.lang ExceptionInfo]))
-
 
 (common/register-fixtures)
 
@@ -95,6 +93,7 @@
 
 (deftest read-template-test
   (io/copy (-> "_test-config-prod.edn" io/resource slurp) (io/file "/tmp/_test-config-prod.edn"))
+  (System/setProperty "CONFIG_PROD" "/tmp/_test-config-prod.edn")
 
   (testing "Reading a template without variables returns its contents"
     (is (< 0 (count (read-template ["CONFIG_PROD" "_test-config.edn"])))))
