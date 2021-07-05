@@ -6,10 +6,10 @@
    [clojure.pprint              :as pp]
 
    [boot.file                   :as file]
-   [boot.util                   :as util]
+   [util.core                   :as util]
    [boot.from.clojure.tools.cli :as cli]
 
-   [insideout.tasks             :as tasks]
+   [insideout.boot              :refer [boot]]
    [insideout.dynamo            :as dyn]
    [insideout.nrepl             :as nr]
    [ui.SWT                      :as swt]))
@@ -89,7 +89,7 @@
          `(let [boot?# ~boot?]
             (if-not boot?#
               (when-let [main# (resolve 'insideout.user/-main)] (main# ~@argv))
-              (tasks/boot ~@(or (seq argv) ["insideout.standard-tasks/help"])))))]))
+              (boot ~@(or (seq argv) ["insideout.standard-tasks/help"])))))]))
      "\n")))
 
 (defn shebang? [arg]
