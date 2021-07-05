@@ -1,31 +1,25 @@
-(ns boot.util
+(ns util.core
   (:require
-    [clojure.java.io              :as io]
-    [clojure.set                  :as set]
-    [clojure.pprint               :as pprint]
-    [clojure.string               :as string]
-    [boot.file                    :as file]
-    [boot.from.io.aviso.ansi      :as ansi]
-    [boot.from.io.aviso.exception :as pretty]
-    [boot.from.me.raynes.conch    :as conch])
+   [clojure.java.io              :as io]
+   [clojure.set                  :as set]
+   [clojure.pprint               :as pprint]
+   [clojure.string               :as string]
+   [boot.file                    :as file]
+   [boot.from.io.aviso.ansi      :as ansi]
+   [boot.from.io.aviso.exception :as pretty]
+   [boot.from.me.raynes.conch    :as conch])
   (:import
-    [java.io       File]
-    [java.nio      ByteBuffer]
-    [java.util     UUID]
-    [java.util.zip ZipFile]
-    [java.util.jar JarEntry JarOutputStream]))
+   [java.io       File]
+   [java.nio      ByteBuffer]
+   [java.util     UUID]
+   [java.util.zip ZipFile]
+   [java.util.jar JarEntry JarOutputStream]))
 
 (declare print-ex)
 
 (defn windows-host? []
   (-> (System/getProperty "os.name")
      (.startsWith "Windows")))
-
-(defmacro replace-nil-with
-  "Evaluate `forms'.  If they return non-nil, return that else return `default-value'"
-  [default-value & forms]
-  `(or (do ~@forms)
-       ~default-value))
 
 (defn config
   "Centralized configuration for String k/v pairs.  Currently uses System/getProperty"
