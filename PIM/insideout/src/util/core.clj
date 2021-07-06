@@ -4,7 +4,7 @@
    [clojure.set                  :as set]
    [clojure.pprint               :as pprint]
    [clojure.string               :as string]
-   [clj-foundation.config        :refer [config-reader]]
+   [clj-foundation.config        :refer [defconfig]]
    [boot.file                    :as file]
    [boot.from.io.aviso.ansi      :as ansi]
    [boot.from.io.aviso.exception :as pretty]

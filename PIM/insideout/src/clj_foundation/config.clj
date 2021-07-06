@@ -69,4 +69,4 @@
     [config-fn-name config-file-location-envar default-config-resource & default-kvs]
 
     `(def ~config-fn-name
-       (config-reader ~config-file-location-envar default-config-resource ~@default-kvs)))
+       (config-reader ~config-file-location-envar ~default-config-resource ~@default-kvs)))
