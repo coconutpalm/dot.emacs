@@ -6,17 +6,20 @@
    [clojure.pprint              :as pp]
 
    [boot.file                   :as file]
-   [util.core                   :as util]
+   [boot.task-helpers           :as helpers]
    [boot.from.clojure.tools.cli :as cli]
+   [boot.from.table.core        :as table]
 
-   [insideout.boot              :refer [boot]]
+   [insideout.boot              :refer [boot deftask with-pass-thru]]
    [insideout.dynamo            :as dyn]
    [insideout.nrepl             :as nr]
+   [util.core                   :as u]
    [ui.SWT                      :as swt]))
 
 
 (def ^:dynamic *boot-opts* {})
 (def ^:dynamic *boot-script* "")
+
 
 (def cli-opts
   [["-a" "--asset-paths PATH"    "Add PATH to set of asset directories."
@@ -27,13 +30,16 @@
 
    ["-C" "--no-colors"           "Remove ANSI escape codes from printed output."]
 
-   #_["-E" "--exclusions SYM"      "Add the SYM dependency to the set of global exclusions."
-      :assoc-fn #(update-in %1 [%2] (fnil conj #{}) (symbol %3))]
+   ["-E" "--exclusions SYM"      "Add the SYM dependency to the set of global exclusions."
+    :assoc-fn #(update-in %1 [%2] (fnil conj #{}) (symbol %3))]
+
    ["-e" "--set-env KEY=VAL"     "Add KEY => VAL to project env map."
     :assoc-fn #(let [[k v] (string/split %3 #"=" 2)]
                  (update-in %1 [%2] (fnil assoc {}) (keyword k) v))]
+
    ["-i" "--init EXPR"           "Evaluate EXPR in the insideout.user context."
     :assoc-fn #(update-in %1 [%2] (fnil conj []) (read-string %3))]
+
    [nil  "--disable-watchers"    "Disable registering file watches (inotify/FSEvents) for constrained environments."]
 
    ["-f" "--file PATH"           "Evaluate PATH (implies -BP). Args and options passed to -main."]
@@ -56,6 +62,52 @@
    #_["-x" "--exclude-clojure"     "Add org.clojure/clojure to the set of global exclusions."]])
 
 
+(deftask help
+  "Print usage info and list available tasks."
+  []
+  (with-pass-thru [_]
+    (let [tasks (#'helpers/available-tasks 'insideout.user)
+          opts  (->> cli-opts (mapv (fn [[x y z]] ["" (str x " " y) z])))
+          envs  [["" "BOOT_AS_ROOT"              "Set to 'yes' to allow boot to run as root."]
+                 ["" "BOOT_CERTIFICATES"         "Specify certificate file paths."]
+                 ["" "BOOT_CLOJARS_REPO"         "Specify the url for the 'clojars' Maven repo."]
+                 ["" "BOOT_CLOJARS_MIRROR"       "Specify the mirror url for the 'clojars' Maven repo."]
+                 ["" "BOOT_CLOJURE_VERSION"      "The version of Clojure boot will provide (1.8.0)."]
+                 ["" "BOOT_CLOJURE_NAME"         "The artifact name of Clojure boot will provide (org.clojure/clojure)."]
+                 ["" "BOOT_COLOR"                "Set to 'no' to turn colorized output off."]
+                 ["" "BOOT_FILE"                 "Build script name (build.boot)."]
+                 ["" "BOOT_GPG_COMMAND"          "System gpg command (gpg)."]
+                 ["" "BOOT_HOME"                 "Directory where boot stores global state (~/.boot)."]
+                 ["" "BOOT_WATCHERS_DISABLE"      "Set to 'yes' to turn off inotify/FSEvents watches."]
+                 ["" "BOOT_JAVA_COMMAND"         "Specify the Java executable (java)."]
+                 ["" "BOOT_JVM_OPTIONS"          "Specify JVM options (Unix/Linux/OSX only)."]
+                 ["" "BOOT_LOCAL_REPO"           "The local Maven repo path (~/.m2/repository)."]
+                 ["" "BOOT_MAVEN_CENTRAL_REPO"   "Specify the url for the 'maven-central' Maven repo."]
+                 ["" "BOOT_MAVEN_CENTRAL_MIRROR" "Specify the mirror url for the 'maven-central' Maven repo."]
+                 ["" "BOOT_VERSION"              "Specify the version of boot core to use."]
+                 ["" "BOOT_WARN_DEPRECATED"      "Set to 'no' to suppress deprecation warnings."]]
+          files [["" "./boot.properties"         "Specify boot options for this project."]
+                 ["" "./profile.boot"            "A script to run after the global profile.boot but before the build script."]
+                 ["" "BOOT_HOME/boot.properties" "Specify global boot options."]
+                 ["" "BOOT_HOME/profile.boot"    "A script to run before running the build script."]]
+          br    #(conj % ["" "" ""])]
+      (printf "\n%s\n"
+              (-> [["" ""] ["Usage:" "boot OPTS <task> TASK_OPTS <task> TASK_OPTS ..."]]
+                  (table/table :style :none)
+                  with-out-str))
+      (printf "%s\n\nDo `boot <task> -h` to see usage info and TASK_OPTS for <task>.\n"
+              (->> (-> [["" "" ""]]
+                       (into (#'helpers/set-title opts "OPTS:")) (br)
+                       (into (#'helpers/set-title (#'helpers/tasks-table tasks) "Tasks:")) (br)
+                       (into (#'helpers/set-title envs "Env:")) (br)
+                       (into (#'helpers/set-title files "Files:"))
+                       (table/table :style :none)
+                       with-out-str
+                       (string/split #"\n"))
+                   (map string/trimr)
+                   (string/join "\n"))))))
+
+
 (defn- parse-cli-opts [args]
   ((juxt :errors :options :arguments)
    (cli/parse-opts args cli-opts :in-order true)))
@@ -69,13 +121,14 @@
     (format ";; end %s" tag)]))
 
 (defn pr-boot-form [form]
-  (if (<= @util/*verbosity* 1)
+  (if (<= @u/*verbosity* 1)
     (pr-str form)
     (let [[op & [msg & more]] form]
       (with-out-str (pp/write form :dispatch pp/code-dispatch)))))
 
 (defn emit [boot? argv localscript bootscript inits]
-  (let [boot-use '[boot.core boot.util boot.task.built-in]]
+  (let [boot-use '[insideout.core insideout.boot insideout.standard-tasks
+                   insideout.dynamo insideout.nrepl ui.SWT]]
     (str
      (string/join
       "\n\n"
@@ -106,15 +159,15 @@
     (->> (string/split (slurp f) #"\n") (remove string/blank?) (map re-pattern) set)))
 
 
-(defn -main [arg0 & args*]
+(defn -main [& args*]
   (let [[arg0 args args*] (if (seq args*)
-                            [arg0 nil args*]
+                            [nil nil args*]
                             ["--help" nil ["--help"]])
-        bootscript        (util/config "BOOT_FILE" "startup.clj")
+        bootscript        (u/config :startup-file)
         exists?           #(when (.isFile (io/file %)) %)
         have-bootscript?  (exists? bootscript)
         [arg0 args]       (cond
-                            (shebang? arg0)  [arg0 args]
+                            #_(shebang? arg0)  #_[arg0 args]
                             have-bootscript? [bootscript args*]
                             :else            [nil args*])
         boot?             (contains? #{nil bootscript} arg0)
@@ -126,29 +179,29 @@
         arg0              (or (:file opts) (if (:no-boot-script opts) nil arg0))
         boot?             (and boot? (not (:file opts)))
         verbosity         (if (:quiet opts)
-                            (* -1 @util/*verbosity*)
+                            (* -1 @u/*verbosity*)
                             (or (:verbose opts) 0))
         watchers?          (if (:disable-watchers opts)
                              false
-                             @util/*watchers?*)]
+                             @u/*watchers?*)]
 
     (when (seq errs)
-      (util/exit-error
+      (u/exit-error
         (println (apply str (interpose "\n" errs)))))
 
     (when (:no-colors opts)
-      (reset! util/*colorize?* false))
+      (reset! u/*colorize?* false))
 
-    (swap! util/*verbosity* + verbosity)
+    (swap! u/*verbosity* + verbosity)
 
-    (reset! util/*watchers?* watchers?)
+    (reset! u/*watchers?* watchers?)
 
-    (binding [*out*               (util/auto-flush *out*)
-              *err*               (util/auto-flush *err*)
+    (binding [*out*               (u/auto-flush *out*)
+              *err*               (u/auto-flush *err*)
               *boot-opts*    opts
               *boot-script*  arg0]
 
-      (util/exit-ok
+      (u/exit-ok
        (let [localscript (exists? (io/file "profile.clj"))
              profile?    (not (:no-profile opts))
              bootstr     (some->> arg0 slurp)
@@ -161,9 +214,9 @@
              scriptstr   (binding [*print-meta* true]
                            (emit boot? args localstr bootstr (:init opts)))]
 
-         (when (:boot-script opts) (util/exit-ok (print scriptstr)))
+         (when (:boot-script opts) (u/exit-ok (print scriptstr)))
 
-         (when (:version opts) (util/exit-ok (boot.App/printVersion)))
+         (when (:version opts) (u/exit-ok (u/info (u/settings :version))))
 
          (try (load-string scriptstr)
               (catch clojure.lang.Compiler$CompilerException cx

@@ -7,6 +7,7 @@
   In addition, the EDN file being used for configuration may contain template variables as defined
   by the [[templates]] namespace.  Template variables may be resolved through the environment or through
   keys and values specified in code."
+
   (:require [clojure.string :as str]
             [clojure.edn :as edn]
             [clojure.pprint :refer [pprint]]
@@ -16,29 +17,38 @@
             [clj-foundation.io :as io]))
 
 
-
 (defn read-config
-  "Reads config object via the path represented by keys and returns the resulting object."
+  "Reads config object via the path represented by keys and returns the resulting object.
+  On failure throws IllegalStateException."
   [config & keys]
   (try
-      (let [result (reduce get config keys)]
+    (let [result (reduce get config keys)]
 
-        (if (nil? result)
-          (throw (IllegalStateException. (str "Error finding config: " keys)))
-          result))
+      (if (nil? result)
+        (throw (IllegalStateException. (str "Error finding config: " keys)))
+        result))
 
-      (catch NullPointerException e (throw (IllegalStateException.
-                                            (str "Error finding config: " keys))))))
+    (catch NullPointerException e (throw (IllegalStateException.
+                                          (str "Error finding config: " keys))))))
 
 
-(defmacro read-settings-file [config-file-envar default-config-resource substitutions]
-  `(edn/read-string (io/read-template ~config-file-envar ~default-config-resource ~@substitutions)))
+(defn read-settings-file [config-file-envar default-config-resource & substitutions]
+  (edn/read-string (apply io/read-template config-file-envar default-config-resource substitutions)))
+
+
+(defn config-reader [config-file-location-envar default-config-resource & default-kvs]
+  (fn [& key-path]
+    (letfn [(read-settings []
+              (apply read-settings-file config-file-location-envar
+                     default-config-resource
+                     default-kvs))]
+      (apply read-config (read-settings) key-path))))
 
 
 (defmacro defconfig
-  "Defines a configuration lookup function of type (=> s/Any [s/Keyword]) that returns configuration
-  values from the EDN file specified by variable or the default resource.  File resolution is done
-  in the following precedence:
+    "Defines a configuration lookup function of type (=> [Keyword & Keyword ...] Any) that returns
+  configuration values from the EDN file specified by variable or the default resource.  File
+  resolution is done in the following precedence:
 
   * A Java system variable with its name matching config-file-location-envar.
   * An operating system environment variable with its name matching config-file-location-envar.
@@ -56,11 +66,7 @@
   files or to define variables inside the configuration file with default values for dev that will be
   overridden in prod via Java system properties or environment variables."
 
-  [config-fn-name config-file-location-envar default-config-resource & default-kvs]
+    [config-fn-name config-file-location-envar default-config-resource & default-kvs]
 
-  `(def ~config-fn-name
-     (fn [& keys#]
-       (let [read-settings# #(read-settings-file ~config-file-location-envar
-                                                 ~default-config-resource
-                                                 ~default-kvs)]
-         (apply read-config (read-settings#) keys#)))))
+    `(def ~config-fn-name
+       (config-reader ~config-file-location-envar default-config-resource ~@default-kvs)))

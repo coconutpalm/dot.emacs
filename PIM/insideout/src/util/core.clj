@@ -4,6 +4,7 @@
    [clojure.set                  :as set]
    [clojure.pprint               :as pprint]
    [clojure.string               :as string]
+   [clj-foundation.config        :refer [config-reader]]
    [boot.file                    :as file]
    [boot.from.io.aviso.ansi      :as ansi]
    [boot.from.io.aviso.exception :as pretty]
@@ -21,13 +22,13 @@
   (-> (System/getProperty "os.name")
      (.startsWith "Windows")))
 
-(defn config
-  "Centralized configuration for String k/v pairs.  Currently uses System/getProperty"
-  ([variable-name]
-   (config variable-name ""))
 
-  ([variable-name default-value]
-   (System/getProperty variable-name default-value)))
+(defconfig settings "INSIDEOUT-INTERNAL" "defaults.edn")
+
+(defconfig config "INSIDEOUT-CONF" "config.edn"
+  :INSIDEOUT-WATCHERS true
+  :INSIDEOUT-COLOR true)
+
 
 (defn watchers?-system-default
   "Return whether we should register file watches on this
@@ -37,10 +38,10 @@
   configuration option BOOT_WATCHERS_DISABLE to either '1' or 'yes' or
   'true' to disable inotify; any other value keeps normal behavior."
   []
-  (let [value (config "BOOT_WATCHERS_DISABLE")]
+  (let [value (config :file-watchers)]
     (if (string/blank? value)
       true
-      (not (#{"1" "yes" "true"}
+      (not (#{"0" "no" "false"}
             (string/lower-case value))))))
 
 (defn colorize?-system-default
@@ -52,7 +53,7 @@
   either '1' or 'yes' or 'true' to enable it; any other value disables
   colorization."
   []
-  (let [value (config "BOOT_COLOR")]
+  (let [value (config :ansi-color)]
     (if-not (string/blank? value)
       (#{"1" "yes" "true"} (string/lower-case value))
       (not (windows-host?)))))
@@ -88,7 +89,7 @@
       (flush))))
 
 (defmacro print**
-  "Macro version of boot.util/print* but arguments are only evaluated
+  "Macro version of util.core/print* but arguments are only evaluated
   when the message will be printed."
   [verbosity color fmt args]
   `(when (>= @*verbosity* ~verbosity)
@@ -103,25 +104,25 @@
   `(print** 3 ansi/cyan ~fmt ~args))
 
 (defmacro dbug*
-  "Macro version of boot.util/dbug, arguments are only evaluated when the
+  "Macro version of util.core/dbug, arguments are only evaluated when the
   message will be printed (i.e., verbosity level >= 2)."
   [fmt & args]
   `(print** 2 ansi/bold-cyan ~fmt ~args))
 
 (defmacro info*
-  "Macro version of boot.util/info, arguments are only evaluated when
+  "Macro version of util.core/info, arguments are only evaluated when
   the message will be printed (i.e., verbosity level >= 1)."
   [fmt & args]
   `(print** 1 ansi/bold ~fmt ~args))
 
 (defmacro warn*
-  "Macro version of boot.util/warn, arguments are only evaluated when
+  "Macro version of util.core/warn, arguments are only evaluated when
   the message will be printed (i.e., verbosity level >= 1)."
   [fmt & args]
   `(print** 1 ansi/bold-yellow ~fmt ~args))
 
 (defmacro fail*
-  "Macro version of boot.util/fail, arguments are only evaluated when
+  "Macro version of util.core/fail, arguments are only evaluated when
   the message will be printed (i.e., verbosity level >= 1)."
   [fmt & args]
   `(print** 1 ansi/bold-red ~fmt ~args))
@@ -130,7 +131,7 @@
   "Print TRACE level message. Arguments of the form fmt & args suitable for
   passing to clojure.core/format.
 
-  Note that boot.util/*verbosity* in a pod needs to be altered AFTER pod
+  Note that util.core/*verbosity* in a pod needs to be altered AFTER pod
   creation or log level won't be affected."
   [& more]
   (print* 3 ansi/cyan more))
@@ -139,7 +140,7 @@
   "Print DEBUG level message. Arguments of the form fmt & args suitable for
   passing to clojure.core/format.
 
-  Note that boot.util/*verbosity* in a pod needs to be altered AFTER pod
+  Note that util.core/*verbosity* in a pod needs to be altered AFTER pod
   creation or log level won't be affected."
   [& more]
   (print* 2 ansi/bold-cyan more))
@@ -148,7 +149,7 @@
   "Print INFO level message. Arguments of the form fmt & args suitable for
   passing to clojure.core/format.
 
-  Note that boot.util/*verbosity* in a pod needs to be altered AFTER pod
+  Note that util.core/*verbosity* in a pod needs to be altered AFTER pod
   creation or log level won't be affected."
   [& more]
   (print* 1 ansi/bold more))
@@ -157,7 +158,7 @@
   "Print WARNING level message. Arguments of the form fmt & args suitable for
   passing to clojure.core/format.
 
-  Note that boot.util/*verbosity* in a pod needs to be altered AFTER pod
+  Note that util.core/*verbosity* in a pod needs to be altered AFTER pod
   creation or log level won't be affected."
   [& more]
   (print* 1 ansi/bold-yellow more))
@@ -166,7 +167,7 @@
   "Print ERROR level message. Arguments of the form fmt & args suitable for
   passing to clojure.core/format.
 
-  Note that boot.util/*verbosity* in a pod needs to be altered AFTER pod
+  Note that util.core/*verbosity* in a pod needs to be altered AFTER pod
   creation or log level won't be affected."
   [& more]
   (print* 1 ansi/bold-red more))
@@ -176,7 +177,7 @@
   passing to clojure.core/format. Respects the BOOT_WARN_DEPRECATED environment
   variable, which if set to no suppresses these messages.
 
-  Note that boot.util/*verbosity* in a pod needs to be altered AFTER pod
+  Note that util.core/*verbosity* in a pod needs to be altered AFTER pod
   creation or log level won't be affected."
   [& args]
   (when-not (= "no" (config "BOOT_WARN_DEPRECATED"))
@@ -326,7 +327,7 @@
 (defn print-ex
   "Print exception to *err* as appropriate for the current *verbosity* level.
 
-  If ex-data contains truthy :boot.util/omit-stacktrace? value, only exception
+  If ex-data contains truthy :util.core/omit-stacktrace? value, only exception
   message is shown."
   [ex]
   (cond

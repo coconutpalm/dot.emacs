@@ -88,12 +88,13 @@
 
 ;; Schema stubs - Leaving these in because they make good documentation
 
-(defn one [& xs])
-(defn optional-key [& xs] (first xs))
-(defn cond-pre [& xs])
-(defn explain [schema] (.toString schema))
+(defn one [& xs]          [:schema/one xs])
+(defn optional-key [& xs] [:schema/optional-key (first xs)])
+(defn cond-pre [& xs]     [:schema/cond-pre xs])
+(defn explain [schema]    (.toString schema))
 
 ;; Data types / schemas specifying the kinds of types from which we can stream data
+;; Used to be `defschema' but I've decided to be schema/specsX/whatever-agnostic for now
 
 (def ByteArray (Class/forName "[B"))
 (def clojure-file-inputs
