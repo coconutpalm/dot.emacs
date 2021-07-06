@@ -142,7 +142,7 @@
          `(let [boot?# ~boot?]
             (if-not boot?#
               (when-let [main# (resolve 'insideout.user/-main)] (main# ~@argv))
-              (boot ~@(or (seq argv) ["insideout.standard-tasks/help"])))))]))
+              (boot ~@(or (seq argv) ["insideout.core/help"])))))]))
      "\n")))
 
 (defn shebang? [arg]
