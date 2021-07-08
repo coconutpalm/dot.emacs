@@ -15,28 +15,28 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
          software-properties-common \
          apt-transport-https \
          wget \
-		   curl \         # for installing latest of other things
-	      git \          # Emacs uses this for local history
-		   imagemagick \  # for lsix, catimg
-		   ffmpeg \       # for cli YouTube
-		   tidy \         # for less <something>.html
-		   pandoc groff   # for less <something>.md
+         curl \
+         git \
+         imagemagick \
+         ffmpeg \
+         tidy \
+         pandoc groff
 
     # Install vscode
     wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
     sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
     sudo apt -y install code
 
-	 # use brew too
-	 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-	 brew update
-    brew tap caskroom/cask
+    # use brew too
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    brew update
+    brew tap homebrew/cask
     #brew cask install visual-studio-code
 
-	 brew install \
-		fd fzf \                   # Fast cli search/autocomplete
-		pre-commit \               # Git pre-commit support
-		gpatch patchelf pkg-config # Misc build tools
+    brew install \
+      fd fzf \
+      pre-commit \
+      gpatch patchelf pkg-config
 
 
     # Standard XFCE configuration
@@ -58,7 +58,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 	 # /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 
 	 brew update
-    brew tap caskroom/cask
+    brew tap homebrew/cask
 
     brew cask install visual-studio-code
 
