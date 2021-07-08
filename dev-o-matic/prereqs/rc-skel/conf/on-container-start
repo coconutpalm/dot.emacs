@@ -1,0 +1,158 @@
+#!/usr/bin/env -S bash
+#set -e
+
+##
+## This script runs as your user inside the Docker container when your development container starts
+## It's bind-mounted from your Mac so changes you make here are preserved, even when you rebuild
+## your development container image.
+##
+
+md() {
+    declare -i COLS
+    COLS=`tput cols`-3
+    cat <(echo ".TH $1 7 `date --iso-8601` Dr.Markdown\n") <(pandoc -t man $1) | \
+        groff -rLL=$(tput cols)n -rcR=1 -K utf8 -t -T utf8 -man 2>/dev/null
+}
+
+USER=`whoami`
+
+# Install ~/bin, coursier, Java, and Scala things
+[ ! -d ~/bin ] && mkdir ~/bin
+
+if [ ! -f ~/bin/cs ]; then
+     curl -fLo ~/bin/cs https://git.io/coursier-cli-linux && chmod +x ~/bin/cs
+     yes | ~/bin/cs setup
+
+     # Install openjdk 8.x; jdk11 comes pre-installed; cs can switch between them
+     ~/bin/cs java --jvm 8 --env >> ~/.bashrc
+fi
+
+
+# Get URL for the latest IntelliJ release
+intellij_dl_url() {
+    wget -q -O - https://data.services.jetbrains.com/products/releases?code=IIU | \
+        jq '.IIU[0].downloads.linux.link' | \
+        sed 's/\"//g'
+}
+
+# Download and install the latest Intellij Idea Ultimate
+cd ~/bin
+if [ -z `ls idea* 2>/dev/null` ]; then
+    wget -O - $(intellij_dl_url) | tar -xzvf -
+    ln -s `ls | grep idea` idea  # link the version-numbered dir to just `idea`
+
+    # so you don't have to .shhhh your computer when invoking `idea`
+    cd idea/bin
+    ln -s idea.sh idea
+fi
+
+
+# Homebrew & friends
+if [ ! -d /home/linuxbrew/.linuxbrew ]; then
+    # Homebrew
+    yes '' | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    echo "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" >> ~/.bash_profile && source ~/.bash_profile
+
+    # friends
+    brew install pre-commit hub jq fzf fd shyaml awscli kubernetes-cli
+fi
+
+
+# Emacs and other standard configuration
+if [ ! -d ~/.emacs.d ]; then
+   git clone git@github.com:coconutpalm/dot.emacs.git
+   mv dot.emacs ~/.emacs.d
+fi
+
+# Install some pretty fonts
+[ ! -d ~/.fonts ] && cd ~/.emacs.d/baseline/fonts && ./install
+
+
+# K8s dev environment
+if [ ! -f ~/bin/k8s-lens ]; then
+    LENS_REPO='https://github.com/lensapp/lens'
+    LENS_VERSION=`latest-release $LENS_REPO`
+    LENS_VERNUM=`echo "$LENS_VERSION" | sed 's/v//'`
+    LENS_TARGET=~/bin/"Lens.AppImage"
+    curl -L $LENS_REPO/releases/download/$LENS_VERSION/Lens-$LENS_VERNUM.AppImage > $LENS_TARGET
+    chmod +x $LENS_TARGET
+    $LENS_TARGET --appimage-extract
+    mv ~/bin/squashfs-root ~/bin/kontena-lens
+    ln -s ~/bin/kontena-lens/kontena-lens ~/bin/lens
+fi
+
+
+## Extra customization
+## A hack to only run this code on first launch
+if [ ! -d ~/.localhistory-emacs ]; then
+    PATH="$HOME/bin:$PATH"
+
+    # Emacs configuration boilerplate
+    mkdir -p ~/.localhistory-emacs
+    cd ~/.localhistory-emacs && git init
+    mkdir -p ~/.snippets
+    touch ~/TIME.org
+
+    # TODO: Parameterize this!
+    git config --global user.name "David Orme"
+    git config --global user.email "david.orme@dividendfinance.com"
+
+    # Node Version Manager
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+
+    # ...and ~/$(dotfiles)
+    ln -s ~/.emacs.d/dot.sbt ~/.sbt
+
+    # Ammonite config
+    mkdir ~/.ammonite
+    ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
+
+
+    # Scala/Mill
+    MILL_REPO=https://github.com/lihaoyi/mill
+    MILL_VERSION=`latest-release $MILL_REPO`
+    curl -L $MILL_REPO/releases/download/$MILL_VERSION/$MILL_VERSION > ~/bin/mill
+    chmod +x ~/bin/mill
+
+    # Scala/Bloop
+    BLOOP_REPO=https://github.com/scalacenter/bloop
+    BLOOP_LATEST=`latest-release $BLOOP_REPO`
+    curl -L $BLOOP_REPO/releases/download/$BLOOP_LATEST/install.py | python
+
+    # This takes a long time to install since it bootstraps itself from source; it should go into an optional plugin
+    #
+    # Scala/Fury
+    # mkdir -p ~/.fury/src
+    # cd ~/.fury/src
+    # git clone https://github.com/propensive/fury.git
+    # cd fury
+    # make clean
+    # make install
+
+    # Clojure boot/lein
+    curl -fsSLo ~/bin/boot https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
+    chmod 755 ~/bin/boot
+
+    curl -fsSLo ~/bin/lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+    chmod 755 ~/bin/lein
+
+    # Note: no 'latest' link on Maven's dl page; have to upgrade this manually
+    cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+    cd ~/bin && tar -xzvf maven-latest.tgz
+    cd ~/bin && ln -s apache-maven* maven
+    cd ~/bin && cat > ~/bin/mvn <<EOF
+#!/bin/bash
+export MAVEN_HOME=`pwd`/maven
+export M2_HOME=`pwd`/maven
+`pwd`/maven/bin/mvn $@
+EOF
+    chmod 755 ~/bin/mvn
+fi
+
+# If VSCode hasn't been configured, add a nice set of default extensions
+if [ ! -d $HOME/.vscode ]; then
+    cat ~/.devrc/conf/vscode-extensions.lst | xargs -L 1 /usr/bin/code --install-extension
+fi
+
+
+[ ! -f ~/.devrc/docs/.welcomed ] && sleep 4 && md ~/.devrc/docs/welcome.md | less && touch ~/.devrc/docs/.welcomed

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+#
+# Main interactive dev command
+#
+
+# $1 is a symlink; Dereference it.
+deref() {
+    echo `ls -l $1 | awk '{ print $11 }'`
+}
+
+# ...so scripts don't have to hard-code paths
+export DOCKER_DEV_SCRIPTS="$(dirname $(deref $0))"
+export DOCKER_DEV_BIN="$DOCKER_DEV_SCRIPTS/../bin"
+export DOCKER_DEV="$DOCKER_DEV_SCRIPTS/.."
+
+source $DOCKER_DEV_SCRIPTS/environment
+
+# Run subcommand <args...>
+subcommand="$DOCKER_DEV_BIN/$1.sh"
+if [ -f $subcommand ]; then
+    $subcommand "${@:2}"
+else
+    echo "dev:  Subcommand not found.  Choices are:"
+    ls -1 $DOCKER_DEV_BIN | awk -F '.' '{ print "      " $1 }'
+fi

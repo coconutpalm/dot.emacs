@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+# If you're on a VPN (usually a corporate one) and find that accessing
+# common web sites like Amazon results in a certificate error from your
+# web browser, you most likely need to download and install your company's
+# certificate authority certificates.  This script does just that.
+#
+# Resources:
+#  * https://thomas-leister.de/en/how-to-import-ca-root-certificate/
+#  * https://unix.stackexchange.com/questions/368123/how-to-extract-the-root-ca-and-subordinate-ca-from-a-certificate-chain-in-linux
+
+echo
+echo ">>IMPORTANT! Be sure to be on the VPN before continuing!"
+echo
+read -n1 -rsp $'Press any key to continue or Ctrl+C to exit...\n'
+echo
+
+function twirly {
+    PID=$!
+    i=1
+    sp="/-\|"
+    echo -n ' '
+    while [ -d /proc/$PID ]  # Assumes a Linux where processes are tracked this way
+    do
+        printf "\b${sp:i++%${#sp}:1}"
+    done
+    printf '\r \r'
+}
+
+TMP=/tmp/ca-certs
+certfile="$TMP/cert2"
+certname="VPN Root CA"
+
+mkdir -p $TMP
+
+echo "Downloading VPN certificates..."
+
+openssl s_client -showcerts -verify 5 -connect www.amazon.com:443 < /dev/null 2>/dev/null | \
+       sed -n -e '/BEGIN\ CERTIFICATE/,/END\ CERTIFICATE/ p' | \
+       awk '{f="/tmp/ca-certs/cert" NR; print $0 "-----END CERTIFICATE-----"> f}' RS='-----END CERTIFICATE-----'
+
+echo "Installing for all users using sudo..."
+echo
+
+chmod 644 /$TMP/*
+sudo cp $TMP/cert2 /usr/local/share/ca-certificates/vpn-root-CA.crt
+sudo update-ca-certificates
+
+echo
+echo "Configuring Firefox (if installed)..."
+
+# dbm database format/protocol
+eval <<EOF &
+
+for certDB in $\(find ~/ -name "cert8.db")
+do
+    echo "   $certDB"
+    certdir=$\(dirname ${certDB});
+    certutil -A -n "${certname}" -t "TCu,Cu,Tu" -i ${certfile} -d dbm:${certdir}
+done
+
+EOF
+twirly
+
+echo "Configuring Chromium-based browsers (if installed)..."
+
+# sql protocol
+eval <<EOF &
+
+for certDB in $\(find ~/ -name "cert9.db")
+do
+    echo "   $certDB"
+    certdir=$\(dirname ${certDB});
+    certutil -A -n "${certname}" -t "TCu,Cu,Tu" -i ${certfile} -d sql:${certdir}
+done
+
+EOF
+twirly
+
+echo " "
+echo "If you install a new web browser run this utility again."
+echo
+echo "Done."
+echo

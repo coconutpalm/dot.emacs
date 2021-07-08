@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -eo pipefail    # Do not keep running if something fails!
+
+if [[ -z "$1" ]]; then
+	echo "usage: $(basename $0) <remote-repo-url>"
+else
+	TMPDIR="/tmp/gitrepo-$RANDOM"
+	mkdir -p $TMPDIR
+	cd $TMPDIR
+	git init > /dev/null
+	git remote add origin $1 > /dev/null
+	git fetch --tags origin > /dev/null 2>&1
+	echo "$(git describe --tags `git rev-list --tags --max-count=1`)"
+fi
+

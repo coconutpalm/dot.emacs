@@ -1,0 +1,11 @@
+#
+# Directories to symlink and mount so they are available from both environments.
+# These are inside $HOME in both environments
+#
+
+.ivy2
+.aws
+.m2
+Documents
+code
+util

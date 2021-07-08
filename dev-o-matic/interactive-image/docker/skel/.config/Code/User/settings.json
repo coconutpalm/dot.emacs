@@ -1,0 +1,14 @@
+{
+    "editor.matchBrackets": false,
+    "workbench.colorTheme": "Base16 Dark Chalk",
+    "java.semanticHighlighting.enabled": true,
+    "files.exclude": {
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.factorypath": true
+    },
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "workbench.iconTheme": "file-icons-colourless"
+}

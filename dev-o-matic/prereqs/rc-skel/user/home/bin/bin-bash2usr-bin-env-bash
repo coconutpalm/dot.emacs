@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# This will edit all scripts in $CWD with '#!/bin/bash' to use '#!/usr/bin/env bash' instead
+#
+# Edited scripts are copied to <scriptname>.bak first.
+# This doesn't handle directories or symlinks in $CWD correctly so be sure to review results.
+
+sed -i.bak 's/#!\/bin\/bash/#!\/usr\/bin\/env bash/ *

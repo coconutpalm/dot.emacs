@@ -1,0 +1,33 @@
+#!/bin/bash
+
+mdless() {
+	if [ -n "$1" ] ; then
+		if [ -f "$1" ] ; then
+          declare -i COLS     # COLS is an integer
+          COLS=`tput cols`-3  # otherwise iTerm's scroll bar obscures 2 columns
+
+			 cat <(echo ".TH $1 7 `date --iso-8601` Dr.Markdown") <(pandoc -t man $1) | \
+			     groff -rLL=${COLS}n -rcR=1 -K utf8 -t -T utf8 -man 2>/dev/null ;
+		fi
+	fi
+}
+
+
+#mdhtml() {
+# todo
+#}
+
+
+case "$1" in
+    *.md)
+	     mdless "$1"
+        ;;
+    *.json)
+        jq -C < "$1"
+        ;;
+    *)
+        # We don't handle this
+        exit 1
+esac
+
+exit 0

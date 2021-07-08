@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+# NOTE: This requires a terminal application supporting sixel graphics
+
+ffmpeg -i "https://www.youtube.com/watch?v=$1" -f sixel -pix_fmt rgb24 -s 640x360 -col 3 -row 2 -
+

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+echo "Getting VPN certificates"
+: | openssl s_client -connect example.com:443 -prexit 2>/dev/null | sed -n -e '/BEGIN\ CERTIFICATE/,/END\ CERTIFICATE/ p'
+echo
+echo "The above output needs to be split into two files and placed in /etc/ssl/certs"
+echo

@@ -1,0 +1,28 @@
+#!/bin/sh
+
+if [ ! -e /run/vncserver/ ]; then
+	mkdir /run/vncserver/
+fi
+
+be_gone() {
+    [ -f $1 ] && rm -f $1
+}
+
+be_gone /tmp/.X1-lock
+be_gone /tmp/.X11-unix/X1
+
+USER=`cat /etc/passwd | grep 1000 | awk -F: '{ print $1 }'`
+VNC="/usr/bin/Xtigervnc :1 -desktop dev:1 ($USER) -auth /home/$USER/.Xauthority -geometry 1900x1200 -depth 24 -rfbwait 30000 -rfbauth /home/$USER/.vnc/passwd -rfbport 5901 -pn -localhost -SecurityTypes VncAuth"
+
+exec 2>&1
+
+# Not really insecure because this port is only exposed on localhost on the Docker host, not on a physical interface
+sudo -u $USER bash -c 'source ~/.bash_profile; vncserver -autokill -cleanstale -SecurityTypes None -localhost yes --I-KNOW-THIS-IS-INSECURE'
+sleep 1
+
+# Wait until the X server that vnc just launched exits
+while [ ! -z `ps aux | awk '{ print $11 }' | grep /usr/bin/Xtigervnc` ]; do
+    sleep 3
+done
+sleep 5  # Cooldown period before relaunching
+echo "Detected VNC server shutdown; restarting"

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+exec vncviewer localhost:1 &

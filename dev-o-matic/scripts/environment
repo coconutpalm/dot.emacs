@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+DOCKER_DEV_DEVRC=~/.devrc
+export DOCKER_DEV_CONFDIR="$DOCKER_DEV_DEVRC/conf"
+export DOCKER_DEV_USERSTATE="$DOCKER_DEV_DEVRC/user"
+export DOCKER_DEV_USERDOCS="$DOCKER_DEV_DEVRC/docs"
+
+export DOCKER_DEV_USERBREW="$DOCKER_DEV_USERSTATE/linuxbrew"
+export DOCKER_DEV_USERHOME="$DOCKER_DEV_USERSTATE/home"
+
+export IMAGENAME=docker-devenv
+export CONTAINERNAME=`whoami`
+export HOSTNAME=dev

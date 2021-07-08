@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ -d ~/.gorilla ]; then
+	echo "Launching..."
+else
+	echo "Installing then launching..."
+	mkdir ~/.gorilla
+fi
+
+cd ~/.gorilla
+
+clojure -Sdeps '{:deps {org.pinkgorilla/gorilla-notebook {:mvn/version "0.4.9"}}}' -m pinkgorilla.core
+

@@ -1,0 +1,110 @@
+##
+## Inteded to be sourced from either bash or zsh
+##
+## Some useful (mainly Docker-related) functions for script and interactive use
+##
+
+
+# Print the IP address of the running container given by <name-or-tag>
+#   Prints:
+#     Usage statement if <name-or-tag> is empty
+#     Docker's error message if the container isn't found or isn't running
+#     The IP if the container is running
+containerIP() {
+    [ -z $1 ] && echo "Usage: containerIP <name-or-tag>" && return 1
+    echo $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $1 2>&1 | \
+               sed '/^\s*$'/d)                  # Strip empty lines from output
+    return 0
+}
+
+
+# docker: log into an already-running container
+dlogin() {
+    if [ $# -ne 1 ]; then
+        echo "Usage: $FUNCNAME <name-or-tag>"
+        return 1
+    fi
+
+    docker exec -it $1 '/bin/bash -l'
+}
+
+
+# docker-compose: log into an already-running container
+dclogin() {
+    if [ $# -ne 1 ]; then
+        echo "Usage: $FUNCNAME <name-or-tag>"
+        return 1
+    fi
+
+    docker-compose exec $1 '/bin/bash -l'
+}
+
+
+# Garbage-collect Exited Docker containers/images
+#
+# Credit to <https://gist.github.com/bastman/5b57ddb3c11942094f8d0a97d461b430#remove-docker-images>
+# and https://kenanbek.medium.com/docker-cleanup-build-and-force-to-rebuild-images-containers-volumes-and-networks-dc70fd4ccec0
+dgc() {
+    echo "Removing exited containers"
+    docker rm $(docker ps -q -f 'status=exited')
+
+    echo "Removing stale images"
+    docker images --filter "dangling=true" -q --no-trunc | xargs docker rmi
+}
+
+
+# Prune all the currently-unused things.  (DANGER)
+dprune() {
+    echo "Pruning..."
+    docker system prune -a
+}
+
+
+dstatus_usage() {
+    echo
+    echo "Usage:"
+    echo " $1                - Prints last container's status"
+    echo " $1 <name-or-tag>  - Prints <name-or-tag> container's status"
+    echo
+    echo "Expected output"
+    echo "    'Up'     = container is up"
+    echo "    'Exited  = container is down"
+    echo "    <empty>  = no last container or container not found"
+    echo
+}
+
+# Prints the status of the named container or the last container if none named
+dstatus() {
+    if [ $# -gt 1 ]; then
+        dstatus_usage "dstatus"
+        return 1
+    elif [ "$1" = '--help' ]; then
+        dstatus_usage "dstatus"
+        return 1
+    fi
+
+    [ -z "$1" ]   && local listing=$(docker ps -l)
+    [ ! -z "$1" ] && local header=$(docker ps -a | head -1) && local listing="$header\n$(docker ps -a | grep "$1")"
+
+    echo "$listing" | \
+        awk '{
+            if (RSTART > 0 && $0 != "") {
+               remaining_fields = substr($0, RSTART)
+               split(remaining_fields, words, FS)
+               print words[1]       # Awk uses 1-based indexes
+            } else {
+               match($0, "STATUS")
+            }
+        }'
+}
+
+
+# Continue working in most recent container after exit, retaining changes
+dcontinue() {
+    if [ -z "$(dstatus)" ]; then
+        echo "ERROR: There is no last-container to continue.  Sorry."
+        return 1
+    fi
+
+    docker start -ia "$(docker ps -lq)"
+}

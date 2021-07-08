@@ -1,0 +1,13 @@
+# TODO The volumes to --mount from `docker run`.  This is currently a WIP.
+#
+#   If HOSTPATH doesn't exist the entire mount line is ignored.
+#   Whitespace-delimited lines.
+#   Available variable substitutions:
+#      $USER - The current user's username
+#      $USERSTATE - Location of persistent user state folder on host
+
+
+# HOSTPATH            CONTAINER PATH
+# ========            ==============
+#$USERSTATE/home       ~
+#$USERSTATE/linuxbrew  /home/linuxbrew
