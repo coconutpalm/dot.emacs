@@ -20,9 +20,6 @@ When you run graphical tools, they will automatically appear on your host's desk
 * **`docker`**
   * You'll be controlling your host's docker instance, not running a new Docker inside your Docker container
   * If you add the command *`source ~/bin/devenv-utils`* to your host's *`zsh`* or *`bash`* login scripts, you'll get a number of handy commands to manage your Docker instance.  Read the source for details.
-* **`chop`** or Chopshop or Connect or Find and Price Care or FPC
-  * The *`chop`* command controls your local dockerized FPC stack.
-  * It's preconfigured to run but needs to be *`./install`*d and loaded with data.  See *`~/code/connect-docker-compose/README.md`*.
 
 ## Configuration
 
