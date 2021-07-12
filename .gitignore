@@ -56,3 +56,7 @@ url/
 /eclipse.jdt.ls/
 /*.lock
 *#
+
+*.build-step
+*.ssh
+*.local-env-ok
