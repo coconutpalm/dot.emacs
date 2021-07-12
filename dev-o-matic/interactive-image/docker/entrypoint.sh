@@ -13,7 +13,6 @@ cat >> /etc/hosts <<EOF
 host.docker.internal dockerhost
 
 EOF
-fi
 
 # Run the system service daemon (lighter-weight than systemd)
 runsvdir -P /etc/service/ &

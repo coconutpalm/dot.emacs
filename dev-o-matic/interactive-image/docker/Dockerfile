@@ -5,8 +5,7 @@ FROM docker-devenv-base
 # USER, GID, etc., are the developer's name/creds on the host
 ARG USER
 ARG UID
-ARG GNAME
-ARG GID
+ARG ADDUSER_GROUPS
 ARG TZ
 
 # Set up /etc/alternatives for Python
@@ -61,7 +60,7 @@ RUN chmod ugo+x /usr/local/bin/entrypoint.sh
 #   Linuxes create a custom group named after each user initially containing just that user
 # We add the user to both the Mac group name and Mac GID in addition to the typical Linux behavior
 
-RUN useradd --badnames -m -u "$UID" -U -G "$GID,$GNAME,docker" -s /bin/bash "$USER" && \
+RUN useradd --badnames -m -u "$UID" -U -G "$ADDUSER_GROUPS" -s /bin/bash "$USER" && \
    echo "${USER} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
    ln -s /home/${USER} /home/ubuntu
 
@@ -81,7 +80,8 @@ ENV USER ${USER}
 USER ${USER}
 
 ENV HOME /home/${USER}
-ENV DISPLAY host.docker.internal:0
+ENV HOST_IP $HOST_IP
+#ENV DISPLAY host.docker.internal:0
 
 # Inside the user's environment...
 WORKDIR ${HOME}
