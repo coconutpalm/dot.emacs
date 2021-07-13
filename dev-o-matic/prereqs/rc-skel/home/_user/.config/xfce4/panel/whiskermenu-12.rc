@@ -1,7 +1,7 @@
 favorites=exo-web-browser.desktop,exo-file-manager.desktop,org.keepassxc.KeePassXC.desktop,google-chrome.desktop,code.desktop,exo-terminal-emulator.desktop
 recent=slack.desktop,google-chrome.desktop,synaptic.desktop,org.keepassxc.KeePassXC.desktop,exo-terminal-emulator.desktop,code.desktop,exo-web-browser.desktop,xfce-mouse-settings.desktop,inkscape.desktop,exo-preferred-applications.desktop,panel-preferences.desktop,xfce-display-settings.desktop
 button-title=Applications Menu
-button-icon=/home/ubuntu/Pictures/Rally_Arrow_R_Orange_Lg_RGB.svg
+button-icon=/home/ubuntu/Pictures/StartIcon.svg
 button-single-row=false
 show-button-title=false
 show-button-icon=true
@@ -90,4 +90,3 @@ name=Github author/org
 pattern=!g
 command=exo-open --launch WebBrowser https://github.com/%u
 regex=false
-
