@@ -1,7 +1,18 @@
-#!/usr/bin/env bash
+#!/usr/bin/env -S bash
 
 
 echo "Checking prerequisites..."
+
+# If we're on a Linux host
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    # Add code to install Linux host dependencies here
+    echo "Updating ~/bin directory"
+    rsync -uav --ignore-existing rc-skel/home/_user/bin ~
+    export PATH="$PATH:$HOME/bin"
+
+    read -n 1 -r -s -p $'Press enter to continue...\n'
+    exit 0
+fi
 
 # Ensure XQuartz is available
 if [ ! -z "$(defaults read org.macosforge.xquartz.X11 2>&1 | grep 'does not exist')" ]

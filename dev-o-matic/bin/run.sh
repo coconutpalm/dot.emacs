@@ -109,8 +109,7 @@ docker run -it \
      --name $CONTAINERNAME \
      --hostname dev \
      --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,consistency=delegated \
-     --mount type=bind,source="$DOCKER_DEV_USERHOME",target=/home/${USER},consistency=delegated \
-     --mount type=bind,source="$DOCKER_DEV_USERBREW",target=/home/linuxbrew,consistency=delegated \
+     --mount type=bind,source="$DOCKER_DEV_USERSTATE",target=/home,consistency=delegated \
      --mount type=bind,source="$DOCKER_DEV_CONFDIR",target=/tmp/devrc.rc,consistency=delegated \
      --mount type=bind,source="$DOCKER_DEV_USERDOCS",target=/tmp/devrc.docs,consistency=delegated \
      $MOUNTS $LINKS \

@@ -12,9 +12,9 @@ HERE=`pwd`
 BIN_SOURCEDIR = ${HERE}/../scripts
 
 RCDIR = ${HOME}/.devrc
-USERSTATE = ${RCDIR}/user/home
-RC_SOURCEDIR = ${HERE}/rc-skel/.
-
+USERSTATE = ${RCDIR}/home/${USER}
+USERDOCS = ${RCDIR}/docs
+USERCONF = ${RCDIR}/conf
 
 All: .local-env-ok ${RCDIR} sync-config-contents binaries ~/code ~/.aws
 
@@ -27,11 +27,17 @@ All: .local-env-ok ${RCDIR} sync-config-contents binaries ~/code ~/.aws
 
 
 ${RCDIR}:
-	mkdir ${RCDIR}
+	mkdir -p ${RCDIR}
+	mkdir -p ${USERSTATE}
+	mkdir -p ${USERDOCS}
+	mkdir -p ${USERCONF}
+
 
 # Don't overwrite what's there but if new files are added during an upgrade, install them
 sync-config-contents:
-	rsync -raq --progress --ignore-existing rc-skel/. ${RCDIR}
+	rsync -raq --progress --ignore-existing rc-skel/home/_user ${USERSTATE}
+	rsync -raq --progress --ignore-existing rc-skel/docs/. ${USERDOCS}
+	rsync -raq --progress --ignore-existing rc-skel/conf/. ${USERCONF}
 	rsync -raq --progress ~/.ssh/. ${USERSTATE}/.ssh
 
 
@@ -54,9 +60,8 @@ binaries: clean ~/bin ${BINARIES}
 	ln -s "${BIN_SOURCEDIR}/dev" ~/bin/devenv-environment
 
 ~/code:
-	echo "***** ~/code directory for sources/projects does not exist.  Creating."
-	echo "***** By convention, this is automatically bind-mounted inside the dev container."
-	mkdir ~/code
+	echo "***** ~/code directory for sources/projects does not exist.  Linking into container."
+	ln -s ${USERSTATE}/code ~/code
 
 ~/.aws:
 	echo "***** ~/.aws configuration does not exist.  Creating and adding stub configuation files."
