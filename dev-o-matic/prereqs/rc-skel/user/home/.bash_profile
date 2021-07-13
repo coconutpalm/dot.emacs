@@ -21,6 +21,15 @@ export LESS='IFRS'
 export VISUAL=vi
 export EDITOR=emacs
 
+reachable="$( ping -c 1 $HOST_IP | grep icmp* | wc -l )"
+if [ $reachable -eq 0 ]; then
+    export DISPLAY="$HOST_IP:0"
+    export PULSE_SERVER="tcp:$HOST_IP"
+else
+    export DISPLAY="host.docker.internal:0"
+    export PULSE_SERVER="tcp:host.docker.internal"
+fi
+
 # Make emacs-webkit work
 export WEBKIT_FORCE_SANDBOX=0
 

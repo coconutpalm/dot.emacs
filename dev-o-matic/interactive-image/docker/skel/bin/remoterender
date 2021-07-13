@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-# Optimize environment for X Windows over the network
-export XCURSOR_SIZE=16;
-export LIBGL_ALWAYS_INDIRECT=1

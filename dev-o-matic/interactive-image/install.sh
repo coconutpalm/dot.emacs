@@ -17,17 +17,17 @@ set_linux_ip() {
 }
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    set_linux_ip
     TZ=`readlink /etc/localtime | cut -d'/' -f5,6`   # Linux-specific `cut`
     ADDUSER_GROUPS='docker'
     docker/skel/bin/maximize-open-files
-    set_linux_ip
 elif [[ "$OSTYPE" == "darwin" ]]; then
     echo "Building for MacOS"
+    HOST_IP="$(ifconfig -l | xargs -n1 ipconfig getifaddr)"
     TZ=`readlink /etc/localtime | cut -d'/' -f6,7`   # Mac-specific `cut`
     GNAME=`cat /etc/group | grep :$(id -g): | awk -F : '{ print $1 }'`
     GID=`id -g`
     ADDUSER_GROUPS="$GID,$GNAME,docker"
-    HOST_IP="$(ifconfig -l | xargs -n1 ipconfig getifaddr)"
 else
     echo "$OSTYPE: unsupported platform"
     exit 1
@@ -36,6 +36,8 @@ fi
 cp -R ~/.ssh docker/build
 
 cd docker && docker build --no-cache \
+        --build-arg USER_NAME="$(git config --get user.name)" \
+        --build-arg USER_EMAIL="$(git config --get user.email)" \
         --build-arg USER="$USER" \
         --build-arg UID="$UID" \
         --build-arg ADDUSER_GROUPS="$ADDUSER_GROUPS" \

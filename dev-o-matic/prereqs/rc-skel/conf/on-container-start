@@ -17,6 +17,8 @@ md() {
 }
 
 USER=`whoami`
+export USER_NAME=$1
+export USER_EMAIL=$2
 
 # Install ~/bin, coursier, Java, and Scala things
 [ ! -d ~/bin ] && mkdir ~/bin
@@ -96,11 +98,13 @@ if [ ! -d ~/.localhistory-emacs ]; then
     touch ~/TIME.org
 
     # TODO: Parameterize this!
-    git config --global user.name "David Orme"
-    git config --global user.email "david.orme@dividendfinance.com"
+    git config --global user.name "$USER_NAME"
+    git config --global user.email "$USER_EMAIL"
 
     # Node Version Manager
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+    NVM_REPO=https://github.com/nvm-sh/nvm
+    NVM_VERSION=`latest-release $NVM_REPO`
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
 
     # ...and ~/$(dotfiles)
     ln -s ~/.emacs.d/dot.sbt ~/.sbt
@@ -138,24 +142,18 @@ if [ ! -d ~/.localhistory-emacs ]; then
     curl -fsSLo ~/bin/lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
     chmod 755 ~/bin/lein
 
-    # Note: no 'latest' link on Maven's dl page; have to upgrade this manually
-    cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+    MAVEN_REPO=https://gitbox.apache.org/repos/asf/maven
+    MAVEN_VERSION=`latest-release $MAVEN_REPO | awk -F - '{ print $2 }'`
+    cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz
     cd ~/bin && tar -xzvf maven-latest.tgz
     cd ~/bin && ln -s apache-maven* maven
     cd ~/bin && cat > ~/bin/mvn <<EOF
 #!/bin/bash
-export MAVEN_HOME=`pwd`/maven
-export M2_HOME=`pwd`/maven
-`pwd`/maven/bin/mvn $@
+export MAVEN_HOME="~/bin/maven"
+export M2_HOME="~/bin/maven"
+"$MAVEN_HOME/maven/bin/mvn" $@
 EOF
     chmod 755 ~/bin/mvn
 fi
-
-# If VSCode hasn't been configured, add a nice set of default extensions
-#
-# Note: This currently doesn't work if running inside WSL
-#if [ ! -d $HOME/.vscode ]; then
-#    cat ~/.devrc/conf/vscode-extensions.lst | xargs -L 1 vscode-install
-#fi
 
 [ ! -f ~/.devrc/docs/.welcomed ] && sleep 4 && md ~/.devrc/docs/welcome.md | less && touch ~/.devrc/docs/.welcomed

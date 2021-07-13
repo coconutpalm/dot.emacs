@@ -5,7 +5,7 @@
 **tl;dr:**
 
 * `dev run` \- \(re\)start development environment container\.
-* `dev rebuild` -
+* `dev rebuild`
 * `dev help` \- List all dev subcommands
 * Examine `~/.devrc`
 * Read all `*.md` files it installs and in the source.

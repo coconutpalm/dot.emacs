@@ -75,8 +75,15 @@ curl -s https://packagecloud.io/install/repositories/segment/aws-okta/script.deb
 apt-get update
 apt-get install -y $(cat extra-packages.lst)
 
-
 # Manual installs now that dependencies are installed
+
+
+# emacs (because xwidgets isn't included in Ubuntu's stock build)
+#
+# From https://launchpad.net/~kelleyk/+archive/ubuntu/emacs
+add-apt-repository ppa:kelleyk/emacs
+apt-get update
+apt-get -y install emacs27
 
 # code
 wget -O code.deb 'https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64'
@@ -99,6 +106,6 @@ curl -L "https://github.com/docker/compose/releases/download/$DCO_VER/docker-com
 chmod +x /usr/local/bin/docker-compose
 
 # Slack - Version has to be manually updated
-SLACK_VER='4.13.0'
+SLACK_VER='4.17.0'
 wget https://downloads.slack-edge.com/linux_releases/slack-desktop-${SLACK_VER}-amd64.deb
 dpkg -i slack-desktop-${SLACK_VER}-amd64.deb

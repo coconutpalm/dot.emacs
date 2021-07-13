@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-convert $1 -geometry 800x600 sixel:-
-

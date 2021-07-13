@@ -3,6 +3,8 @@
 FROM docker-devenv-base
 
 # USER, GID, etc., are the developer's name/creds on the host
+ARG USER_NAME
+ARG USER_EMAIL
 ARG USER
 ARG UID
 ARG ADDUSER_GROUPS
@@ -81,7 +83,7 @@ USER ${USER}
 
 ENV HOME /home/${USER}
 ENV HOST_IP $HOST_IP
-#ENV DISPLAY host.docker.internal:0
+ENV DISPLAY host.docker.internal:0
 
 # Inside the user's environment...
 WORKDIR ${HOME}
@@ -101,9 +103,9 @@ RUN env | grep -Ev '^(PWD|HOME|USER|USERNAME|SHELL|TERM|SHLVL)=' | sort > /etc/e
 RUN /build/set-password.sh ${USER}
 RUN rm -fr /build
 
-EXPOSE 22 5901-5909 8000-10000
+EXPOSE 22 5901-5909 8000-10000 6000
 
 # Launch
 #ENTRYPOINT tini -s -g -- runsvdir -P /etc/service/
 
-ENTRYPOINT tini -s -g -- /usr/local/bin/entrypoint.sh ${USER} ${HOME}
+ENTRYPOINT tini -s -g -- /usr/local/bin/entrypoint.sh ${USER} ${HOME} ${USER_NAME} ${USER_EMAIL}

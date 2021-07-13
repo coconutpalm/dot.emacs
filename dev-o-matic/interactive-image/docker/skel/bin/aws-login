@@ -1,3 +1,0 @@
-#!/bin/bash
-echo "VM creds here then accept 2fa"
-aws-okta -b file write-to-credentials connect ~/.aws/credentials

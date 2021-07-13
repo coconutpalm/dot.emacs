@@ -33,7 +33,7 @@ fi
 
 # Run the user's on-container-start
 CONTAINER_START_SCRIPT="${HOME}/.devrc/conf/on-container-start"
-[ -f "$CONTAINER_START_SCRIPT" ] && su - "$1" -c "$CONTAINER_START_SCRIPT"
+[ -f "$CONTAINER_START_SCRIPT" ] && su - "$1" -c "$CONTAINER_START_SCRIPT $3 $4"
 
 # Pass control to user's login shell
 exec -l su - "$USER_LOGINNAME"

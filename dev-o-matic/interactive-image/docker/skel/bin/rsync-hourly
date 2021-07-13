@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-source /home/ubuntu/.bashrc
-rsync-backup backup home
-
-# refresh error log
-backuplogdir=$HOME/.rsync_tmbackup
-grep -E 'rsync:|rsync error:' $backuplogdir/*.log > $backuplogdir/errors.log
-

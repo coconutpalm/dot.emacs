@@ -107,7 +107,7 @@ docker run -it \
      --ulimit nofile=99000:99000 \
      --shm-size=1g \
      --name $CONTAINERNAME \
-     --hostname $HOSTNAME \
+     --hostname dev \
      --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,consistency=delegated \
      --mount type=bind,source="$DOCKER_DEV_USERHOME",target=/home/${USER},consistency=delegated \
      --mount type=bind,source="$DOCKER_DEV_USERBREW",target=/home/linuxbrew,consistency=delegated \
@@ -124,6 +124,6 @@ docker run -it \
 
 # Clean up the container when it exits.
 echo Bye
-docker rm $CONTAINERNAME
 
+sleep 1
 sudo chgrp $USER /var/run/docker.sock
