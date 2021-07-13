@@ -3,6 +3,35 @@
 
 echo "Checking prerequisites..."
 
+enter_to_continue() {
+    read -n 1 -r -s -p $'Press enter to continue...\n'
+}
+
+platform_open() {
+    open $1 || xdg-open $1
+}
+
+check_docker() {
+    # Ensure Docker is avilable and running
+    DOCKER=`which docker 2>&1 | grep ^/`
+    if [ -z "$DOCKER" ]; then
+        echo "Docker not found!  Opening a browser to the right place"
+        echo
+        platform_open 'https://www.docker.com/products/docker-desktop'
+        ERROR="yes"
+    fi
+
+    DOCKER_EXEC_ERR=`docker info 2>&1 | grep ERROR`
+    if [ ! -z "$DOCKER_EXEC_ERR" ]
+    then
+        echo $DOCKER_EXEC_ERR
+        ERROR="yes"
+    fi
+
+    [ ! -z "$ERROR" ] && exit 1
+    echo "...looks good"
+}
+
 # If we're on a Linux host
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     # Add code to install Linux host dependencies here
@@ -10,9 +39,25 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
     rsync -uav --ignore-existing rc-skel/home/_user/bin ~
     export PATH="$PATH:$HOME/bin"
 
-    read -n 1 -r -s -p $'Press enter to continue...\n'
+    echo
+    echo "Checking dependencies.  If you get tired of typing your passwd, run `visudo`"
+    echo "and change the appropriate line to read:"
+    echo "    %sudo   ALL=(ALL:ALL) NOPASSWD: ALL"
+    echo
+    echo "Checking Docker"
+    check_docker
+
+    echo "Ensuring xdg-open (from xdg-utils) is installed"
+    enter_to_continue
+    sudo apt-get -y install xdg-utils
+
     exit 0
 fi
+
+
+# Else we're on a Mac
+
+check_docker
 
 # Ensure XQuartz is available
 if [ ! -z "$(defaults read org.macosforge.xquartz.X11 2>&1 | grep 'does not exist')" ]
@@ -21,30 +66,12 @@ then
     echo "    (Opening XQuartz home page in your default web browser)"
     echo
     open 'https://www.xquartz.org/'
-    ERROR="yes"
+    exit 1
 fi
 
-# Ensure Docker is avilable and running
-DOCKER=`which docker 2>&1 | grep ^/`
-if [ -z "$DOCKER" ]
-then
-    echo "Docker not found!  Opening a browser to the right place"
-    echo
-    open 'https://www.docker.com/products/docker-desktop'
-    ERROR="yes"
-fi
-
-DOCKER_EXEC_ERR=`docker info 2>&1 | grep ERROR`
-if [ ! -z "$DOCKER_EXEC_ERR" ]
-then
-    echo $DOCKER_EXEC_ERR
-    ERROR="yes"
-fi
-
-[ ! -z "$ERROR" ] && exit 1
 
 echo "...everything looks good."
-
+enter_to_continue
 
 #
 # Configure XQuartz
