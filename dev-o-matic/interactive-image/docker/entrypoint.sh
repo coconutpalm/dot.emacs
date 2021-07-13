@@ -6,6 +6,8 @@ USER_UID="$(su -c 'id -u' $USER_LOGINNAME)"
 
 cd /home/$USER_LOGINNAME
 
+# Allow plenty of open files
+bin/maximize-open-files
 
 cat >> /etc/hosts <<EOF
 

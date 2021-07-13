@@ -4,7 +4,6 @@ set -e
 #
 # Build Docker container
 #
-
 source ../scripts/environment
 
 set_linux_ip() {
@@ -19,6 +18,7 @@ set_linux_ip() {
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     ADDUSER_GROUPS='docker'
+    docker/skel/bin/maximize-open-files
     set_linux_ip
 elif [[ "$OSTYPE" == "darwin" ]]; then
     echo "Building for MacOS"

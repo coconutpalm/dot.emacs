@@ -4,6 +4,16 @@ MYDIR=$(dirname $0)
 source "${MYDIR}/../scripts/environment"
 source "${MYDIR}/../scripts/devenv-utils"
 
-docker image ls -a | grep ${IMAGENAME} | sort | awk '{ print $3 }' | xargs docker rmi
-dgc
+docker container ls --all | \
+    grep "docker-devenv:latest" | \
+    grep Exited | \
+    awk '{ print $1}' | \
+    xargs docker container rm
+
+docker image ls -a | \
+    grep ${IMAGENAME} | \
+    sort | \
+    awk '{ print $3 }' | \
+    xargs docker rmi
+
 make -C "${MYDIR}/.." clean

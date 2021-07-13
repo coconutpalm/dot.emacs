@@ -7,6 +7,8 @@
 ## your development container image.
 ##
 
+ulimit -n 88000
+
 md() {
     declare -i COLS
     COLS=`tput cols`-3
@@ -54,7 +56,7 @@ if [ ! -d /home/linuxbrew/.linuxbrew ]; then
     echo "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" >> ~/.bash_profile && source ~/.bash_profile
 
     # friends
-    brew install pre-commit hub jq fzf fd shyaml awscli kubernetes-cli
+    brew install pre-commit hub jq fzf fd shyaml awscli kubernetes-cli kind
 fi
 
 
@@ -150,9 +152,10 @@ EOF
 fi
 
 # If VSCode hasn't been configured, add a nice set of default extensions
-if [ ! -d $HOME/.vscode ]; then
-    cat ~/.devrc/conf/vscode-extensions.lst | xargs -L 1 /usr/bin/code --install-extension
-fi
-
+#
+# Note: This currently doesn't work if running inside WSL
+#if [ ! -d $HOME/.vscode ]; then
+#    cat ~/.devrc/conf/vscode-extensions.lst | xargs -L 1 vscode-install
+#fi
 
 [ ! -f ~/.devrc/docs/.welcomed ] && sleep 4 && md ~/.devrc/docs/welcome.md | less && touch ~/.devrc/docs/.welcomed

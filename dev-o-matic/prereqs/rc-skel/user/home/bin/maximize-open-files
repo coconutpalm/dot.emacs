@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Increase max open files/watches possible
+echo "Maximizing allowed open files (ulimit)"
+
+if [ -z "$(grep limits /etc/pam.d/common-session)" ]; then
+    sudo su -c "echo 'session required pam_limits.so' >> /etc/pam.d/common-session"
+    sudo su -c "echo 'session required pam_limits.so' >> /etc/pam.d/common-session-noninteractive"
+fi
+
+if [ -z "$(grep 'soft nofile' /etc/security/limits.conf)" ]; then
+    sudo su -c 'echo >> /etc/security/limits.conf' <<EOF
+* soft nofile 88000
+* hard nofile 88000
+EOF
+fi
+
+sudo sysctl -w fs.file-max=1048576
+sudo sysctl -w fs.inotify.max_user_watches=100000 fs.inotify.max_user_watches=100000
+sudo bash -c 'ulimit -n 88000'

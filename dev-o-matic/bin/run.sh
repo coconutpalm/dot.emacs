@@ -114,13 +114,16 @@ docker run -it \
      --mount type=bind,source="$DOCKER_DEV_CONFDIR",target=/tmp/devrc.rc,consistency=delegated \
      --mount type=bind,source="$DOCKER_DEV_USERDOCS",target=/tmp/devrc.docs,consistency=delegated \
      $MOUNTS $LINKS \
-     --expose 5901-5909 \
-     --expose 8900-8909 \
-     -p 5901-5909:5901-5909 \
      -p 8900-8909:8900-8909 \
+     -p 5901:5901 \
+     -p 5902:5902 \
+     -p 5903:5903 \
+     -p 5904:5904 \
      -p 2222:22 \
      $IMAGENAME:latest
 
 # Clean up the container when it exits.
 echo Bye
 docker rm $CONTAINERNAME
+
+sudo chgrp $USER /var/run/docker.sock

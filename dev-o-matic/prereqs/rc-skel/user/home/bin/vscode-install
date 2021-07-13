@@ -1,0 +1,3 @@
+#!/usr/bin/env -S bash
+
+/usr/bin/code --install-extension %1 < /usr/bin/yes

@@ -21,7 +21,8 @@ export LESS='IFRS'
 export VISUAL=vi
 export EDITOR=emacs
 
+# Make emacs-webkit work
+export WEBKIT_FORCE_SANDBOX=0
 
 # Postgres
-# export PGHOST="$(chop ip postgres)"  or something?
 export PGHOST="localhost"  # FIXME: connect-docker-compose will put postgres on a different IP; maybe it can help?
