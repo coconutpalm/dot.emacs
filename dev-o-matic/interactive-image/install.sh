@@ -17,11 +17,13 @@ set_linux_ip() {
 }
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    TZ=`readlink /etc/localtime | cut -d'/' -f5,6`   # Linux-specific `cut`
     ADDUSER_GROUPS='docker'
     docker/skel/bin/maximize-open-files
     set_linux_ip
 elif [[ "$OSTYPE" == "darwin" ]]; then
     echo "Building for MacOS"
+    TZ=`readlink /etc/localtime | cut -d'/' -f6,7`   # Mac-specific `cut`
     GNAME=`cat /etc/group | grep :$(id -g): | awk -F : '{ print $1 }'`
     GID=`id -g`
     ADDUSER_GROUPS="$GID,$GNAME,docker"
@@ -30,8 +32,6 @@ else
     echo "$OSTYPE: unsupported platform"
     exit 1
 fi
-
-TZ=`readlink /etc/localtime | cut -d'/' -f6,7`   # Note this is a Mac-specific `cut`
 
 cp -R ~/.ssh docker/build
 
