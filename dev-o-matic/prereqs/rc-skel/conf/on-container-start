@@ -21,7 +21,28 @@ export USER_NAME=$1
 export USER_EMAIL=$2
 
 # Install ~/bin, coursier, Java, and Scala things
-[ ! -d ~/bin ] && mkdir ~/bin
+[ ! -d ~/bin ] && mkdir ~/bin    # Should already be there but defensive coding
+
+cat > ~/bin/latest-release <<EOF
+#!/usr/bin/env bash
+
+set -eo pipefail    # Do not keep running if something fails!
+
+if [[ -z "$1" ]]; then
+	echo "usage: $(basename $0) <remote-repo-url>"
+else
+	TMPDIR="/tmp/gitrepo-$RANDOM"
+	mkdir -p $TMPDIR
+	cd $TMPDIR
+	git init > /dev/null
+	git remote add origin $1 > /dev/null
+	git fetch --tags origin > /dev/null 2>&1
+	echo "$(git describe --tags `git rev-list --tags --max-count=1`)"
+fi
+EOF
+chmod +x ~/bin/latest-release
+alias latest-release="~/bin/latest-release"    # Because we don't want to add ~/bin to the path twice
+
 
 if [ ! -f ~/bin/cs ]; then
      curl -fLo ~/bin/cs https://git.io/coursier-cli-linux && chmod +x ~/bin/cs
@@ -156,4 +177,9 @@ EOF
     chmod 755 ~/bin/mvn
 fi
 
+../linuxbrew/.linuxbrew/bin/clear
+
 [ ! -f ~/.devrc/docs/.welcomed ] && sleep 4 && md ~/.devrc/docs/welcome.md | less && touch ~/.devrc/docs/.welcomed
+
+echo "Choose a password for your container:"
+sudo passwd $USER

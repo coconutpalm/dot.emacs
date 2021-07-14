@@ -34,6 +34,7 @@ else
 fi
 
 cp -R ~/.ssh docker/build
+cp -R ../prereqs/rc-skel/home/_user docker/build
 
 cd docker && docker build --no-cache \
         --build-arg USER_NAME="$(git config --get user.name)" \
@@ -50,3 +51,4 @@ cd docker && docker build --no-cache \
     	  . && cd ..
 
 rm -fr docker/build/.ssh
+rm -fr docker/build/_user

@@ -10,6 +10,9 @@ ARG UID
 ARG ADDUSER_GROUPS
 ARG TZ
 
+# Make sure everything's up to date
+RUN apt update && apt -y upgrade
+
 # Set up /etc/alternatives for Python
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python2 2 && \
   update-alternatives --install /usr/bin/python python /usr/bin/python3 1
@@ -52,7 +55,9 @@ RUN ln -sv /etc/sv/sshd /etc/service/sshd && \
    ln -sv /etc/sv/vncserver /etc/service/vncserver
 
 # Root configuration
-COPY skel/ /etc/skel
+RUN rm -fr /etc/skel && \
+   mkdir -p /etc/skel && \
+   cp -R build/_user/. /etc/skel
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod ugo+x /usr/local/bin/entrypoint.sh
 

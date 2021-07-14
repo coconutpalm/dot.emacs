@@ -35,7 +35,7 @@ ${RCDIR}:
 
 # Don't overwrite what's there but if new files are added during an upgrade, install them
 sync-config-contents:
-	rsync -raq --progress --ignore-existing rc-skel/home/_user ${USERSTATE}
+	rsync -raq --progress --ignore-existing rc-skel/home/_user/. ${USERSTATE}
 	rsync -raq --progress --ignore-existing rc-skel/docs/. ${USERDOCS}
 	rsync -raq --progress --ignore-existing rc-skel/conf/. ${USERCONF}
 	rsync -raq --progress ~/.ssh/. ${USERSTATE}/.ssh

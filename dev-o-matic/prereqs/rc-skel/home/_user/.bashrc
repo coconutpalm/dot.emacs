@@ -10,7 +10,7 @@ esac
 
 
 # Postgres - default user
-alias psql='psql -U rally'
+#alias psql='psql -U rally'
 
 
 # don't put duplicate lines or lines starting with space in the history.
