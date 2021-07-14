@@ -3,8 +3,8 @@
 # Info about the user we're logging in
 USER_LOGINNAME="$1"
 USER_UID="$(su -c 'id -u' $USER_LOGINNAME)"
-USER_NAME=$3
-USER_EMAIL=$4
+export USER_NAME="$3"
+export USER_EMAIL="$4"
 
 cd /home/$USER_LOGINNAME
 
@@ -37,7 +37,8 @@ fi
 CONTAINER_START_SCRIPT="${HOME}/.devrc/conf/on-container-start"
 [ -f "$CONTAINER_START_SCRIPT" ] && su - "$1" -c "$CONTAINER_START_SCRIPT $USER_NAME $USER_EMAIL"
 
-echo "Welcome ${USER_NAME} <${USER_EMAIL}>"
+echo "Choose a password for your container:"
+sudo passwd $USER_LOGINNAME
 
 # Pass control to user's login shell
 exec -l su - "$USER_LOGINNAME"

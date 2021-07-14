@@ -114,6 +114,7 @@ docker run -it \
      --mount type=bind,source="$DOCKER_DEV_USERDOCS",target=/tmp/devrc.docs,consistency=delegated \
      $MOUNTS $LINKS \
      -p 8900-8909:8900-8909 \
+     -p 4713:4713 \
      -p 5901:5901 \
      -p 5902:5902 \
      -p 5903:5903 \

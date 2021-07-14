@@ -41,7 +41,6 @@ else
 fi
 EOF
 chmod +x ~/bin/latest-release
-alias latest-release="~/bin/latest-release"    # Because we don't want to add ~/bin to the path twice
 
 
 if [ ! -f ~/bin/cs ]; then
@@ -96,7 +95,7 @@ fi
 # K8s dev environment
 if [ ! -f ~/bin/k8s-lens ]; then
     LENS_REPO='https://github.com/lensapp/lens'
-    LENS_VERSION=`latest-release $LENS_REPO`
+    LENS_VERSION=`bin/latest-release $LENS_REPO`
     LENS_VERNUM=`echo "$LENS_VERSION" | sed 's/v//'`
     LENS_TARGET=~/bin/"Lens.AppImage"
     curl -L $LENS_REPO/releases/download/$LENS_VERSION/Lens-$LENS_VERNUM.AppImage > $LENS_TARGET
@@ -124,7 +123,7 @@ if [ ! -d ~/.localhistory-emacs ]; then
 
     # Node Version Manager
     NVM_REPO=https://github.com/nvm-sh/nvm
-    NVM_VERSION=`latest-release $NVM_REPO`
+    NVM_VERSION=`bin/latest-release $NVM_REPO`
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
 
     # ...and ~/$(dotfiles)
@@ -137,13 +136,13 @@ if [ ! -d ~/.localhistory-emacs ]; then
 
     # Scala/Mill
     MILL_REPO=https://github.com/lihaoyi/mill
-    MILL_VERSION=`latest-release $MILL_REPO`
+    MILL_VERSION=`bin/latest-release $MILL_REPO`
     curl -L $MILL_REPO/releases/download/$MILL_VERSION/$MILL_VERSION > ~/bin/mill
     chmod +x ~/bin/mill
 
     # Scala/Bloop
     BLOOP_REPO=https://github.com/scalacenter/bloop
-    BLOOP_LATEST=`latest-release $BLOOP_REPO`
+    BLOOP_LATEST=`bin/latest-release $BLOOP_REPO`
     curl -L $BLOOP_REPO/releases/download/$BLOOP_LATEST/install.py | python
 
     # This takes a long time to install since it bootstraps itself from source; it should go into an optional plugin
@@ -164,7 +163,7 @@ if [ ! -d ~/.localhistory-emacs ]; then
     chmod 755 ~/bin/lein
 
     MAVEN_REPO=https://gitbox.apache.org/repos/asf/maven
-    MAVEN_VERSION=`latest-release $MAVEN_REPO | awk -F - '{ print $2 }'`
+    MAVEN_VERSION=`bin/latest-release $MAVEN_REPO | awk -F - '{ print $2 }'`
     cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz
     cd ~/bin && tar -xzvf maven-latest.tgz
     cd ~/bin && ln -s apache-maven* maven
@@ -177,9 +176,6 @@ EOF
     chmod 755 ~/bin/mvn
 fi
 
-../linuxbrew/.linuxbrew/bin/clear
+~/../linuxbrew/.linuxbrew/bin/clear
 
 [ ! -f ~/.devrc/docs/.welcomed ] && sleep 4 && md ~/.devrc/docs/welcome.md | less && touch ~/.devrc/docs/.welcomed
-
-echo "Choose a password for your container:"
-sudo passwd $USER

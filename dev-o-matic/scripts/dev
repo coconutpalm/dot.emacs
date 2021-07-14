@@ -9,6 +9,9 @@ deref() {
     echo `ls -l $1 | awk '{ print $11 }'`
 }
 
+# Make sure we can access the Docker daemon
+sudo chgrp $USER /var/run/docker.sock
+
 # ...so scripts don't have to hard-code paths
 export DOCKER_BUILDKIT=0
 export DOCKER_DEV_SCRIPTS="$(dirname $(deref $0))"

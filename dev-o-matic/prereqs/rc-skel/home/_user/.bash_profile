@@ -21,17 +21,13 @@ export LESS='IFRS'
 export VISUAL=vi
 export EDITOR=emacs
 
-reachable="$( ping -c 1 $HOST_IP | grep icmp* | wc -l )"
-if [ $reachable -eq 0 ]; then
-    export DISPLAY="$HOST_IP:0"
-    export PULSE_SERVER="tcp:$HOST_IP"
-else
-    export DISPLAY="host.docker.internal:0"
-    export PULSE_SERVER="tcp:host.docker.internal"
-fi
+export DISPLAY="host.docker.internal:0"
+export PULSE_SERVER="tcp:host.docker.internal"
 
-# Make emacs-webkit work
+# Make emacs-webkit work!
 export WEBKIT_FORCE_SANDBOX=0
 
 # Postgres
 export PGHOST="localhost"  # FIXME: connect-docker-compose will put postgres on a different IP; maybe it can help?
+
+echo "Welcome ${USER_NAME} <${USER_EMAIL}>"
