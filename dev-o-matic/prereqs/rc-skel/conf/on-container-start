@@ -12,7 +12,7 @@ ulimit -n 88000
 md() {
     declare -i COLS
     COLS=`tput cols`-3
-    cat <(echo ".TH $1 7 `date --iso-8601` Dr.Markdown\n") <(pandoc -t man $1) | \
+    cat <(echo ".TH $(basename $1) 7 `date --iso-8601` Dr.Markdown\n") <(pandoc -t man $1) | \
         groff -rLL=$(tput cols)n -rcR=1 -K utf8 -t -T utf8 -man 2>/dev/null
 }
 
