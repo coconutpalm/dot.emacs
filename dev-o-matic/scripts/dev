@@ -10,6 +10,7 @@ deref() {
 }
 
 # ...so scripts don't have to hard-code paths
+export DOCKER_BUILDKIT=0
 export DOCKER_DEV_SCRIPTS="$(dirname $(deref $0))"
 export DOCKER_DEV_BIN="$DOCKER_DEV_SCRIPTS/../bin"
 export DOCKER_DEV="$DOCKER_DEV_SCRIPTS/.."

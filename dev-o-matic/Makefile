@@ -3,6 +3,8 @@
 include scripts/environment
 export $(shell sed 's/=.*//' scripts/environment)
 
+export DOCKER_BUILDKIT=0
+
 CONFIG_UPDATED=prereqs/.all-upgrades-applied
 
 .DEFAULT_GOAL := ALL
