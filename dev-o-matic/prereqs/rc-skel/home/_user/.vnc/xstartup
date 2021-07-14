@@ -1,6 +1,10 @@
 #!/bin/sh
-# Start Desktop 
-[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+
+# Start Desktop
+
+# We'll use a custom startup script
+#[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+
 [ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
 vncconfig -nowin &   # Enable clipboard integration
 env -u SESSION_MANAGER -u DBUS_SESSION_BUS_ADDRESS dbus-launch --exit-with-session xfce4-session
