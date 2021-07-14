@@ -10,9 +10,6 @@ ARG UID
 ARG ADDUSER_GROUPS
 ARG TZ
 
-# Make sure everything's up to date
-RUN apt update && apt -y upgrade
-
 # Set up /etc/alternatives for Python
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python2 2 && \
   update-alternatives --install /usr/bin/python python /usr/bin/python3 1
