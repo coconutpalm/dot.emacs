@@ -1474,7 +1474,8 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (use-package xwwp-follow-link-helm
   :after (helm))
 
-(setq browse-url-browser-function 'xwidget-webkit-browse-url)
+;; Until xwidgets-webkit is reliable or I find a replacement
+;; (setq browse-url-browser-function 'xwidget-webkit-browse-url)
 
 (defun web-browse-or-search (browse-target)
   "Browse to a web link or search terms in BROWSE-TARGET."
