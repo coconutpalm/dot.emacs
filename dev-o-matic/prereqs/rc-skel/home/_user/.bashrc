@@ -152,8 +152,15 @@ parse_git_branch () {
     [[ $current_branch ]] && printf ' [%s]' "$current_branch"
 }
 
+
+if [ -z "$(git config --get user.name)" ]; then
+    git config --global user.name "$USER_NAME"
+    git config --global user.email "$USER_EMAIL"
+fi
+
 export PROMPT_COMMAND='export GIT_RELATIVE_PATH=`git_relative_path`; echo -ne "\033]0;${PWD} $(parse_git_branch)\007"'
 export PS1="\[\033[38;5;8m\]\w \$(parse_git_branch)\n\[$(/usr/bin/tput sgr0)\]λ "
+
 
 # For remote X
 export LIBGL_ALWAYS_INDIRECT=1    # Hardware-accelerated graphics, please
@@ -162,18 +169,14 @@ export LIBGL_ALWAYS_INDIRECT=1    # Hardware-accelerated graphics, please
 [ -d ~/aws ] && source $HOME/aws/bin/activate
 
 
-# Put Intellij on the pat
+# Put Intellij on the path
 export PATH=$PATH:~/bin/idea/bin
 
 
 # If my Google Drive isn't mounted, mount it under ~/rallydrive
-#[ -d $HOME/rallydrive/Rally ] || google-drive-ocamlfuse ~/rallydrive
+#[ -d $HOME/work-files/Rally ] || google-drive-ocamlfuse ~/work-files
 
 export SBT_OPTS=@/home/$USER/.sbt/SBT_OPTS
-
-# chop/drug config
-export PATH=$PATH:/home/$USER/code/connect-docker-compose/bin
-export CHOP_DIR=/home/$USER/code/connect-docker-compose
 
 
 # Homebrew and friends.  Brew-installed things should override apt-installed things
@@ -184,12 +187,9 @@ export PATH=/home/linuxbrew/.linuxbrew/bin:$PATH
 # Better searching from https://mike.place/2017/fzf-fd/
 export FZF_DEFAULT_COMMAND="fd -L . $HOME"
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export FZF_ALT_C_COMMAND="fd -tL d . $HOME"
+export FZF_ALT_C_COMMAND="fd -td -L . $HOME"
 
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
-
-# Include this if you install Proton
-# . /home/linuxbrew/.linuxbrew/etc/bash_completion.d/proton
 
 export PATH="$PATH:$HOME/.bloop"   # For CLI access to the compile server
 

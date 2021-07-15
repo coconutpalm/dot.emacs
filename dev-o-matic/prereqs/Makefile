@@ -13,10 +13,11 @@ BIN_SOURCEDIR = ${HERE}/../scripts
 
 RCDIR = ${HOME}/.devrc
 USERSTATE = ${RCDIR}/home/${USER}
+UBUNTU_SYMLINK = ${RCDIR}/home/ubuntu
 USERDOCS = ${RCDIR}/docs
 USERCONF = ${RCDIR}/conf
 
-All: .local-env-ok ${RCDIR} sync-config-contents binaries ~/code ~/.aws
+All: .local-env-ok ${RCDIR} sync-config-contents ${UBUNTU_SYMLINK} binaries ~/code ~/.aws
 
 
 # Confirm that XQuartz and Docker are installed and tweak some default settings.
@@ -40,6 +41,8 @@ sync-config-contents:
 	rsync -raq --progress --ignore-existing rc-skel/conf/. ${USERCONF}
 	rsync -raq --progress ~/.ssh/. ${USERSTATE}/.ssh
 
+${UBUNTU_SYMLINK}:
+	ln -s ${USER} ${UBUNTU_SYMLINK}
 
 BINARIES = ~/bin/dev ~/bin/devenv-utils ~/bin/devenv-environment
 binaries: clean ~/bin ${BINARIES}

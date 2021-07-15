@@ -30,9 +30,12 @@ jq
 kdiff3
 keepassxc
 kitty
+krita
 less
 libnss3-tools
+libtool-bin
 libvte9
+libxcb-ewmh2
 libxml2-utils
 make
 man
@@ -40,6 +43,7 @@ manpages
 metacity-themes
 microsoft-edge-dev
 mlterm
+mplayer
 nano
 net-tools
 nmap

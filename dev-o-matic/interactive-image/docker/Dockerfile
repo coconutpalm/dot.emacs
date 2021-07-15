@@ -110,4 +110,4 @@ EXPOSE 22 5901-5909 8000-10000 6000
 # Launch
 #ENTRYPOINT tini -s -g -- runsvdir -P /etc/service/
 
-ENTRYPOINT tini -s -g -- "/usr/local/bin/entrypoint.sh ${USER} ${HOME} ${USER_NAME} ${USER_EMAIL}"
+ENTRYPOINT tini -s -g -- /usr/local/bin/entrypoint.sh ${USER} ${HOME} ${USER_NAME} ${USER_EMAIL}

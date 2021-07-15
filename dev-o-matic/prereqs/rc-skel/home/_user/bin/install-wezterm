@@ -1,0 +1,19 @@
+#!/usr/bin/env -S bash
+
+if [ -z "$(which wezterm)" ]; then
+    echo "Installing Wezterm..."
+
+    source /etc/os-release
+    WEZ_VERSION="$(curl -s https://github.com/wez/wezterm/releases/latest | awk -F \\\" '{ print $2 }' | awk -F / '{ print $8 }')"
+
+    BASE_URL="https://github.com/wez/wezterm/releases/download/${WEZ_VERSION}"
+    FILENAME="wezterm-${WEZ_VERSION}.Ubuntu${VERSION_ID}.deb"
+    DL_URL="$BASE_URL/$FILENAME"
+
+    echo $DL_URL
+
+    wget -O /tmp/wezterm.deb "$DL_URL"
+    sudo dpkg -i /tmp/wezterm.deb
+else
+    echo "wezterm already installed"
+fi

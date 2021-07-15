@@ -1,6 +1,7 @@
 #!/usr/bin/env -S bash
-#set -e
 
+##
+## Install anything that lives under your home directory here.
 ##
 ## This script runs as your user inside the Docker container when your development container starts
 ## It's bind-mounted from your Mac so changes you make here are preserved, even when you rebuild
@@ -8,6 +9,8 @@
 ##
 
 ulimit -n 88000
+USER=`whoami`
+PATH="$HOME/bin:$PATH"
 
 md() {
     declare -i COLS
@@ -16,31 +19,9 @@ md() {
         groff -rLL=$(tput cols)n -rcR=1 -K utf8 -t -T utf8 -man 2>/dev/null
 }
 
-USER=`whoami`
-export USER_NAME=$1
-export USER_EMAIL=$2
 
 # Install ~/bin, coursier, Java, and Scala things
 [ ! -d ~/bin ] && mkdir ~/bin    # Should already be there but defensive coding
-
-cat > ~/bin/latest-release <<EOF
-#!/usr/bin/env bash
-
-set -eo pipefail    # Do not keep running if something fails!
-
-if [[ -z "$1" ]]; then
-	echo "usage: $(basename $0) <remote-repo-url>"
-else
-	TMPDIR="/tmp/gitrepo-$RANDOM"
-	mkdir -p $TMPDIR
-	cd $TMPDIR
-	git init > /dev/null
-	git remote add origin $1 > /dev/null
-	git fetch --tags origin > /dev/null 2>&1
-	echo "$(git describe --tags `git rev-list --tags --max-count=1`)"
-fi
-EOF
-chmod +x ~/bin/latest-release
 
 
 if [ ! -f ~/bin/cs ]; then
@@ -91,39 +72,20 @@ fi
 # Install some pretty fonts
 [ ! -d ~/.fonts ] && cd ~/.emacs.d/baseline/fonts && ./install
 
-
-# K8s dev environment
-if [ ! -f ~/bin/k8s-lens ]; then
-    LENS_REPO='https://github.com/lensapp/lens'
-    LENS_VERSION=`bin/latest-release $LENS_REPO`
-    LENS_VERNUM=`echo "$LENS_VERSION" | sed 's/v//'`
-    LENS_TARGET=~/bin/"Lens.AppImage"
-    curl -L $LENS_REPO/releases/download/$LENS_VERSION/Lens-$LENS_VERNUM.AppImage > $LENS_TARGET
-    chmod +x $LENS_TARGET
-    $LENS_TARGET --appimage-extract
-    mv ~/bin/squashfs-root ~/bin/kontena-lens
-    ln -s ~/bin/kontena-lens/kontena-lens ~/bin/lens
-fi
-
-
 ## Extra customization
 ## A hack to only run this code on first launch
 if [ ! -d ~/.localhistory-emacs ]; then
-    PATH="$HOME/bin:$PATH"
-
     # Emacs configuration boilerplate
     mkdir -p ~/.localhistory-emacs
     cd ~/.localhistory-emacs && git init
     mkdir -p ~/.snippets
-    touch ~/TIME.org
-
-    # TODO: Parameterize this!
-    git config --global user.name "$USER_NAME"
-    git config --global user.email "$USER_EMAIL"
+    mkdir -p ~/_NOTES
+    cd ~/_NOTES && git init
+    cd ~ && ln -s _NOTES .deft
 
     # Node Version Manager
     NVM_REPO=https://github.com/nvm-sh/nvm
-    NVM_VERSION=`bin/latest-release $NVM_REPO`
+    NVM_VERSION=`latest-release $NVM_REPO`
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
 
     # ...and ~/$(dotfiles)
@@ -136,13 +98,13 @@ if [ ! -d ~/.localhistory-emacs ]; then
 
     # Scala/Mill
     MILL_REPO=https://github.com/lihaoyi/mill
-    MILL_VERSION=`bin/latest-release $MILL_REPO`
+    MILL_VERSION=`latest-release $MILL_REPO`
     curl -L $MILL_REPO/releases/download/$MILL_VERSION/$MILL_VERSION > ~/bin/mill
     chmod +x ~/bin/mill
 
     # Scala/Bloop
     BLOOP_REPO=https://github.com/scalacenter/bloop
-    BLOOP_LATEST=`bin/latest-release $BLOOP_REPO`
+    BLOOP_LATEST=`latest-release $BLOOP_REPO`
     curl -L $BLOOP_REPO/releases/download/$BLOOP_LATEST/install.py | python
 
     # This takes a long time to install since it bootstraps itself from source; it should go into an optional plugin
@@ -163,7 +125,7 @@ if [ ! -d ~/.localhistory-emacs ]; then
     chmod 755 ~/bin/lein
 
     MAVEN_REPO=https://gitbox.apache.org/repos/asf/maven
-    MAVEN_VERSION=`bin/latest-release $MAVEN_REPO | awk -F - '{ print $2 }'`
+    MAVEN_VERSION=`latest-release $MAVEN_REPO | awk -F - '{ print $2 }'`
     cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz
     cd ~/bin && tar -xzvf maven-latest.tgz
     cd ~/bin && ln -s apache-maven* maven

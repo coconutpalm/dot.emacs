@@ -25,7 +25,7 @@ Your data is bind-mounted into the container from *`~/.devrc`* so you can safely
 
 On a Mac, when you run graphical tools from the default dev-o-matic shell, they will automatically appear on your host's desktop thanks to XQuartz.  Note that some graphical tools perform better in desktop mode than through XWindows/XQuartz.
 
-On Windows, you will need to `ssh -Y` into your container and run your graphical applications separately from the default dev-o-matic shell.  Then you'll be able to run graphical tools from that command line.  The `wsl-scripts/forward-vnc.cmd` script illustrates how to do this.  (It also shows how to forward VNC from the container back to Windows.)
+On Windows, you will need to *`ssh -Y`* into your container and run your graphical applications separately from the default dev-o-matic shell.  Then you'll be able to run graphical tools from that command line.  The *`wsl-scripts/forward-vnc.cmd`* script illustrates how to do this.  (It also shows how to forward VNC from the container back to Windows.)
 
 ### Desktop mode
 
@@ -89,7 +89,7 @@ The build scripts copy the following from your Mac or Linux host environment int
 
 You can edit anything inside *`~/.devrc/conf`*.  Use the *`links`* file there to mount folders from your host home directory into the dev container and when you're inside the container, everything you want to keep needs to live inside one of your mounted host directories.
 
-*`~/.devrc/home`* is bind-mounted to *`/home`* inside the container.
+*`~/.devrc/home`* is bind-mounted to *`/home`* inside the container so will persist across container rebuilds/restarts.
 
 ## Next steps
 ### Places to explore

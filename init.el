@@ -916,6 +916,10 @@ Approximates the rules of `clean-buffer-list'."
   :commands flycheck-cask-setup
   :config (add-hook 'emacs-lisp-mode-hook (flycheck-cask-setup)))
 
+;; (use-package flycheck-inline
+;;   :straight (:type git :host github :repo "flycheck/flycheck-inline")
+;;   :ensure t :after flycheck
+;;   :hook (flycheck-mode . #'flycheck-inline-mode))
 
 ;; ansi-term
 (defcustom term-unbind-key-list
@@ -2321,6 +2325,12 @@ assuming it is in a maven-style project."
         ("M-s-<return>" . 'cider-eval-defun-at-point-in-repl)))
 
 (use-package clj-refactor)
+
+
+(use-package sotclojure
+  :straight (:type git :host github :repo "Malabarba/speed-of-thought-clojure")
+  :config
+  (require 'sotclojure-on))
 
 
 ;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
