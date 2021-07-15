@@ -28,6 +28,6 @@ export PULSE_SERVER="tcp:host.docker.internal"
 export WEBKIT_FORCE_SANDBOX=0
 
 # Postgres
-export PGHOST="localhost"  # FIXME: connect-docker-compose will put postgres on a different IP; maybe it can help?
+export PGHOST="localhost"
 
 echo "Welcome ${USER_NAME} <${USER_EMAIL}>"

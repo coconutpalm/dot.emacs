@@ -128,13 +128,6 @@ export MFA_STS_DURATION=129600
 export AWS_PROFILE=connect
 export AWS_OKTA_BACKEND=file   # Can I get secret-service or kwallet working?
 
-# rally-okta and friends
-export PATH=~/util/CloudOps/scripts/usertools:$PATH
-
-
-export SERVICE_LOCATOR_CONVENTION_SCHEME=dns
-export SERVICE_LOCATOR_CONVENTION_DNS_PATTERN=http://connect.localhost:9001
-
 
 git_relative_path () {
   `git status 2&>/dev/null` || return 1
@@ -173,8 +166,8 @@ export LIBGL_ALWAYS_INDIRECT=1    # Hardware-accelerated graphics, please
 export PATH=$PATH:~/bin/idea/bin
 
 
-# If my Google Drive isn't mounted, mount it under ~/rallydrive
-#[ -d $HOME/work-files/Rally ] || google-drive-ocamlfuse ~/work-files
+# If my Google Drive isn't mounted, mount it under ~/cloud
+#[ -d $HOME/cloud/Rally ] || google-drive-ocamlfuse ~/cloud
 
 export SBT_OPTS=@/home/$USER/.sbt/SBT_OPTS
 
