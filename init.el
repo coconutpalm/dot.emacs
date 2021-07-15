@@ -157,10 +157,15 @@ With ARG, do this that many times."
 
 
 (defun exit-message ()
-  "Define a friendly message to display for the re-bound C-x C-c."
+  "Define a friendly message to display for the re-bound exit command."
   (interactive)
   (message "Type C-x C-q to exit Emacs.  It's waaaay too easy to accidentally hit C-x C-c")
   (ding))
+
+(defun isearch-forward-message ()
+  "A friendly message to display when someone hits the old \"isearch-forward\" key."
+  (interactive)
+  (message "Buffer saved.  Press C-f for isearch-forward."))
 
 
 ;; Font sizing / zooming
@@ -1493,7 +1498,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (browse-url "https://jira.rallyhealth.com/secure/RapidBoard.jspa?rapidView=844"))
 
 (defun web-sso-login ()
-  "Login."
+  "Login to SSO service."
   (interactive)
   (browse-url "https://dividendfinance.okta.com/app/UserHome"))
 
@@ -1510,6 +1515,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (global-set-key (kbd "C-c b g") 'helm-google-suggest)
 (global-set-key (kbd "C-c b s") 'web-browse-or-search)
 (global-set-key (kbd "C-c b b") 'web-bookmark-page)
+(global-set-key (kbd "C-c b w") 'xwidget-webkit-browse-url)
 
 ;; Accelerators to quickly open important web applications
 (global-set-key (kbd "C-c b S") 'web-storyboard)
@@ -1521,6 +1527,10 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (define-key xwidget-webkit-mode-map (kbd "M-w") 'xwidget-webkit-copy-selection-as-kill)
 (define-key xwidget-webkit-mode-map (kbd "S-C-c") 'xwidget-webkit-copy-selection-as-kill)
 (define-key xwidget-webkit-mode-map (kbd "S-C-v") 'xwidget-webkit-insert-string)
+(define-key xwidget-webkit-mode-map (kbd "PageUp") 'xwidget-webkit-scroll-up)
+(define-key xwidget-webkit-mode-map (kbd "PageDown") 'xwidget-webkit-scroll-down)
+(define-key xwidget-webkit-mode-map (kbd "<mouse-4>") 'xwidget-webkit-scroll-down) ; Linux scroll-wheel wasn't bound
+(define-key xwidget-webkit-mode-map (kbd "<mouse-5>") 'xwidget-webkit-scroll-up)
 (define-key xwidget-webkit-mode-map [remap beginning-of-buffer] 'xwidget-webkit-scroll-top)
 (define-key xwidget-webkit-mode-map [remap end-of-buffer] 'xwidget-webkit-scroll-bottom)
 (define-key xwidget-webkit-mode-map (kbd "C-=") nil) ; Use global bindings instead
@@ -2329,7 +2339,7 @@ assuming it is in a maven-style project."
         ("C-c k h" . 'kaocha-runner-hide-windows)
 
         ("s-<return>" . 'init-ns)
-        ("C-s-<return>" . 'cider-eval-expression-at-point-in-repl)
+        ;; ("C-s-<return>" . 'cider-eval-expression-at-point-in-repl)
         ("c-<return>" . 'cider-eval-expression-at-point-in-repl)
         ("M-s-<return>" . 'cider-eval-defun-at-point-in-repl)))
 
@@ -3042,7 +3052,14 @@ buffer's."
 (define-key lisp-interaction-mode-map [escape] 'quit-window) ; Scratch buffer
 (global-set-key (kbd "<escape>") 'keyboard-quit)
 
-(global-set-key (kbd "C-s") 'save-buffer) ; Was isearch-forward
+
+(defun save-and-prompt ()
+  "Save the buffer and display prompt hint."
+  (interactive)
+  (save-buffer)
+  (isearch-forward-message))
+
+(global-set-key (kbd "C-s") 'save-and-prompt) ; Was isearch-forward
 (global-set-key (kbd "C-f") 'isearch-forward) ; Was find-file
 (define-key isearch-mode-map (kbd "C-f") 'isearch-repeat-forward)
 (global-set-key (kbd "S-C-f") 'query-replace)
