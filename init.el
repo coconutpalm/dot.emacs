@@ -1492,15 +1492,20 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (interactive)
   (browse-url "https://jira.rallyhealth.com/secure/RapidBoard.jspa?rapidView=844"))
 
+(defun web-sso-login ()
+  "Login."
+  (interactive)
+  (browse-url "https://dividendfinance.okta.com/app/UserHome"))
+
 (defun web-chat ()
   "Open my current project's chat app."
   (interactive)
-  (browse-url "https://rallyhealth.slack.com"))
+  (browse-url "https://dividendfinance.slack.com"))
 
-(defun web-continuous-integration ()
-  "Open my current project's CI server."
-  (interactive)
-  (browse-url "https://ci.rally-dev.com/teams-connect/job/connect/"))
+;; (defun web-continuous-integration ()
+;;   "Open my current project's CI server."
+;;   (interactive)
+;;   (browse-url "https://ci.rally-dev.com/teams-connect/job/connect/"))
 
 (global-set-key (kbd "C-c b g") 'helm-google-suggest)
 (global-set-key (kbd "C-c b s") 'web-browse-or-search)
@@ -1508,11 +1513,14 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; Accelerators to quickly open important web applications
 (global-set-key (kbd "C-c b S") 'web-storyboard)
+(global-set-key (kbd "C-c b L") 'web-sso-login)
 (global-set-key (kbd "C-c b C") 'web-chat)
-(global-set-key (kbd "C-c b I") 'web-continuous-integration)
+;; (global-set-key (kbd "C-c b I") 'web-continuous-integration)
 
 (define-key xwidget-webkit-mode-map (kbd "C-w") 'xwidget-webkit-copy-selection-as-kill)
 (define-key xwidget-webkit-mode-map (kbd "M-w") 'xwidget-webkit-copy-selection-as-kill)
+(define-key xwidget-webkit-mode-map (kbd "S-C-c") 'xwidget-webkit-copy-selection-as-kill)
+(define-key xwidget-webkit-mode-map (kbd "S-C-v") 'xwidget-webkit-insert-string)
 (define-key xwidget-webkit-mode-map [remap beginning-of-buffer] 'xwidget-webkit-scroll-top)
 (define-key xwidget-webkit-mode-map [remap end-of-buffer] 'xwidget-webkit-scroll-bottom)
 (define-key xwidget-webkit-mode-map (kbd "C-=") nil) ; Use global bindings instead
