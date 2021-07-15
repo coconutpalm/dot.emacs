@@ -1495,7 +1495,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (defun web-storyboard ()
   "Open my current project's scrum board."
   (interactive)
-  (browse-url "https://jira.rallyhealth.com/secure/RapidBoard.jspa?rapidView=844"))
+  (browse-url "https://jira.dividendsolar.com/secure/RapidBoard.jspa?rapidView=55"))
 
 (defun web-sso-login ()
   "Login to SSO service."
