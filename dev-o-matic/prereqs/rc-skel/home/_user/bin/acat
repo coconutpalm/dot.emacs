@@ -1,0 +1,8 @@
+#!/usr/bin/env -S bash
+
+ARG="$1"
+if [ -z "$ARG" ]; then
+    ARG='-'
+fi
+
+emacs --batch -Q -l "$HOME/bin/e2ansi/bin/e2ansi-cat" --colors rgb24 --theme deeper-blue "$ARG"
