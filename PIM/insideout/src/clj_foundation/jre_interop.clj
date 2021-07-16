@@ -1,4 +1,4 @@
-(ns clj-foundation.oo
+(ns clj-foundation.jre-interop
   "Simplify Java object interop"
   (:require [clojure.string :as str]
             [clj-foundation.data :refer [keywordize getter]]))

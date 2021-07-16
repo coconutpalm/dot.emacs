@@ -1,4 +1,4 @@
-(ns clj-foundation.oo-test
+(ns clj-foundation.jre-interop-test
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.string :as str]
