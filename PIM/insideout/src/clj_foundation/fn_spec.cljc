@@ -1,7 +1,7 @@
 (ns clj-foundation.fn-spec
   "Support for making function specs DRYer to write."
   (:require
-   [clj-foundation.errors :refer [resolved]]
+   [clj-foundation.errors :as err :refer [T resolved]]
    [clojure.walk :refer [prewalk-replace]]))
 
 
@@ -25,11 +25,15 @@
   (apply assoc {} (interleave symbols specs)))
 
 
+(declare spec?)
+
 (defn seq-spec? [x]
   (and (seqable? x)
-       (every? #(fn? %) x)))
+       (every? #(spec? %) x)))
 
 (defn spec? [a] (or (seq-spec? a) (fn? a)))
+
+(def spec-coll (T seq-spec?))
 
 
 (defn- arglist-str    [arglist] (pr-str arglist))
@@ -58,7 +62,7 @@
                    [""           (first more)  (rest more)])
         new-docs (typed-docs docstring (type-str arglist parameter-specs return-spec))]
 
-    (assert (valid? (s/coll-of spec?) arglist))
+    (assert (= arglist (spec-coll arglist)))
 
     `(defn ~f ~new-docs ~arglist
        {:pre  [~@(all-valid? arglist parameter-specs)]
