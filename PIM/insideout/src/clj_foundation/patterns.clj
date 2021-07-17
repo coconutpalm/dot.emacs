@@ -10,34 +10,6 @@
   (:gen-class))
 
 
-(defn get-package
-  "Returns the package name for the specified Class"
-  [clazz]
-  (->> (.split (.getName clazz) "\\.")
-       reverse
-       rest
-       reverse
-       (interpose ".")
-       (apply str)))
-
-
-(defn get-class-name
-  "Returns the unqualified class name for the specified Class"
-  [clazz]
-  (->> (.split (.getName clazz) "\\.")
-       reverse
-       first
-       (apply str)))
-
-
-(defn arity
- "Returns the maximum parameter count of each invoke method found by reflection
-  on the input instance. The returned value can be then interpreted as the arity
-  of the input function. The count does NOT detect variadic functions."
-  [f]
-  (let [invokes (filter #(= "invoke" (.getName %1)) (.getDeclaredMethods (class f)))]
-    (apply max (map #(alength (.getParameterTypes %1)) invokes))))
-
 
 ;; The singleton pattern ------------------------------------------------------------------------------------
 

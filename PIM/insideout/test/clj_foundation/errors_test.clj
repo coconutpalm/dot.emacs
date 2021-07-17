@@ -2,11 +2,10 @@
   (:require [clojure.test :refer :all]
             [clj-foundation.unit-test-common :as common]
             [clj-foundation.io :as io :refer [with-err-str]]
-            [clj-foundation.errors :refer :all]
+            [clj-foundation.errors :as err :refer :all]
             [clj-foundation.data :refer [elem-satisfies?]]
             [clj-foundation.patterns :as p]
             [clj-foundation.millis :as millis]
-            [clj-foundation.errors :as err]
             [clojure.string :as str])
   (:import [java.util Date]
            [clojure.lang ExceptionInfo]))
@@ -21,6 +20,15 @@
       (is (.contains ":line" result))
       (is (.contains ":column" result)))))
 
+(deftest valid?-test
+  (testing "*check-valid?* is true by default"
+    (is (valid? string? "Fred")
+        "Happy path")
+    (is (failure? (try* (valid? string? 6)))
+        "Sadness in a bottle (sendin' out an S.O.S.")
+    (let [expect-exception (try* (valid? string? 6))]
+      (is (instance? AssertionError expect-exception)
+          "Should throw AssertionError"))))
 
 (deftest failure?--predefined-failure-modes-test
   (testing "Nil is not a failure"

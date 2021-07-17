@@ -8,19 +8,6 @@
 (common/register-fixtures)
 
 
-;; Schema/type tests ---------------------------------------------------------------------------------------
-
-(deftest get-package-test
-  (testing "get-package returns java.lang given java.lang.Object"
-    (is (= "java.lang" (get-package Object))))
-
-  (testing "Passing something other than a Class throws an exception"
-    (is (thrown? RuntimeException (get-package "Object")))))
-
-(deftest get-class-name-test
-  (testing "get-class-name returns Object given java.lang.Object"
-    (is (= "Object" (get-class-name Object)))))
-
 ;; Singleton -----------------------------------------------------------------------------------------------
 
 (def invocations (atom 0))

@@ -3,13 +3,30 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clj-foundation.unit-test-common :as common]
-            [clj-foundation.oo :refer :all]))
+            [clj-foundation.jre-interop :refer :all]))
 
-
-;; @see also http://stackoverflow.com/questions/9753164/generate-java-beans-with-clojure
 
 (common/register-fixtures)
 
+
+;; Schema/type tests ---------------------------------------------------------------------------------------
+
+(deftest get-package-test
+  (testing "get-package returns java.lang given java.lang.Object"
+    (is (= "java.lang" (get-package Object))))
+
+  (testing "Passing something other than a Class throws an exception"
+    (is (thrown? RuntimeException (get-package "Object")))))
+
+(deftest get-class-name-test
+  (testing "get-class-name returns Object given java.lang.Object"
+    (is (= "Object" (get-class-name Object)))))
+
+
+;; Bean things
+;;
+;; @see also http://stackoverflow.com/questions/9753164/generate-java-beans-with-clojure
+;;
 ;; Test data
 
 (definterface IAddress
