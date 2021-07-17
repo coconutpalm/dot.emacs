@@ -25,7 +25,11 @@
   (apply assoc {} (interleave symbols specs)))
 
 
-(defn spec? [a] (or (seqable? a) (instance? clojure.lang.IFn a)))
+(defn seq-spec? [x]
+  (and (seqable? x)
+       (every? #(fn? %) x)))
+
+(defn spec? [a] (or (seq-spec? a) (fn? a)))
 
 
 (defn- arglist-str    [arglist] (pr-str arglist))
