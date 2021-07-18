@@ -9,7 +9,8 @@
   (:require [boot.from.io.aviso.exception      :as prettyexception]
             [clojure.string          :as str]
             [clj-foundation.patterns :refer :all]
-            [clj-foundation.millis   :as millis])
+            [clj-foundation.millis   :as millis]
+            [clj-foundation.types])     ; (Needed for :import to work below)
 
   (:import [java.util Date]
            [clj_foundation.types SatisfyError]))
