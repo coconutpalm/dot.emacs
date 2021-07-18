@@ -1,8 +1,17 @@
 (ns clj-foundation.fn-spec
   "Support for making function specs DRYer to write."
   (:require
-   [clj-foundation.errors :as err :refer [T resolved]]
+   [clj-foundation.types :as t :refer [T]]
    [clojure.walk :refer [prewalk-replace]]))
+
+
+;; Internal macro for resolving vars inside macros ---------------------------------
+
+(defmacro resolved
+  "Returns the resolved var for sym; i.e.: sym -> #'sym"
+  [sym]
+  (let [v (resolve sym)]
+    `~v))
 
 
 (defn args
@@ -79,7 +88,7 @@
         arglist (-> resolved-f args first)
         new-docs (typed-docs docstring (type-str arglist parameter-specs return-spec))]
 
-    (assert (valid? (s/coll-of spec?) arglist))
+    (assert (= arglist (spec-coll arglist)))
 
     `(do
        (def ~f-renamed ~f)
@@ -93,7 +102,7 @@
          (apply ~f-renamed args#)))))
 
 
-(defmacro def-tfn
+(defmacro tfn
   "Define a typed function or redefine an existing function to be typed.
 
   The function's name and type signature are first.  If nothing else follows, the specified
