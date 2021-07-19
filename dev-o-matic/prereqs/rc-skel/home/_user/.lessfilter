@@ -1,43 +1,81 @@
 #!/bin/bash
 
-mdless() {
+document2less() {
 	if [ -n "$1" ] ; then
 		if [ -f "$1" ] ; then
           declare -i COLS     # COLS is an integer
           COLS=`tput cols`-3  # otherwise iTerm's scroll bar obscures 2 columns
 
-			 cat <(echo ".TH $(basename $1) 7 `date --iso-8601` Dr.Markdown") <(pandoc -t man $1) | \
+			 cat <(echo ".TH $(basename $1) 7 `date --iso-8601` \"$2\"") <(pandoc -t man $1) | \
 			     groff -rLL=${COLS}n -rcR=1 -K utf8 -t -T utf8 -man 2>/dev/null ;
 		fi
 	fi
 }
 
+imgless() {
+    # A failed attempt to display images natively in `less` using sixel graphics
+    stty -echo   # If term doesn't understand esc sequence, don't show it
+    convert_cmd=''
+    IFS=";" read -a REPLY -s -t 1 -d "c" -p $'\e[c' >&2
+    stty echo
 
-htmless() {
-	if [ -n "$1" ] ; then
-		if [ -f "$1" ] ; then
-          declare -i COLS     # COLS is an integer
-          COLS=`tput cols`-3  # otherwise iTerm's scroll bar obscures 2 columns
+    for code in "${REPLY[@]}"; do
+	     if [[ $code == "4" ]]; then
+	         convert_cmd="convert $1 -geometry 800x600 sixel:-"
+	         break
+	     fi
+    done
 
-			 cat <(echo ".TH $(basename $1) 7 `date --iso-8601` Dr.HTML") <(pandoc -t man $1) | \
-			     groff -rLL=${COLS}n -rcR=1 -K utf8 -t -T utf8 -man 2>/dev/null ;
-		fi
-	fi
+    # YAFT can't respond to vt220 sixel escapes
+    if [[ "$TERM" == yaft* ]]; then
+        convert_cmd="convert $1 -geometry 800x600 sixel:-"
+    fi
+
+    if [[ -z "$convert_cmd" ]]; then
+        case "$1" in
+            *.jpg)
+                jp2a --colors -z "$1"
+                ;;
+            *.jpeg)
+                jp2a --colors -z "$1"
+                ;;
+            *)
+                convert "$1" jpg:- | jp2a --colors -z -
+                ;;
+        esac
+    else
+        $convert_cmd
+    fi
 }
 
 
 case "$1" in
+    *.org)
+        document2less "$1" "Dr. Org"
+        ;;
     *.md)
-        mdless "$1"
+        document2less "$1" "Dr. Markdown"
         ;;
     *.html)
-        htmless "$1"
+        document2less "$1" "Dr. HTML"
         ;;
     *.htm)
-        htmless "$1"
+        document2less "$1" "Dr. HTM"
         ;;
     *.json)
         jq -C < "$1"
+        ;;
+    *.bmp)
+        imgless "$1"
+        ;;
+    *.png)
+        imgless "$1"
+        ;;
+    *.jpg)
+        imgless "$1"
+        ;;
+    *.jpeg)
+        imgless "$1"
         ;;
     *)
         acat "$1"
