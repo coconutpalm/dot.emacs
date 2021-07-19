@@ -13,7 +13,7 @@
             [clj-foundation.types])     ; (Needed for :import to work below)
 
   (:import [java.util Date]
-           [clj_foundation.types SatisfyError]))
+           [clj_foundation.types TypeCtorError]))
 
 
 ;; Extensible failure objects / test multimethod -------------------------------------
@@ -27,7 +27,7 @@
 
 
 (defmethod failure-class? [Throwable] [_]    true)
-(defmethod failure-class? [SatisfyError] [_] true)
+(defmethod failure-class? [TypeCtorError] [_] true)
 (defmethod failure-class? :default [_]       false)
 
 

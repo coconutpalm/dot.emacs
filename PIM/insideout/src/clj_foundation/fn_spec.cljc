@@ -20,29 +20,12 @@
   (-> f meta :arglists))
 
 
-(defn validations
-  "public for testability only"
-  [symbols specs symbols-str]
-  (assert (= (count symbols) (count specs))
-          (str "(count arguments) != (count specs): " symbols-str "/" specs))
 
-  (let [spec-symbol-pairs (partition 2 (interleave specs symbols))]
-    (map (fn [[spec symbol]] `(valid? ~spec ~symbol)) spec-symbol-pairs)))
 
 
 (defn- symbol->spec [symbols specs]
   (apply assoc {} (interleave symbols specs)))
 
-
-(declare spec?)
-
-(defn seq-spec? [x]
-  (and (seqable? x)
-       (every? #(spec? %) x)))
-
-(defn spec? [a] (or (seq-spec? a) (fn? a)))
-
-(def spec-coll (T seq-spec?))
 
 
 (defn- arglist-str    [arglist] (pr-str arglist))
@@ -50,9 +33,7 @@
 (defn- argspec        [arglist parameter-specs] (prewalk-replace (symbol->spec (arglist-vector arglist)
                                                                                parameter-specs)
                                                                  arglist))
-(defn- all-valid?     [arglist parameter-specs] (validations (arglist-vector arglist)
-                                                             parameter-specs
-                                                             (arglist-str arglist)))
+
 (defn- type-str       [arglist parameter-specs return-spec] (str "(=> "
                                                                  (argspec arglist parameter-specs)
                                                                  " "
@@ -102,6 +83,10 @@
          (apply ~f-renamed args#)))))
 
 
+(def function-name (T symbol?))
+
+(defn valid? [& kvs] true)
+
 (defmacro tfn
   "Define a typed function or redefine an existing function to be typed.
 
@@ -134,7 +119,7 @@
   [f parameter-specs return-spec & more]
 
   {:pre [(valid? symbol? f)
-         (valid? (s/coll-of spec?) parameter-specs)
+         (valid? (coll-of spec?) parameter-specs)
          (valid? spec? return-spec)]}
 
   (if (empty? more)
