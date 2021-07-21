@@ -4,4 +4,4 @@ EXTENSIONS_LIST="~/.devrc/conf/vscode-extensions.lst"
 echo "Installing $EXTENSIONS_LIST"
 
 cat "$EXTENSIONS_LIST" | \
-    xargs -L 1 vscode-install
+    xargs -L 1 install-vscode-extension
