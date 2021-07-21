@@ -1,5 +1,12 @@
 # K8s integration
 
+* If `docker` isn't available, try `podman` command
+
+* Persistent Volumes/claims
+
+https://stackoverflow.com/questions/62694361/how-to-reference-a-local-volume-in-kind-kubernetes-in-docker
+https://mauilion.dev/posts/kind-pvc/
+
 * `dev rebuild` or `dev promote` for promoting Docker images?
 
 * KubeSail
