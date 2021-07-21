@@ -1,4 +1,6 @@
-#!/bin/bash -c cat <<\#EOF | kind create cluster --config=-
+#!/usr/bin/env -S bash
+
+cat <<\#EOF | kind create cluster --config=-
 # cluster-config.yml
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
