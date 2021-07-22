@@ -1767,16 +1767,27 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
 (use-package magit
   :commands magit-status magit-blame magit-refresh-all
   :config
+  (defun XXXX-NN-colon_form (ISSUEKEY current-branch)
+    "SCRUM-123: <<commit message prefix"
+    (replace-regexp-in-string
+     (concat ".*?\\(" ISSUEKEY "\\).*")
+     "\\1: "
+     current-branch))
+
+  (defun feat_XXXX-NN_form (ISSUEKEY current-branch)
+    "feat: (SCRUM-123) <<commit message prefix"
+    (replace-regexp-in-string
+     (concat ".*?\\(" ISSUEKEY "\\).*")
+     "feat: (\\1) "
+     current-branch))
+
   (defun find-jira-ticket-id-in-branchname ()
     "Return any `JIRA-##' string from the branch name or the empty string."
     (let ((ISSUEKEY "[[:upper:]]+-[[:digit:]]+")
           (current-branch (magit-get-current-branch)))
       (if (and current-branch
                (string-match-p ISSUEKEY current-branch))
-          (replace-regexp-in-string
-           (concat ".*?\\(" ISSUEKEY "\\).*")
-           "\\1: "
-           (magit-get-current-branch))
+          (feat_XXXX-NN_form ISSUEKEY current-branch)
         "")))
 
   (define-key magit-mode-map (kbd "<tab>") 'magit-section-toggle)
