@@ -54,6 +54,20 @@ add-apt-repository \
        $(lsb_release -cs) \
        stable"
 
+# docker-compose
+DCO_VER=$(latest-version https://github.com/docker/compose.git)
+curl -L "https://github.com/docker/compose/releases/download/$DCO_VER/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+
+# kind
+KIND_VER=$(latest-version https://github.com:kubernetes-sigs/kind.git)
+curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/$KIND_VER/kind-linux-amd64
+chmod +x /usr/local/bin/kind
+
+# Kubectl
+curl -Lo /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x /usr/local/bin/kubectl
+
 # google-drive-ocamlfuse
 add-apt-repository ppa:alessandro-strada/ppa
 
@@ -97,11 +111,6 @@ curl -O https://download.clojure.org/install/linux-install-1.10.1.716.sh
 chmod +x linux-install-1.10.1.716.sh
 sudo ./linux-install-1.10.1.716.sh
 rm ./linux-install-1.10.1.716.sh
-
-# docker-compose
-DCO_VER=$(latest-version https://github.com/docker/compose.git)
-curl -L "https://github.com/docker/compose/releases/download/$DCO_VER/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
 
 # Slack - Version has to be manually updated
 SLACK_VER='4.17.0'
