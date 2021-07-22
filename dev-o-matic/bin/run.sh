@@ -103,6 +103,13 @@ ensure_symlink "/tmp/devrc.docs" "${DOCKER_DEV_USERHOME}/.devrc/docs"
 # start a new container
 # --priviliged is for Chrome
 # --[blah... fuse] stuff is to run AppImages without extracting them; SYS_ADMIN is redundent but there for documentation purposes
+#
+# Ports:
+# 89xx: ?
+# 4713: PulseAudio
+# 5432: Postgres
+# 59xx: VNC
+# 22: SSH
 docker run -it \
      --privileged \
      --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse:mrw \
@@ -121,6 +128,7 @@ docker run -it \
      -p 5902:5902 \
      -p 5903:5903 \
      -p 5904:5904 \
+     -p 5432:5432 \
      -p 2222:22 \
      $IMAGENAME:latest
 
