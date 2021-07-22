@@ -77,6 +77,8 @@ apt-get install -y $(cat extra-packages.lst)
 
 # Manual installs now that dependencies are installed
 
+wget https://downloads.rclone.org/rclone-current-linux-amd64.deb
+dpkg -i rclone-current-linux-amd64.deb
 
 # emacs (because xwidgets isn't included in Ubuntu's stock build)
 #
@@ -88,10 +90,6 @@ apt-get -y install emacs27
 # code
 wget -O code.deb 'https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64'
 dpkg -i code.deb
-
-# edge-browser
-#wget -O edge.deb 'https://www.microsoftedgeinsider.com/en-us/download/?platform=linux-deb'
-#dpkg -i edge.deb
 
 # clojure
 CLOJURE_VER=$(latest-version https://github.com/clojure/clojure.git)
