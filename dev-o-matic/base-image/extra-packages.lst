@@ -60,6 +60,7 @@ pandoc
 postgresql
 pulseaudio
 pulseaudio-utils
+pv
 pwgen
 runit
 silversearcher-ag
