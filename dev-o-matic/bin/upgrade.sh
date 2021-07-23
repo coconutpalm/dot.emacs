@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+set -e
+source ~/bin/devenv-utils
+
+
 echo "This *will* overwrite changes you may have made to your stock environment."
 # TODO: Add a "press <return> to continue prompt here"
 
