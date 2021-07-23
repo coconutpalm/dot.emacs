@@ -107,7 +107,6 @@ ensure_symlink "/tmp/devrc.docs" "${DOCKER_DEV_USERHOME}/.devrc/docs"
 # Ports:
 # 89xx: ?
 # 4713: PulseAudio
-# 5432: Postgres
 # 59xx: VNC
 # 22: SSH
 docker run -it \
@@ -128,7 +127,6 @@ docker run -it \
      -p 5902:5902 \
      -p 5903:5903 \
      -p 5904:5904 \
-     -p 5432:5432 \
      -p 2222:22 \
      $IMAGENAME:latest
 
