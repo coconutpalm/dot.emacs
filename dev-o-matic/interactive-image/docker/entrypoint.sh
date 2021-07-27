@@ -11,13 +11,6 @@ cd /home/$USER_LOGINNAME
 # Allow plenty of open files
 bin/maximize-open-files
 
-cat >> /etc/hosts <<EOF
-
-# dockerhost
-host.docker.internal dockerhost
-
-EOF
-
 # Run the system service daemon (lighter-weight than systemd)
 runsvdir -P /etc/service/ &
 
