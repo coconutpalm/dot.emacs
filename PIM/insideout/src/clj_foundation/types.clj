@@ -4,18 +4,30 @@
   * Built on the idea that any predicate implicitly defines a type--a set of \"things\".
   * Not a framework - Just some functions / macros that stand on their own.
   * Doesn't try to \"boil the ocean\" or be the One Type Library to Rule Them All.
-  * Coexists well and enhances other Clojure \"type\" libraries.
+  * Coexists well with and enhances other Clojure \"type\" libraries.
   * Totally transparent to the rest of your code.
   * Integrates well with :pre, :post, and (assert ...).
   * Implemented in barely a page of code with 0 dependencies.
 
   See the `T` macro for more.")
 
+
 (definterface ICtorError
   (prependPath [pos type-str])
   (errorPositions))
 
+
+;;FieldErrorT {(Opt. :pos) int? :msg string?}
+(defrecord FieldErr [pos msg]
+  Object
+  (toString [this]
+    (if pos
+      (str pos ":" msg)
+      msg)))
+
 (defrecord TypeCtorError [x errors msg path]
+  :load-ns true
+
   ICtorError
   (prependPath [^TypeCtorError e pos type-str]
     (TypeCtorError.
@@ -25,22 +37,25 @@
      (conj (seq (:path e)) (str pos ":" type-str))))
 
   (errorPositions [this]
-    (let [offset (fn [e] (-> e (.split ":") first Integer/parseInt))
-          errors (:errors this)]
+    (letfn [(pos [e] (if (:pos e) (:pos e) 0))]
       (vec (map (fn [e] (cond
-                         (string? e) (offset e)
-                         (instance? TypeCtorError e) {(-> e :path first offset) (.errorPositions e)}
-                         :else (str (type e))))
-                errors))))
+                         (instance? TypeCtorError e) {(-> e :path first pos) (.errorPositions e)}
+                         (map? e)                    (pos e)
+                         :else                       (str (type e))))
+                (:errors this)))))
 
+  Object
   (toString [this]
     (if (first (:path this))
-      (str "{\"" (apply str (conj (vec (interpose "/" (:path this))) "\" [" (:msg this))) "]}")
+      (str "{ "
+           (apply str "path://" (conj (vec (interpose "/" (:path this))) "/"))
+           " [" (:msg this) "]"
+           " }")
       (:msg this))))
 
 
-(defn ctor->pred [predicate-or-type-ctor]
-  "Accepts either a predicate or a type-ctor function and returns a predicate."
+(defn T->pred [predicate-or-type-ctor]
+  "Accepts either a predicate or a type-ctor function and returns a traditional predicate."
   (fn [x]
     (let [result (predicate-or-type-ctor x)]
       (if (instance? TypeCtorError result)
@@ -49,9 +64,21 @@
 
 
 (defn ^:public-for-testability maybe-type-error
-  "Runs (type-test x).  Returns an empty vector when the result is not an error.
-  If the result is a TypeCtorError or is falsey, returns a vector containing the TypeCtorError
-  or containing a String with an error message."
+  "Runs (type-test x) where `type-test` is a \"predicate\" indicating if `x` satisfies `type`.
+
+  Returns a vector of 0 or 1 element depending on if an error was detected or not.
+
+  Truthy values except for (instance? TypeCtorError value) satisfy (type-test x) and do
+  not return an error value (returns an empty vector).
+
+  If type-test returns a TypeCtorError and is positional (maybe-pos is not nil), the
+  result is a copy of the TypeCtorError with the positional information prepended
+  to its path.
+
+  If type-test returns a TypeCtorError and no positional information is supplied,
+  the result is the TypeCtorError.
+
+  If type-test returns falsey, the result is a String containing an error message."
   [type-test type-str x & [maybe-pos]]
   (let [result (type-test x)]
     (if (instance? TypeCtorError result)
@@ -60,19 +87,35 @@
          result)]
       (if result
         []
-        [(str (if maybe-pos (str maybe-pos ":") "") "(" type-str " " (pr-str x) ")")]))))
+        [(let [msg (str "(" type-str " " (pr-str x) ")")]
+           (FieldErr. maybe-pos msg))]))))
 
 
-(defn ^:public-for-testability positional-errs
+(comment
+    (defrecord Opt [key])
+
+    (let [name {:first         string?
+                (Opt. :middle) string?
+                :last          string?}
+          grouped (group-by #(instance? Opt (first %)) (seq name))
+          optional (into {} (get grouped true {}))
+          required (into {} (get grouped false {}))]
+      {:optional optional :required required}
+      (clojure.set/difference (set (keys required)) #{:first}))
+
+
+    (into {} [[:first string?] [:middle string?] [:last string?]])
+    ,)
+
+
+(defn- positional-errs
   "Ensure xs satisfies positional predicates in `types'.  Returns xs or a TypeCtorError"
   [types types-strs xs]
   (letfn [(pairs [as bs] (partition 3 (interleave as bs (range))))] ; (range) adds position-index to (a,b,position-index)
 
     (if (not= (count types) (count xs))
-      (TypeCtorError. xs
-                     [(str "Expected: " types-strs)]
-                     (str "Expected " types-strs)
-                     '())
+      (let [msg (str "Expected: " types-strs)]
+        (TypeCtorError. xs [(FieldErr. nil msg)] msg '()))
 
       (let [preds  (pairs types types-strs)
             checks (pairs preds xs)
@@ -82,18 +125,19 @@
         (if (empty? errors)
           xs
           (TypeCtorError. xs
-                         (vec errors)
-                         (apply str (->> (vec errors)
-                                       (interpose ", ")))
-                         '()))))))
+                          (vec errors)
+                          (->> (vec errors)
+                             (interpose ", ")
+                             (apply str))
+                          '()))))))
 
 
 (defn x-or-err [type type-str x]
   (let [error-result (first (maybe-type-error type type-str x))]
     (cond
-      (nil? error-result)    x
-      (string? error-result) (TypeCtorError. x [error-result] error-result '())
-      :else                  error-result)))
+      (nil? error-result)  x
+      (map? error-result)  (TypeCtorError. x [error-result] error-result '())
+      :else                error-result)))
 
 
 (defmacro T
@@ -111,8 +155,8 @@
   but with a twist:
 
   `predicate` can be a function like in specs.  Or to validate fixed-length vectors
-  positionally it can be a vector of functions where each function is predicate
-  corresponding with a position to be verified.
+  positionally it can be a vector of functions where each function is a predicate
+  that validates the value in its corresponding position.
 
   This macro returns a type constructor function as defined above.
 
@@ -130,6 +174,7 @@
         trace    (fn [& xs] (apply str *ns* (seq line-col) ": " (apply pr-str xs)))]
     (cond
       (map? type)     (throw (ex-info (trace "Not implemented") {:type type}))
+
       (vector? type)  (let [types-strs (vec (map name type))]
                         `(partial positional-errs ~type ~types-strs))
 
@@ -151,7 +196,7 @@
 (def ^:experimental ctor-ctor (T (some-fn map? vector? symbol? list? hash-list-fn?)))
 
 
-(defn valid?
+(defn ^:experimental valid?
   "A replacement for specs/valid? for use with type constructors.  Loses errors subsequent
   to the initial one."
   [& cv's]

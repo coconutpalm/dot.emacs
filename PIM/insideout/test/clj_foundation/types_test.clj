@@ -41,6 +41,12 @@
           (is (instance? TypeCtorError e))
           (is (= [0 2] (.errorPositions e)))))))
 
+  (testing "Associative T /"
+    (let [name-type {:first string?
+                     :middle string?
+                     :last string?}]))
+
+
   (testing "Predicated T /"
     (testing "named"
       (let [drinking-age-illinois? (fn [age] (and (number? age)
@@ -67,13 +73,15 @@
       (let [first-middle-last (T [string? string? string?])
             address-3-lines (T [first-middle-last string? string?])
             e (address-3-lines [["First" :m :last] "Line2" :line3])]
-        (is (= [{0 [1 2]} 2] (.errorPositions e)))))))
+        (is (= [{0 [1 2]} 2] (.errorPositions e)))
+        (println (.toString e))))))
 
 
-(deftest ctor->pred--test
+(deftest T->pred--test
   (let [drinking-age-illinois (T (fn [age] (>= age 21)))
-        dai? (testee/ctor->pred drinking-age-illinois)]
+        dai? (testee/T->pred drinking-age-illinois)]
     (is (dai? 21))
     (is (not (dai? 20)))))
+
 
 (run-tests)
