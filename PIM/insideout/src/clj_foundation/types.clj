@@ -12,10 +12,11 @@
   See the `T` macro for more.")
 
 
+;; Error types ========================================================================
+
 (definterface ICtorError
   (prependPath [pos type-str])
   (errorPositions))
-
 
 ;;FieldErrorT {(Opt. :pos) int? :msg string?}
 (defrecord FieldErr [pos msg]
@@ -63,6 +64,8 @@
         result))))
 
 
+;; Test one thing =====================================================================
+
 (defn ^:public-for-testability maybe-type-error
   "Runs (type-test x) where `type-test` is a \"predicate\" indicating if `x` satisfies `type`.
 
@@ -91,24 +94,28 @@
            (FieldErr. maybe-pos msg))]))))
 
 
+;; Map type constructors ==============================================================
+
 (comment
-    (defrecord Opt [key])
+  (defrecord Opt [key])
 
-    (let [name {:first         string?
-                (Opt. :middle) string?
-                :last          string?}
-          grouped (group-by #(instance? Opt (first %)) (seq name))
-          optional (into {} (get grouped true {}))
-          required (into {} (get grouped false {}))]
-      {:optional optional :required required}
-      (clojure.set/difference (set (keys required)) #{:first}))
-
-
-    (into {} [[:first string?] [:middle string?] [:last string?]])
-    ,)
+  (let [name {:first         string?
+              (Opt. :middle) string?
+              :last          string?}
+        grouped (group-by #(instance? Opt (first %)) (seq name))
+        optional (into {} (get grouped true {}))
+        required (into {} (get grouped false {}))]
+    {:optional optional :required required}
+    (clojure.set/difference (set (keys required)) #{:first}))
 
 
-(defn- positional-errs
+  (into {} [[:first string?] [:middle string?] [:last string?]])
+  ,)
+
+
+;; Sequential type constructors =======================================================
+
+(defn ^:public-for-testability positional-errs
   "Ensure xs satisfies positional predicates in `types'.  Returns xs or a TypeCtorError"
   [types types-strs xs]
   (letfn [(pairs [as bs] (partition 3 (interleave as bs (range))))] ; (range) adds position-index to (a,b,position-index)
@@ -132,6 +139,8 @@
                           '()))))))
 
 
+;; Predicate type constructors ========================================================
+
 (defn x-or-err [type type-str x]
   (let [error-result (first (maybe-type-error type type-str x))]
     (cond
@@ -139,6 +148,8 @@
       (map? error-result)  (TypeCtorError. x [error-result] error-result '())
       :else                error-result)))
 
+
+;; The `T` macro ======================================================================
 
 (defmacro T
   "Because computing failures is more useful than asking if a value is `specs/valid?`.
