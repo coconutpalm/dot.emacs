@@ -66,4 +66,6 @@
     (is (thrown? AssertionError (twice 42)))))
 
 
-(run-tests)
+(comment
+  (run-tests)
+  ,)
