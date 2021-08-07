@@ -54,11 +54,9 @@
 
         new-docs (typed-docs docstring (type-str arglist parameter-specs return-spec))]
 
-
     `(defn ~f ~new-docs ~arglist
-       {:pre  [(valid? ~parameter-specs ~(symbol "%"))]
-        :post [(valid? ~return-spec ~(symbol "%"))]}
-       ~@body)))
+       (valid? (T ~parameter-specs) (flatten ~arglist))
+       (valid? (T ~return-spec) (do ~@body)))))
 
 
 (defn annotate-fn
@@ -76,11 +74,8 @@
     `(do
        (def ~f-renamed ~f)
        (defn ~f ~new-docs [& args#]
-         (valid? ~parameter-specs args#)
-
-         (valid?
-          ~return-spec
-          (apply ~f-renamed args#))))))
+         (valid? (T ~parameter-specs) (flatten args#))
+         (valid? (T ~return-spec) (apply ~f-renamed args#))))))
 
 
 (def function-name (T symbol?))
@@ -117,7 +112,7 @@
 
   [f parameter-specs return-spec & more]
 
-  {:pre [(valid? symbol? f)
+  {:pre [(valid? (T symbol?) f)
          (valid? (T (seq-of type-ctor?)) parameter-specs)
          (valid? (T type-ctor?) return-spec)]}
 

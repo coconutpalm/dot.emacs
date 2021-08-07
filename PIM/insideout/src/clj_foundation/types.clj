@@ -54,7 +54,7 @@
            (apply str "path://" (conj (vec (interpose "/" (:path this))) "/"))
            " [" (:msg this) "]"
            " }")
-      (:msg this))))
+      (str (:msg this)))))
 
 
 (defn T->pred [predicate-or-type-ctor]
@@ -153,7 +153,7 @@
   (letfn [(pairs [as bs] (partition 3 (interleave as bs (range))))] ; (range) adds position-index to (a,b,position-index)
 
     (if (not= (count types) (count xs))
-      (let [msg (str "Expected: " types-strs)]
+      (let [msg (str "(count types): " (count types) " (count xs): " (count xs) " types: " types-strs)]
         (TypeCtorError. xs [(FieldErr. nil msg)] msg '()))
 
       (let [preds  (pairs types types-strs)
@@ -175,7 +175,8 @@
   (fn [xs]
     (let [indexed-xs (partition 2 (interleave xs (range)))
           errors     (mapcat (fn [[x pos]]
-                               (maybe-type-error p? p?-str x pos)))]
+                               (maybe-type-error p? p?-str x pos))
+                             indexed-xs)]
       (if (empty? errors)
         xs
         (TypeCtorError. xs
@@ -265,8 +266,10 @@
 (defn valid?
   "Asserts that `type-ctor` appled to `x` yields a valid value.  Returns `x` if successful."
   [type-ctor x]
-  (assert (= x (type-ctor x)))
-  x)
+  (let [maybe-error (type-ctor x)]
+     (if (= x maybe-error)
+       x
+       (throw (AssertionError. (.toString maybe-error))))))
 
 
 (comment
