@@ -2,7 +2,34 @@
   (:require [clj-foundation.types :as testee :refer [T]]
             [clojure.test :as t :refer [deftest testing is run-tests]])
 
-  (:import [clj_foundation.types TypeCtorError]))
+  (:import [clj_foundation.types TypeCtorError Opt]))
+
+
+(deftest map-err-T--test
+  (let [t (testee/map-err-T {:one         {:pred string?   :type-str ":one string?"}
+                             :two         {:pred int?      :type-str ":two int?"}
+                             :three       {:pred rational? :type-str ":three rational?"}
+                             (Opt. :four) {:pred string?   :type-str "(Opt. :four) string?"}})]
+
+    (testing "Happy! 1"
+      (is (=   {:one "1" :two 2 :three 5/3}
+             (t {:one "1" :two 2 :three 5/3}))))
+
+    (testing "Happy! 2"
+      (is (=   {:one "1" :two 2 :three 5/3 :four "4"}
+             (t {:one "1" :two 2 :three 5/3 :four "4"}))))
+
+    (testing "One missing key"
+      (is (instance? TypeCtorError (t {:one "1" :two 2}))))
+
+    (testing "Two missing keys"
+      (is (instance? TypeCtorError (t {:two 2}))))
+
+    (testing "One type mismatch"
+      (is (instance? TypeCtorError (t {:one "1" :two 2 :three 5/3 :four 4}))))
+
+    (testing "Two type mismatches"
+      (is (instance? TypeCtorError (t {:one 1/3 :two 2 :three 5/3 :four 4}))))))
 
 
 (deftest positional-errs--test
@@ -42,9 +69,24 @@
           (is (= [0 2] (.errorPositions e)))))))
 
   (testing "Associative T /"
-    (let [name-type {:first string?
-                     :middle string?
-                     :last string?}]))
+    (let [name-type (T {:first string?
+                        (Opt. :middle) string?
+                        :last string?})]
+      (testing "Success - without optional key"
+        (is (= {:first "Charles" :last "Brown"}
+               (name-type {:first "Charles" :last "Brown"}))))
+
+      (testing "Success - with optional key"
+        (is (= {:first "Charles" :middle "M." :last "Brown"}
+               (name-type {:first "Charles" :middle "M." :last "Brown"}))))
+
+      (testing "One mismatch"
+        (is (instance? TypeCtorError (name-type {:first 1 :last "Brown"}))))
+
+      (testing "Two mismatches"
+        (let [result (name-type {:first 1 :middle 2 :last "Brown"})]
+          (is (instance? TypeCtorError result))
+          (is (= 2 (count (:errors result))))))))
 
 
   (testing "Predicated T /"
@@ -73,8 +115,7 @@
       (let [first-middle-last (T [string? string? string?])
             address-3-lines (T [first-middle-last string? string?])
             e (address-3-lines [["First" :m :last] "Line2" :line3])]
-        (is (= [{0 [1 2]} 2] (.errorPositions e)))
-        (println (.toString e))))))
+        (is (= [{0 [1 2]} 2] (.errorPositions e)))))))
 
 
 (deftest T->pred--test

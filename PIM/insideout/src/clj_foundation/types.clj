@@ -4,12 +4,13 @@
   * Built on the idea that any predicate implicitly defines a type--a set of \"things\".
   * Not a framework - Just some functions / macros that stand on their own.
   * Doesn't try to \"boil the ocean\" or be the One Type Library to Rule Them All.
-  * Coexists well with and enhances other Clojure \"type\" libraries.
+  * Coexists well with and enhances other Clojure \"type\" libraries, particularly Specs.
   * Totally transparent to the rest of your code.
   * Integrates well with :pre, :post, and (assert ...).
   * Implemented in barely a page of code with 0 dependencies.
 
-  See the `T` macro for more.")
+  See the `T` macro for more."
+  (:require [clojure.set :as set]))
 
 
 ;; Error types ========================================================================
@@ -25,6 +26,7 @@
     (if pos
       (str pos ":" msg)
       msg)))
+
 
 (defrecord TypeCtorError [x errors msg path]
   :load-ns true
@@ -72,7 +74,7 @@
   Returns a vector of 0 or 1 element depending on if an error was detected or not.
 
   Truthy values except for (instance? TypeCtorError value) satisfy (type-test x) and do
-  not return an error value (returns an empty vector).
+  not return an error value.  (They return an empty vector.)
 
   If type-test returns a TypeCtorError and is positional (maybe-pos is not nil), the
   result is a copy of the TypeCtorError with the positional information prepended
@@ -96,27 +98,57 @@
 
 ;; Map type constructors ==============================================================
 
-(comment
-  (defrecord Opt [key])
 
-  (let [name {:first         string?
-              (Opt. :middle) string?
-              :last          string?}
-        grouped (group-by #(instance? Opt (first %)) (seq name))
-        optional (into {} (get grouped true {}))
-        required (into {} (get grouped false {}))]
-    {:optional optional :required required}
-    (clojure.set/difference (set (keys required)) #{:first}))
+(defrecord Opt [key])
 
+(defn ^:public-for-testability map-err-T
+  "Ensure `m` satisfies k/v predicates in `kv-types` map.  Returns `m` or a TypeCtorError."
+  [kv-types]
+  (let [required-keys (->> kv-types
+                         (seq)
+                         (map first)
+                         (filter #(not (instance? Opt %)))
+                         (set))
+        predicates    (into {}
+                            (map (fn [[k v]]
+                              (if (instance? Opt k)
+                                [(:key k) v]
+                                [k v]))
+                            kv-types))]
 
-  (into {} [[:first string?] [:middle string?] [:last string?]])
-  ,)
+    (fn [m]
+      (let [missing-keys  (set/difference required-keys (set (keys m)))]
+        (if-not (empty? missing-keys)
+          (let [errors (->> missing-keys
+                          (map (fn [k]
+                                 (let [type-str (:type-str (get predicates k))]
+                                   (FieldErr. k type-str))))
+                          (vec))
+                msg (->> missing-keys
+                       (map #(get predicates %))
+                       (map :type-str)
+                       (interpose ", ")
+                       (apply str "Missing k/v(s): "))]
+            (TypeCtorError. m errors msg '()))
+
+          (let [errors (vec (mapcat (fn [[k v]]
+                                      (let [{:keys [pred type-str]} (get predicates k)]
+                                        (maybe-type-error pred type-str v k)))
+                                    m))]
+            (if (empty? errors)
+              m
+              (TypeCtorError. m
+                              errors
+                              (->> errors
+                                 (interpose ", ")
+                                 (apply str))
+                              '()))))))))
 
 
 ;; Sequential type constructors =======================================================
 
 (defn ^:public-for-testability positional-errs
-  "Ensure xs satisfies positional predicates in `types'.  Returns xs or a TypeCtorError"
+  "Ensure xs satisfies positional predicates in `types'.  Returns xs or a TypeCtorError."
   [types types-strs xs]
   (letfn [(pairs [as bs] (partition 3 (interleave as bs (range))))] ; (range) adds position-index to (a,b,position-index)
 
@@ -184,7 +216,12 @@
   (let [line-col (vec (meta &form))
         trace    (fn [& xs] (apply str *ns* (seq line-col) ": " (apply pr-str xs)))]
     (cond
-      (map? type)     (throw (ex-info (trace "Not implemented") {:type type}))
+      (map? type)     (let [kv-types (->> type
+                                        (map (fn [[k v]]
+                                               [k {:pred v
+                                                   :type-str (str (pr-str k) " " (pr-str v))}]))
+                                        (into {}))]
+                        `(map-err-T ~kv-types))
 
       (vector? type)  (let [types-strs (vec (map name type))]
                         `(partial positional-errs ~type ~types-strs))
@@ -201,6 +238,8 @@
 
       :default        (throw (ex-info (trace "Unrecognized type constructor \"predicate\"") {:type type})))))
 
+(defmacro pp-syntax [& t] (apply str (interpose " " (map pr-str t))))
+(pp-syntax (Opt. :k) string?)
 
 (defn- hash-list-fn? [x] (fn* x))
 
