@@ -1,5 +1,6 @@
 (ns clj-foundation.fn-spec
   "Support for making function specs DRYer to write."
+  :deprecated
   (:require
    [clj-foundation.types :as t :refer [T]]
    [clojure.walk :refer [prewalk-replace]]))
