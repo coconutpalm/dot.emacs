@@ -238,8 +238,6 @@
 
       :default        (throw (ex-info (trace "Unrecognized type constructor \"predicate\"") {:type type})))))
 
-(defmacro pp-syntax [& t] (apply str (interpose " " (map pr-str t))))
-(pp-syntax (Opt. :k) string?)
 
 (defn- hash-list-fn? [x] (fn* x))
 
