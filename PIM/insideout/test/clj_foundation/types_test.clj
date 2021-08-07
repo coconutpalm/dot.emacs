@@ -86,7 +86,8 @@
       (testing "Two mismatches"
         (let [result (name-type {:first 1 :middle 2 :last "Brown"})]
           (is (instance? TypeCtorError result))
-          (is (= 2 (count (:errors result))))))))
+          (is (= 2 (count (:errors result))))
+          (is (= [:first :middle] (.errorPositions result)))))))
 
 
   (testing "Predicated T /"
