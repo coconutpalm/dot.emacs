@@ -240,23 +240,14 @@
 
 
 (defn- hash-list-fn? [x] (fn* x))
+(def type-ctor? (some-fn map? vector? symbol? list? hash-list-fn?))
 
-(def ^:experimental ctor-ctor (T (some-fn map? vector? symbol? list? hash-list-fn?)))
 
-
-(defn ^:experimental valid?
-  "A replacement for specs/valid? for use with type constructors.  Loses errors subsequent
-  to the initial one."
-  [& cv's]
-  {:pre [(not (nil? cv's))
-         (even? (count cv's))]}
-  (let [try-ctor (fn [[ctor v]]
-                   (let [v' (ctor v)]
-                     (if (= v v')
-                       []
-                       [[v v' (str "(= " v " " v' ")")]])))
-        errors (mapcat try-ctor (partition 2 cv's))]
-    (map (fn [[v v' e]] (assert (= v v') e)) errors)))
+(defn valid?
+  "Asserts that `type-ctor` appled to `x` yields a valid value.  Returns `x` if successful."
+  [type-ctor x]
+  (assert (= x (type-ctor x)))
+  x)
 
 
 (comment
