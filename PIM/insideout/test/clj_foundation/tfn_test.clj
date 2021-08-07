@@ -41,10 +41,10 @@
 
 
 (defn twice [a] (str a a))
-(tfn twice [string?] string?)
+(=> twice [string?] string?)
 
 
-(deftest =>-test
+(deftest tfn-test
   (testing "The function's docstring includes user-defined docstring and the function type."
       (let [docstring (-> #'happy meta :doc)]
         (is (str/includes? docstring "Happy case test function"))

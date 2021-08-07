@@ -112,10 +112,31 @@
 
   [f parameter-specs return-spec & more]
 
-  {:pre [(valid? (T symbol?) f)
-         (valid? (T (seq-of type-ctor?)) parameter-specs)
-         (valid? (T type-ctor?) return-spec)]}
+  (letfn [(trace [& xs] (apply str *ns* (seq (vec (meta &form))) ": " (apply pr-str xs)))]
+    (try
+      (valid? (T symbol?) f)
+      (valid? (T (seq-of type-ctor?)) parameter-specs)
+      (valid? (T type-ctor?) return-spec)
+
+      (catch AssertionError e
+        (throw (AssertionError. (trace (.getMessage e)) e)))))
 
   (if (empty? more)
     (annotate-fn f parameter-specs return-spec)
     (typed-fn f parameter-specs return-spec more)))
+
+
+(defmacro =>
+  "Like `tfn` but only annotates existing functions with type information/checking."
+  [f parameter-specs return-spec]
+
+  (letfn [(trace [& xs] (apply str *ns* (seq (vec (meta &form))) ": " (apply pr-str xs)))]
+    (try
+      (valid? (T symbol?) f)
+      (valid? (T (seq-of type-ctor?)) parameter-specs)
+      (valid? (T type-ctor?) return-spec)
+
+      (catch AssertionError e
+        (throw (AssertionError. (trace (.getMessage e)) e)))))
+
+  (annotate-fn f parameter-specs return-spec))
