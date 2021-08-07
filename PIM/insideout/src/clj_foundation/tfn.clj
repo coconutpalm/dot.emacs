@@ -1,8 +1,7 @@
-(ns clj-foundation.fn-spec
+(ns clj-foundation.tfn
   "Support for making function specs DRYer to write."
-  :deprecated
   (:require
-   [clj-foundation.types :as t :refer [T]]
+   [clj-foundation.types :as t :refer [T type-ctor? seq-of valid?]]
    [clojure.walk :refer [prewalk-replace]]))
 
 
@@ -22,8 +21,6 @@
 
 
 
-
-
 (defn- symbol->spec [symbols specs]
   (apply assoc {} (interleave symbols specs)))
 
@@ -35,7 +32,7 @@
                                                                                parameter-specs)
                                                                  arglist))
 
-(defn- type-str       [arglist parameter-specs return-spec] (str "(=> "
+(defn- type-str       [arglist parameter-specs return-spec] (str "\n(=> "
                                                                  (argspec arglist parameter-specs)
                                                                  " "
                                                                  return-spec
@@ -46,17 +43,20 @@
 (defn typed-fn
   "Return a defn statement with :pre and :post conditions using specs to typecheck parameters and return value."
   [f parameter-specs return-spec more]
+
+  (valid? (T (seq-of type-ctor?)) parameter-specs)
+
   (let [[docstring
          arglist
          body]   (if (string? (first more))
-                   [(first more) (second more) (rest (rest more))]
-                   [""           (first more)  (rest more)])
+         [(first more) (second more) (rest (rest more))]
+         [""           (first more)  (rest more)])
+
         new-docs (typed-docs docstring (type-str arglist parameter-specs return-spec))]
 
-    (assert (= arglist (spec-coll arglist)))
 
     `(defn ~f ~new-docs ~arglist
-       {:pre  [~@(all-valid? arglist parameter-specs)]
+       {:pre  [(valid? ~parameter-specs ~(symbol "%"))]
         :post [(valid? ~return-spec ~(symbol "%"))]}
        ~@body)))
 
@@ -64,29 +64,26 @@
 (defn annotate-fn
   "Rename the existing f; make a new f with type checking/docs; delegate to the renamed f."
   [f parameter-specs return-spec]
+
+  (valid? (T (seq-of type-ctor?)) parameter-specs)
+
   (let [resolved-f (resolve f)
         f-renamed (symbol (str f `-renamed#))
         docstring (-> resolved-f meta :doc)
         arglist (-> resolved-f args first)
         new-docs (typed-docs docstring (type-str arglist parameter-specs return-spec))]
 
-    (assert (= arglist (spec-coll arglist)))
-
     `(do
        (def ~f-renamed ~f)
        (defn ~f ~new-docs [& args#]
-         {:post [(valid? ~return-spec ~(symbol "%"))]}
+         (valid? ~parameter-specs args#)
 
-         (let [~arglist args#]
-           ~@(map (fn [condition] `(assert ~condition))
-                  (all-valid? arglist parameter-specs)))
-
-         (apply ~f-renamed args#)))))
+         (valid?
+          ~return-spec
+          (apply ~f-renamed args#))))))
 
 
 (def function-name (T symbol?))
-
-(defn valid? [& kvs] true)
 
 (defmacro tfn
   "Define a typed function or redefine an existing function to be typed.
@@ -117,11 +114,12 @@
   more -
   If present, in the form: docstring? [arglist-vector] & statements.  If empty, then annotates
   an existing function f with a type defined by parameter-specs => return-spec."
+
   [f parameter-specs return-spec & more]
 
   {:pre [(valid? symbol? f)
-         (valid? (coll-of spec?) parameter-specs)
-         (valid? spec? return-spec)]}
+         (valid? (T (seq-of type-ctor?)) parameter-specs)
+         (valid? (T type-ctor?) return-spec)]}
 
   (if (empty? more)
     (annotate-fn f parameter-specs return-spec)
