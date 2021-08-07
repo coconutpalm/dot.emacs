@@ -170,6 +170,25 @@
                              (apply str))
                           '()))))))
 
+(defn seq-of'
+  [p? p?-str]
+  (fn [xs]
+    (let [indexed-xs (partition 2 (interleave xs (range)))
+          errors     (mapcat (fn [[x pos]]
+                               (maybe-type-error p? p?-str x pos)))]
+      (if (empty? errors)
+        xs
+        (TypeCtorError. xs
+                        (vec errors)
+                        (->> (vec errors)
+                           (interpose ", ")
+                           (apply str))
+                        '())))))
+
+(defmacro seq-of [p?]
+  (let [p?-str (pr-str p?)]
+    `(seq-of' ~p? ~p?-str)))
+
 
 ;; Predicate type constructors ========================================================
 

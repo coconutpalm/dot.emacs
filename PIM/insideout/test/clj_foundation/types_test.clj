@@ -126,4 +126,6 @@
     (is (not (dai? 20)))))
 
 
-(run-tests)
+(comment
+  (run-tests)
+  ,)
