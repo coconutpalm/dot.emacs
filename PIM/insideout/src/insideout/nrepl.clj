@@ -49,14 +49,15 @@
 (defn start! [& extra-middlewares]
   (let [dep-names (set (conj extra-middlewares :nrepl))
         sources (map deps dep-names)
-        middleware (mapcat mids (or extra-middlewares []))
-        handler (apply nrepl.server/default-handler middleware)]
+        middleware (mapcat mids (or extra-middlewares []))]
     (swap! main-server
            (fn [maybe-server]
              (if maybe-server
                maybe-server
                (let [_        (dyn/resolve-libs sources)
-                     server   (apply nrepl.server/start-server (flatten (vec (assoc *nrepl-opts* :handler handler))))
+                     server   (apply nrepl.server/start-server
+                                     (flatten (vec (assoc *nrepl-opts*
+                                                          :handler (apply nrepl.server/default-handler middleware)))))
                      portfile (write-port-file (:port server) ".nrepl-port")]
                  (.addShutdownHook (Runtime/getRuntime)
                                    (Thread. ^Runnable #(let [nrepl-portfile (File. portfile)]

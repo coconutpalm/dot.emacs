@@ -21,7 +21,9 @@
 (def ^:dynamic *sync-delete* true)
 (def ^:dynamic *hard-link*   true)
 
-(def windows? (boot.App/isWindows))
+(defn windows? []
+  (-> (System/getProperty "os.name")
+     (.startsWith "Windows")))
 
 (def tmpfile-permissions
   (into-array FileAttribute

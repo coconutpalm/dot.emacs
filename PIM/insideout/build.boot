@@ -5,7 +5,8 @@
                  [adzerk/boot-reload          "0.6.1" :scope "test"]
 
                  ;; Client and server
-                 [org.clojure/core.async      "1.3.610"]
+                 #_[org.clojure/core.async      "1.3.610"]
+                 [org.clojure/data.xml        "0.0.8"]
                  [juji/editscript             "0.5.4"]
 
                  ;; Server-side dependencies
@@ -16,7 +17,7 @@
 
 
  :source-paths #{"src" "test" "resources"}
- :resource-paths #{"resources"})
+ :resource-paths #{"src" "resources"})
 
 (require
  '[boot.pod :as pod]
@@ -26,6 +27,10 @@
  '[clojure.java.io :as io]
 
  '[adzerk.boot-reload       :refer [reload]])
+
+(task-options!
+ pom {:project 'insideout
+      :version "0.1.0"})
 
 
 (deftask ui-scale [m multiplier VAL str "The user interface scale multiplier for Swing and JavaFX"]
@@ -172,8 +177,9 @@
 (deftask prod
   "Build for production deployment."
   []
-  (comp (aot)
+  (comp (aot :namespace #{'insideout.boot})
      (pom)
      (uber)
-     (jar :main "insideout.core")
-     (bin :output-dir "bin" :file "io" :jvm-opt "-XstartOnFirstThread")))
+     (jar :main 'insideout.boot :file "io.jar")
+     (target)
+     (bin :output-dir "bin")))
