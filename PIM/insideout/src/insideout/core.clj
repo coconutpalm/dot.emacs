@@ -14,6 +14,8 @@
   (:gen-class :main true))
 
 
+(def ^:dynamic *boot-script* nil)
+
 (defn start [args]
   (dyn/resolve-sources)
   (nr/start!))
@@ -92,9 +94,8 @@
     (swap! u/*verbosity* + verbosity)
     (reset! u/*watchers?* watchers?)
 
-    (binding [*out*               (u/auto-flush *out*)
-              *err*               (u/auto-flush *err*)
-              *boot-opts*    opts
+    (binding [*out*          (u/auto-flush *out*)
+              *err*          (u/auto-flush *err*)
               *boot-script*  arg0]
 
       (u/exit-ok

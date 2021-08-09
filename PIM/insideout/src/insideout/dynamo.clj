@@ -2,12 +2,10 @@
   "A component/module system for InsideOut built on classlojure."
   (:require
    [clojure.core :refer :all]
-   [classlojure.core :refer [wrap-ext-classloader ext-classloader]]
+   [classlojure.core :refer [base-classloader]]
    [cemerick.pomegranate :as pom])
   (:import [java.io File]))
 
-
-(defonce cl (wrap-ext-classloader))
 
 (def ^:dynamic *extra-repositories*
   "Extra repositories in addition to Maven Central and Clojars. Default={}"
@@ -29,7 +27,7 @@
                                               {"clojars" "https://clojars.org/repo"}
                                               *extra-repositories*)))
   ([coordinates]
-   (resolve-libs ext-classloader coordinates)))
+   (resolve-libs base-classloader coordinates)))
 
 
 (defn require-dependencies
@@ -51,7 +49,7 @@
        (require require-params))))
 
   ([coordinates require-params]
-   (require-dependencies ext-classloader
+   (require-dependencies base-classloader
                          coordinates
                          require-params)))
 
