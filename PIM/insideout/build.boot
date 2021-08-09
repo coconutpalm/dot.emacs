@@ -181,5 +181,4 @@
      (pom)
      (uber)
      (jar :main 'insideout.boot :file "io.jar")
-     (target)
      (bin :output-dir "bin")))

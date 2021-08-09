@@ -25,6 +25,7 @@ sbt-launcher
 launchers
 *.swp
 *~
+workspace
 .lsp-session-*
 .metals
 .vscode
