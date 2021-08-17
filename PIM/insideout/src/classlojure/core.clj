@@ -6,11 +6,15 @@
 
 
 (def base-classloader
-  (or (.getClassLoader clojure.lang.RT)
-      (.getContextClassLoader (Thread/currentThread))))
+  (if (bound? Compiler/LOADER)
+    Compiler/LOADER
+    (or (.getClassLoader clojure.lang.RT)
+        (.getContextClassLoader (Thread/currentThread)))))
 
 (def ext-classloader
-  (.getParent ^ClassLoader base-classloader))
+  (.getParent ^ClassLoader
+              (or (.getClassLoader clojure.lang.RT)
+                  (.getContextClassLoader (Thread/currentThread)))))
 
 (defn- url-classloader [urls ext]
   (URLClassLoader.

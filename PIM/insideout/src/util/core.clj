@@ -172,17 +172,6 @@
   [& more]
   (print* 1 ansi/bold-red more))
 
-(defn warn-deprecated
-  "Print WARNING level message. Arguments of the form fmt & args suitable for
-  passing to clojure.core/format. Respects the BOOT_WARN_DEPRECATED environment
-  variable, which if set to no suppresses these messages.
-
-  Note that util.core/*verbosity* in a pod needs to be altered AFTER pod
-  creation or log level won't be affected."
-  [& args]
-  (when-not (= "no" (config "BOOT_WARN_DEPRECATED"))
-    (apply warn args)))
-
 (defmacro extends-protocol
   "Like extend-protocol but allows specifying multiple classes for each of the
   implementations:
