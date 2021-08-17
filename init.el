@@ -3045,7 +3045,7 @@ buffer's."
 
 (use-package perspective
   :hook
-  (kill-emacs . #'persp-state-save)
+  (kill-emacs . (lambda () (persp-state-save persp-state-default-file)) )
 
   :config
   (setq persp-state-default-file (concat (expand-file-name "~/.emacs.d") "/perspectives.save" ))
