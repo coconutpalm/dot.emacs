@@ -114,7 +114,9 @@
   (interactive)
   (olivetti-mode "toggle"))
 
-(use-package olivetti)
+(use-package olivetti
+  :config
+  (olivetti-set-width 81))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
