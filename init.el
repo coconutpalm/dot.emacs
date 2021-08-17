@@ -2088,7 +2088,7 @@ assuming it is in a maven-style project."
   :custom
   ;; what to use when checking on-save. "check" is default, I prefer clippy
   (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-eldoc-render-all t)
+  ;; (lsp-eldoc-render-all t)
   (lsp-idle-delay 0.6)
   (lsp-rust-analyzer-server-display-inlay-hints t)
 
@@ -2311,7 +2311,8 @@ assuming it is in a maven-style project."
         ("M-s-<return>" . 'cider-eval-defun-at-point-in-repl))
   :config
   (setq-local buffer-save-without-query t)
-  (setq-local
+
+  (setq
    ;; Formatting and indentation - use Cider instead
    lsp-enable-on-type-formatting nil
    ;; Set to nil to use CIDER features instead of LSP UI
@@ -2327,12 +2328,12 @@ assuming it is in a maven-style project."
    ;; lsp-modeline-diagnostics-scope :workspace
 
    ;; popup documentation boxes
-   lsp-ui-doc-enable t            ;; disable all doc popups
-   ;; lsp-ui-doc-show-with-cursor nil       ;; doc popup for cursor
-   ;; lsp-ui-doc-show-with-mouse t   ;; doc popup for mouse
-   ;; lsp-ui-doc-delay 1             ;; delay in seconds for popup to display
+   lsp-ui-doc-enable nil         ;; disable all doc popups
+   lsp-ui-doc-show-with-cursor nil       ;; doc popup for cursor
+   lsp-ui-doc-show-with-mouse t   ;; doc popup for mouse
+   lsp-ui-doc-delay 1            ;; delay in seconds for popup to display
    lsp-ui-doc-include-signature t ;; include function signature
-   ;; lsp-ui-doc-position 'at-point  ;; positioning of doc popup: top bottom at-point
+   lsp-ui-doc-position 'at-point ;; positioning of doc popup: top bottom at-point
    ;; lsp-ui-doc-alignment 'window ;; relative location of doc popup: frame window
 
    ;; code actions and diagnostics text as right-hand side of buffer
@@ -2503,7 +2504,6 @@ assuming it is in a maven-style project."
              (cider-repl-prompt-default namespace))))
 
   :hook
-  (cider-mode-hook . eldoc-mode)
   (cider-mode-hook . cider-company-enable-fuzzy-completion)
   (cider-repl-mode-hook . cider-company-enable-fuzzy-completion)
   (cider-mode-hook . company-mode)
@@ -3044,8 +3044,14 @@ buffer's."
 
 
 (use-package perspective
+  :hook
+  (kill-emacs . #'persp-state-save)
+
   :config
-  (persp-mode))
+  (setq persp-state-default-file (concat (expand-file-name "~/.emacs.d") "/perspectives.save" ))
+  (persp-mode)
+  (when (file-exists-p persp-state-default-file)
+    (persp-state-load persp-state-default-file)))
 
 
 ;; Save window layout perspectives per projectile project please
@@ -3170,8 +3176,6 @@ buffer's."
     (find-file (concat (expand-file-name "~/_NOTES") "/NOTES-WIP.md" ))
   (find-file (concat (expand-file-name "~/_NOTES") "/NOTES.md" )))
 
-;; Restore the desktop / open files
-(desktop-save-mode 1)
 
 (provide 'init)
 ;;; init.el ends here
