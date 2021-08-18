@@ -4,7 +4,8 @@
    [clojure.core :refer :all]
    [classlojure.core :refer [base-classloader]]
    [cemerick.pomegranate :as pom])
-  (:import [java.io File]))
+  (:import [java.io File]
+           [java.net URL]))
 
 
 (def ^:dynamic *extra-repositories*
@@ -27,7 +28,7 @@
                                               {"clojars" "https://clojars.org/repo"}
                                               *extra-repositories*)))
   ([coordinates]
-   (resolve-libs base-classloader coordinates)))
+   (resolve-libs (. (. (. Compiler/LOADER deref) getParent) getParent) coordinates)))
 
 
 (defn require-dependencies
@@ -49,7 +50,7 @@
        (require require-params))))
 
   ([coordinates require-params]
-   (require-dependencies base-classloader
+   (require-dependencies (. (. (. Compiler/LOADER deref) getParent) getParent)
                          coordinates
                          require-params)))
 
@@ -59,20 +60,19 @@
 (defmacro import-dependencies
   "Download and import classes directly from Maven-style dependencies.
 
-  [classloader coordinates import-params] where
-  classloader - The parent classloader
+  [coordinates import-params] where
   coordinates - A vector of '[maven.style/coordinates \"1.0.0\"]
   import-params - A vector of parameters to pass to clojure.core/import
                   Or a vector of vectors to sequentially pass to clojure.core/import"
 
-  [classloader coordinates import-params]
+  [coordinates import-params]
   (let [imports (if (empty? import-params)
                   []
                   (if (every? sequential? import-params)
                     (map (fn [i] `(import ~i)) import-params)
                     [~(import import-params)]))]
     `(do
-       (resolve-libs ~classloader ~coordinates)
+       (resolve-libs (. (. (. Compiler/LOADER deref) getParent) getParent) ~coordinates)
        ~@imports)))
 
 

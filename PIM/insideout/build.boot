@@ -21,7 +21,7 @@
 
 (require
  '[boot.pod :as pod]
- '[boot.task.built-in :refer [target uber]]
+ '[boot.task.built-in :refer :all]
  '[adzerk.boot-jar2bin :refer :all]
  '[boot.core :as boot]
  '[clojure.java.io :as io]
@@ -164,7 +164,8 @@
   (comp
    (cider)
    (watch)
-   (speak)
+   (notify :audible true :visual true :theme "woodblock")
+   (javac)
    (kaocha)
    (reload)
    (repl
@@ -177,8 +178,9 @@
 (deftask prod
   "Build for production deployment."
   []
-  (comp (aot :namespace #{'insideout.boot})
+  (comp #_(aot :namespace #{'insideout.boot})
+     (javac)
      (pom)
      (uber)
-     (jar :main 'insideout.boot :file "io.jar")
+     (jar :main 'loader.Main :file "io.jar")
      (bin :output-dir "bin")))

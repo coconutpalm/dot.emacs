@@ -30,8 +30,7 @@
                   (str "Unsupported OS: " (System/getProperty "os.name"))))
 
 (defonce swt-lib-resolution
-  (dynamo/import-dependencies base-classloader
-                              [swt-lib]
+  (dynamo/import-dependencies [swt-lib]
                               ['[org.eclipse.swt.widgets Display Shell]
                                '[org.eclipse.swt SWT]]))
 

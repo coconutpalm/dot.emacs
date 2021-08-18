@@ -99,7 +99,7 @@
               *boot-script*  arg0]
 
       (u/exit-ok
-       (let [bootstr     (some->> arg0 slurp)
+       (let [bootstr     (or (some->> arg0 slurp) "(resolve-sources) (start! :cider :reveal)")
              scriptstr   (binding [*print-meta* true]
                            (emit boot? args bootstr (:init opts)))]
 

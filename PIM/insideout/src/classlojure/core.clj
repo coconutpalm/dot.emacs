@@ -5,11 +5,9 @@
   (:import [java.net URL URLClassLoader]))
 
 
-(def base-classloader
-  (if (bound? Compiler/LOADER)
-    Compiler/LOADER
-    (or (.getClassLoader clojure.lang.RT)
-        (.getContextClassLoader (Thread/currentThread)))))
+(def ^ClassLoader base-classloader
+  (or (.getClassLoader clojure.lang.RT)
+      (.getContextClassLoader (Thread/currentThread))))
 
 (def ext-classloader
   (.getParent ^ClassLoader
