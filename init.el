@@ -396,6 +396,15 @@ With ARG, do this that many times."
                           (set-window-buffer nil (current-buffer)))))
 (require 'pomidor)
 
+
+(use-package back-button
+  :config
+  (back-button-mode 1)
+
+  :bind
+  (("S-M-<left>" . 'back-button-global-backward)
+   ("S-M-<right>" . 'back-button-global-forward)))
+
 ;; Comp(lete)any mode
 
 (use-package company
