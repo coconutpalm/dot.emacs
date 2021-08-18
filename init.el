@@ -114,9 +114,7 @@
   (interactive)
   (olivetti-mode "toggle"))
 
-(use-package olivetti
-  :config
-  (olivetti-set-width 81))
+(use-package olivetti)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -1181,6 +1179,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    (lambda ()
      (setq show-trailing-whitespace nil)
      (olivetti-mode 1)
+     (olivetti-set-width 81)
      (variable-pitch-mode 1)
 
      (add-hook 'buffer-list-update-hook ; Fires on window focus; see doc for select-window
@@ -1192,6 +1191,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    .
    (lambda ()
      (olivetti-mode 1)
+     (olivetti-set-width 81)
      (variable-pitch-mode 1))))
 
 
@@ -1661,6 +1661,7 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
           (lambda ()
             (variable-pitch-mode 1)
             (olivetti-mode 1)
+            (olivetti-set-width 81)
             (flyspell-mode 1)
             (markdown-pretty-symbols)
             (setq flyspell-generic-check-word-predicate 'markdown-flyspell-check-word-p)))
