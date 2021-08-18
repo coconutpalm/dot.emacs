@@ -563,9 +563,9 @@ With ARG, do this that many times."
             treemacs-tag-follow-delay              1.5
             treemacs-width                         40)))
 
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
+  ;; The default width and height of the icons is 22 pixels. If you are
+  ;; using a Hi-DPI display, uncomment this to double the icon size.
+  ;;(treemacs-resize-icons 44)
 
 
   (treemacs-follow-mode t)
@@ -578,19 +578,23 @@ With ARG, do this that many times."
     (`(t . _)
      (treemacs-git-mode 'simple)))
 
+  ;; .PgUp/PgDn should affect the focused window
+  (define-key treemacs-mode-map (kbd "<prior>") 'scroll-down-command)
+  (define-key treemacs-mode-map (kbd "<next>") 'scroll-up-command)
+
   :hook
   (treemacs-mode . (lambda ()
                      (variable-pitch-mode 1)))
 
   :bind
   (:map global-map
-        ("M-0"       . treemacs-select-window)
-        ("C-x t 1"   . treemacs-delete-other-windows)
-        ("C-x t t"   . treemacs)
-        ("C-\\"      . treemacs)
-        ("C-x t B"   . treemacs-bookmark)
-        ("C-x t C-t" . treemacs-find-file)
-        ("C-x t M-t" . treemacs-find-tag)))
+        ("M-0"        . treemacs-select-window)
+        ("C-x t 1"    . treemacs-delete-other-windows)
+        ("C-x t t"    . treemacs)
+        ("C-\\"       . treemacs)
+        ("C-x t B"    . treemacs-bookmark)
+        ("C-x t C-t"  . treemacs-find-file)
+        ("C-x t M-t"  . treemacs-find-tag)))
 
 
 ;; (use-package treemacs-evil
@@ -2091,6 +2095,8 @@ assuming it is in a maven-style project."
    lsp-signature-auto-activate nil      ;Because https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
    lsp-completion-provider :capf)
 
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\docs\\'")
+
   (lsp-enable-which-key-integration t)
 
   :commands lsp lsp-deferred
@@ -2103,7 +2109,7 @@ assuming it is in a maven-style project."
   (lsp-rust-analyzer-server-display-inlay-hints t)
 
   :bind
-  ([f3] . 'lsp-goto-implementation))
+  ([f3] . 'lsp-find-definition))
 
 ;; Scala
 (use-package lsp-metals)
@@ -2314,6 +2320,9 @@ assuming it is in a maven-style project."
         ("C-c k a" . 'kaocha-runner-run-all-tests)
         ("C-c k w" . 'kaocha-runner-show-warnings)
         ("C-c k h" . 'kaocha-runner-hide-windows)
+
+        ("S-C-o"      . 'lsp-clojure-clean-ns)
+        ("M-<return>" . 'lsp-clojure-add-import-to-namespace)
 
         ("s-<return>" . 'init-ns)
         ;; ("C-s-<return>" . 'cider-eval-expression-at-point-in-repl)
