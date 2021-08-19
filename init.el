@@ -321,6 +321,8 @@ With ARG, do this that many times."
   (setq default-buffer-file-coding-system 'utf-8))
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
+(setq gc-cons-threshold (* 100 1024 1024)
+      read-process-output-max (* 1024 1024))
 (setq inhibit-splash-screen t)
 (setq select-enable-clipboard t)      ; enable use of system clipboard across emacs and applications
 (setq-default fill-column 120)
@@ -394,6 +396,15 @@ With ARG, do this that many times."
                           (set-window-buffer nil (current-buffer)))))
 (require 'pomidor)
 
+
+(use-package back-button
+  :config
+  (back-button-mode 1)
+
+  :bind
+  (("S-M-<left>" . 'back-button-global-backward)
+   ("S-M-<right>" . 'back-button-global-forward)))
+
 ;; Comp(lete)any mode
 
 (use-package company
@@ -408,7 +419,7 @@ With ARG, do this that many times."
    company-dabbrev-downcase nil
    company-idle-delay 0.0
    company-tooltip-align-annotations t
-   company-minimum-prefix-length 2)
+   company-minimum-prefix-length 1)
   (setq-local
    completion-ignore-case t)
   :config
@@ -552,9 +563,9 @@ With ARG, do this that many times."
             treemacs-tag-follow-delay              1.5
             treemacs-width                         40)))
 
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
+  ;; The default width and height of the icons is 22 pixels. If you are
+  ;; using a Hi-DPI display, uncomment this to double the icon size.
+  ;;(treemacs-resize-icons 44)
 
 
   (treemacs-follow-mode t)
@@ -567,19 +578,23 @@ With ARG, do this that many times."
     (`(t . _)
      (treemacs-git-mode 'simple)))
 
+  ;; .PgUp/PgDn should affect the focused window
+  (define-key treemacs-mode-map (kbd "<prior>") 'scroll-down-command)
+  (define-key treemacs-mode-map (kbd "<next>") 'scroll-up-command)
+
   :hook
   (treemacs-mode . (lambda ()
                      (variable-pitch-mode 1)))
 
   :bind
   (:map global-map
-        ("M-0"       . treemacs-select-window)
-        ("C-x t 1"   . treemacs-delete-other-windows)
-        ("C-x t t"   . treemacs)
-        ("C-\\"      . treemacs)
-        ("C-x t B"   . treemacs-bookmark)
-        ("C-x t C-t" . treemacs-find-file)
-        ("C-x t M-t" . treemacs-find-tag)))
+        ("M-0"        . treemacs-select-window)
+        ("C-x t 1"    . treemacs-delete-other-windows)
+        ("C-x t t"    . treemacs)
+        ("C-\\"       . treemacs)
+        ("C-x t B"    . treemacs-bookmark)
+        ("C-x t C-t"  . treemacs-find-file)
+        ("C-x t M-t"  . treemacs-find-tag)))
 
 
 ;; (use-package treemacs-evil
@@ -1177,6 +1192,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    (lambda ()
      (setq show-trailing-whitespace nil)
      (olivetti-mode 1)
+     (olivetti-set-width 81)
      (variable-pitch-mode 1)
 
      (add-hook 'buffer-list-update-hook ; Fires on window focus; see doc for select-window
@@ -1188,6 +1204,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
    .
    (lambda ()
      (olivetti-mode 1)
+     (olivetti-set-width 81)
      (variable-pitch-mode 1))))
 
 
@@ -1368,57 +1385,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; Use my fork of npm-mode that fixes jump to error
 (require 'npm+-mode)
-
-
-;; (defun setup-tide-mode ()
-;;   (interactive)
-;;   (tide-setup)
-;;   (flycheck-mode t)
-;;   (setq flycheck-check-syntax-automatically '(save mode-enabled))
-;;   (eldoc-mode t)
-;;   (tide-hl-identifier-mode t)
-;;   (company-mode +1))
-
-;; (use-package tide
-;;   :ensure t
-;;   :after (typescript-mode company flycheck)
-;;   :config
-;;   (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
-;;   (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)
-
-;;   :hook ((typescript-mode . setup-tide-mode)
-;;          (typescript-mode . tide-hl-identifier-mode)
-;;          (before-save . tide-format-before-save)))
-
-
-
-
-;; Web-mode -- superseded by LSP-mode
-;; (use-package web-mode
-;;   :ensure t
-;;   :after (tide)
-;;   :config
-;;   (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.jsp\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.rtml?\\'" . web-mode))
-
-;;   :hook ((web-mode-hook
-;;           .
-;;           (lambda ()
-;;             (when (or (string-equal "ejs" (file-name-extension buffer-file-name))
-;;                       (string-equal "tsx" (file-name-extension buffer-file-name))
-;;                       (string-equal "jsx" (file-name-extension buffer-file-name)))
-;;               (setq web-mode-code-indent-offset 4)
-;;               (setup-tide-mode))))))
 
 ;; enable typescript-tslint checker
 ;; (flycheck-add-mode 'typescript-tslint 'web-mode)
@@ -1708,6 +1674,7 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
           (lambda ()
             (variable-pitch-mode 1)
             (olivetti-mode 1)
+            (olivetti-set-width 81)
             (flyspell-mode 1)
             (markdown-pretty-symbols)
             (setq flyspell-generic-check-word-predicate 'markdown-flyspell-check-word-p)))
@@ -2107,8 +2074,9 @@ assuming it is in a maven-style project."
   (java-mode . lsp)
   (scala-mode . lsp)
   (sbt-mode . lsp)
-  ;; (clojure-mode . lsp)   ; Need to figure out how to use this with Boot
-  ;; (clojurescript-mode . lsp)
+  (clojure-mode . lsp)                  ; Need to figure out how to use this with Boot
+  (clojurec-mode . lsp)
+  (clojurescript-mode . lsp)
   (javascript-mode . lsp)
   (js2-mode . lsp)
   (typescript-mode . lsp)
@@ -2124,7 +2092,11 @@ assuming it is in a maven-style project."
   :config
   (setq
    lsp-lens-enable t
+   lsp-signature-auto-activate nil      ;Because https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
    lsp-completion-provider :capf)
+
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\docs\\'")
+
   (lsp-enable-which-key-integration t)
 
   :commands lsp lsp-deferred
@@ -2132,12 +2104,12 @@ assuming it is in a maven-style project."
   :custom
   ;; what to use when checking on-save. "check" is default, I prefer clippy
   (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-eldoc-render-all t)
+  ;; (lsp-eldoc-render-all t)
   (lsp-idle-delay 0.6)
   (lsp-rust-analyzer-server-display-inlay-hints t)
 
   :bind
-  ([f3] . 'lsp-goto-implementation))
+  ([f3] . 'lsp-find-definition))
 
 ;; Scala
 (use-package lsp-metals)
@@ -2349,12 +2321,64 @@ assuming it is in a maven-style project."
         ("C-c k w" . 'kaocha-runner-show-warnings)
         ("C-c k h" . 'kaocha-runner-hide-windows)
 
+        ("S-C-o"      . 'lsp-clojure-clean-ns)
+        ("M-<return>" . 'lsp-clojure-add-import-to-namespace)
+
         ("s-<return>" . 'init-ns)
         ;; ("C-s-<return>" . 'cider-eval-expression-at-point-in-repl)
         ("c-<return>" . 'cider-eval-expression-at-point-in-repl)
-        ("M-s-<return>" . 'cider-eval-defun-at-point-in-repl)))
+        ("M-s-<return>" . 'cider-eval-defun-at-point-in-repl))
+  :config
+  (setq-local buffer-save-without-query t)
 
-(use-package clj-refactor)
+  (setq
+   ;; Formatting and indentation - use Cider instead
+   lsp-enable-on-type-formatting nil
+   ;; Set to nil to use CIDER features instead of LSP UI
+   lsp-enable-indentation nil
+   lsp-enable-snippet t ;; to test again
+
+   ;; symbol highlighting - `lsp-toggle-symbol-highlight` toggles highlighting
+   ;; subtle highlighting for doom-gruvbox-light theme defined in dotspacemacs/user-config
+   lsp-enable-symbol-highlighting t
+
+   ;; Show lint error indicator in the mode line
+   lsp-modeline-diagnostics-enable t
+   ;; lsp-modeline-diagnostics-scope :workspace
+
+   ;; popup documentation boxes
+   lsp-ui-doc-enable nil         ;; disable all doc popups
+   lsp-ui-doc-show-with-cursor nil       ;; doc popup for cursor
+   lsp-ui-doc-show-with-mouse t   ;; doc popup for mouse
+   lsp-ui-doc-delay 1            ;; delay in seconds for popup to display
+   lsp-ui-doc-include-signature t ;; include function signature
+   lsp-ui-doc-position 'at-point ;; positioning of doc popup: top bottom at-point
+   ;; lsp-ui-doc-alignment 'window ;; relative location of doc popup: frame window
+
+   ;; code actions and diagnostics text as right-hand side of buffer
+   lsp-ui-sideline-enable t
+   lsp-ui-sideline-show-code-actions t
+   ;; lsp-ui-sideline-delay 500
+
+   lsp-ui-sideline-show-diagnostics t
+
+   ;; reference count for functions (assume their maybe other lenses in future)
+   lsp-lens-enable t
+
+   ;; Efficient use of space in treemacs-lsp display
+   ;; treemacs-space-between-root-nodes nil
+
+   ;; Optimization for large files
+   lsp-file-watch-threshold 10000
+   lsp-log-io nil)
+
+  (setq cider-eldoc-display-for-symbol-at-point nil))
+
+(use-package clj-refactor
+  :ensure t
+  :defer t
+  :config
+  (cljr-add-keybindings-with-prefix "C-c C-r"))
 
 
 (use-package sotclojure
@@ -2364,11 +2388,12 @@ assuming it is in a maven-style project."
 
 
 ;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
-(use-package lispy)
+(use-package lispy
+  :ensure t
+  :defer t
+  :init
+  (setq lispy-compat '(cider)))
 
-;; clojure-semantic (https://github.com/kototama/clojure-semantic)
-;; (Prerequisite for Lispy Clojure support)
-;;(use-package clojure-semantic)
 
 (defun lispy-mode-key-unbindings ()
   "Disable some Lispy-mode keybindings that conflict with Clojure or other packages."
@@ -2498,11 +2523,21 @@ assuming it is in a maven-style project."
              (cider-repl-prompt-default namespace))))
 
   :hook
-  (cider-mode-hook . eldoc-mode)
   (cider-mode-hook . cider-company-enable-fuzzy-completion)
   (cider-repl-mode-hook . cider-company-enable-fuzzy-completion)
   (cider-mode-hook . company-mode)
-  (cider-repl-mode . company-mode))
+  (cider-repl-mode . company-mode)
+
+  :config
+  (setq
+   cider-repl-use-content-types t
+   nrepl-hide-special-buffers t)
+
+  :custom
+  (cider-repl-display-help-banner nil)
+  (cider-repl-display-in-current-window nil)
+  (cider-repl-pop-to-buffer-on-connect 'display-only)
+  (cider-repl-buffer-size-limit 100000))
 
 
 (use-package flycheck-clojure
@@ -3028,8 +3063,14 @@ buffer's."
 
 
 (use-package perspective
+  :hook
+  (kill-emacs . (lambda () (persp-state-save persp-state-default-file)) )
+
   :config
-  (persp-mode))
+  (setq persp-state-default-file (concat (expand-file-name "~/.emacs.d") "/perspectives.save" ))
+  (persp-mode)
+  (when (file-exists-p persp-state-default-file)
+    (persp-state-load persp-state-default-file)))
 
 
 ;; Save window layout perspectives per projectile project please
@@ -3099,9 +3140,13 @@ buffer's."
 (global-set-key (kbd "C-S-v") 'yank)
 (global-set-key (kbd "C-S-a") 'mark-whole-buffer)
 
-(require 'redo+)
-(global-set-key (kbd "C-z") 'undo)
-(global-set-key (kbd "C-S-z") 'redo)
+
+;; (require redo+)
+(use-package undo-fu
+  :config
+  (setq undo-fu-ignore-keyboard-quit t)
+  (global-set-key (kbd "C-z") 'undo-fu-only-undo)
+  (global-set-key (kbd "C-S-z") 'undo-fu-only-redo))
 
 
 (defun set-local-fonts ()
@@ -3150,8 +3195,6 @@ buffer's."
     (find-file (concat (expand-file-name "~/_NOTES") "/NOTES-WIP.md" ))
   (find-file (concat (expand-file-name "~/_NOTES") "/NOTES.md" )))
 
-;; Restore the desktop / open files
-(desktop-save-mode 1)
 
 (provide 'init)
 ;;; init.el ends here

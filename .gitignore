@@ -54,6 +54,8 @@ request/
 target/
 url/
 /.emacs.desktop
+perspectives.save
+var
 /eclipse.jdt.ls/
 /*.lock
 *#

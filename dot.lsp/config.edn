@@ -1,0 +1,17 @@
+{:log-path "/tmp/clojure-lsp.out"
+ :cljfmt {flow [[:block 1]]
+          fact [[:block 1]]
+          facts [[:block 1]]
+          tabular [[:inner 0]]}
+ :project-specs [{:project-path "deps.edn"
+                  :classpath-cmd ["clojure" "-Spath"]}]
+ :use-metadata-for-privacy? true
+ :keep-require-at-start? false
+ :show-docs-arity-on-same-line? true
+ :text-document-sync-kind :full
+ :auto-add-ns-to-new-files? true
+ :lint-project-files-after-startup? true
+ :additional-snippets [{:name "wrap-let-sexpr$"
+                        :detail "Wrap in let sexpr"
+                        :snippet "(let [$1] $0$current-form)"}]
+ :dependency-scheme "jar"}
