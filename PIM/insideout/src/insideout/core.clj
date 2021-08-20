@@ -39,14 +39,15 @@
       "\n\n"
       (remove nil?
               [(pr-boot-form `(ns insideout.user (:require ~@requires) (:use ~@uses)))
-        (when inits (with-comments "--init exprs" inits))
-        (with-comments "boot script" bootscript)
-        #_(pr-boot-form
-         `(let [boot?# ~boot?]
-            (if-not boot?#
-              (when-let [main# (resolve 'insideout.core/start)] (main# ~@argv))
-              (when-let [main# (resolve 'insideout.core/start)] (main# ~@argv))
-              #_(boot ~@(or (seq argv) ["insideout.core/help"])))))]))
+               (when inits (with-comments "--init exprs" inits))
+               (with-comments "boot script" bootscript)
+               (pr-boot-form `(insideout.user/io-main ~@argv))
+               #_(pr-boot-form
+                  `(let [boot?# ~boot?]
+                     (if-not boot?#
+                       (when-let [main# (resolve 'insideout.core/start)] (main# ~@argv))
+                       (when-let [main# (resolve 'insideout.core/start)] (main# ~@argv))
+                       #_(boot ~@(or (seq argv) ["insideout.core/help"])))))]))
      "\n")))
 
 #_(defn shebang? [arg]
