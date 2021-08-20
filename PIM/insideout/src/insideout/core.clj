@@ -32,8 +32,8 @@
       (with-out-str (pp/write form :dispatch pp/code-dispatch)))))
 
 (defn emit [boot? argv bootscript inits]
-  (let [requires [['insideout.dynamo :as 'dynamo] ['insideout.nrepl :as 'nrepl-server]]
-        uses '[clojure.tools.namespace.repl]]
+  (let [requires [['insideout.dynamo :as 'dynamo]]
+        uses '[clojure.tools.namespace.repl clojure.repl]]
     (str
      (string/join
       "\n\n"

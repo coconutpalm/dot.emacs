@@ -7,7 +7,6 @@
                  ;; Client and server
                  #_[org.clojure/core.async      "1.3.610"]
                  [org.clojure/data.xml        "0.0.8"]
-                 [org.clojure/tools.logging   "1.1.0"]
                  [org.slf4j/slf4j-simple      "1.7.5"]
                  [juji/editscript             "0.5.4"]
 
