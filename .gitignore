@@ -26,6 +26,7 @@ launchers
 *.swp
 *~
 workspace
+.lsp
 .lsp-session-*
 .metals
 .vscode
