@@ -62,7 +62,10 @@
   [[] {} args])
 
 
-(defn default-script [] (-> "default-script.clj" io/resource slurp))
+(defn default-script []
+  (-> "default-script.clj" io/resource slurp))
+(defn maybe-embedded-user-script []
+  (some-> (u/config :startup-file) io/resource slurp))
 
 (defn -main [& args*]
   (let [[arg0 args args*] (if (seq args*)
@@ -100,7 +103,9 @@
               *boot-script*  arg0]
 
       (u/exit-ok
-       (let [bootstr     (or (some->> arg0 slurp) (default-script))
+       (let [bootstr     (or (maybe-embedded-user-script)
+                             (some->> arg0 slurp)
+                             (default-script))
              scriptstr   (binding [*print-meta* true]
                            (emit boot? args bootstr (:init opts)))]
 
