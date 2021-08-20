@@ -1,8 +1,8 @@
 (ns insideout.dynamo
   "A component/module system for InsideOut built on classlojure."
   (:require
-   [clojure.core :refer :all]
-   [classlojure.core :refer [base-classloader]]
+   [clojure.core         :refer :all]
+   [clj-foundation.types :as tp]
    [cemerick.pomegranate :as pom])
   (:import [java.io File]
            [java.net URL]))
@@ -46,7 +46,7 @@
    (resolve-libs classloader coordinates)
    (when-not (empty? require-params)
      (if (every? sequential? require-params)
-       (map require require-params)
+       (apply require require-params)
        (require require-params))))
 
   ([coordinates require-params]

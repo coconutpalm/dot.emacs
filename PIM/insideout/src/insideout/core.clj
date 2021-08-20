@@ -5,9 +5,6 @@
    [clojure.string              :as string]
    [clojure.pprint              :as pp]
 
-   [boot.from.clojure.tools.cli :as cli]
-   [boot.from.table.core        :as table]
-
    [insideout.dynamo            :as dyn]
    [insideout.nrepl             :as nr]
    [util.core                   :as u])
@@ -35,15 +32,16 @@
       (with-out-str (pp/write form :dispatch pp/code-dispatch)))))
 
 (defn emit [boot? argv bootscript inits]
-  (let [boot-use '[clojure.tools.namespace.repl insideout.core insideout.dynamo insideout.nrepl ui.SWT]]
+  (let [requires [['insideout.dynamo :as 'dynamo] ['insideout.nrepl :as 'nrepl-server]]
+        uses '[clojure.tools.namespace.repl]]
     (str
      (string/join
       "\n\n"
       (remove nil?
-       [(pr-boot-form `(ns insideout.user (:use ~@boot-use)))
+              [(pr-boot-form `(ns insideout.user (:require ~@requires) (:use ~@uses)))
         (when inits (with-comments "--init exprs" inits))
         (with-comments "boot script" bootscript)
-        (pr-boot-form
+        #_(pr-boot-form
          `(let [boot?# ~boot?]
             (if-not boot?#
               (when-let [main# (resolve 'insideout.core/start)] (main# ~@argv))
@@ -62,6 +60,9 @@
 
 (defn parse-cli-opts [args]
   [[] {} args])
+
+
+(defn default-script [] (-> "default-script.clj" io/resource slurp))
 
 (defn -main [& args*]
   (let [[arg0 args args*] (if (seq args*)
@@ -99,7 +100,7 @@
               *boot-script*  arg0]
 
       (u/exit-ok
-       (let [bootstr     (or (some->> arg0 slurp) "(resolve-sources) (start! :cider :reveal)")
+       (let [bootstr     (or (some->> arg0 slurp) (default-script))
              scriptstr   (binding [*print-meta* true]
                            (emit boot? args bootstr (:init opts)))]
 
