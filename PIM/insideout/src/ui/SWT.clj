@@ -1,7 +1,6 @@
 (ns ui.SWT
   (:require
    [clojure.core :refer :all]
-   [classlojure.core :refer [base-classloader]]
    [insideout.dynamo :as dynamo]))
 
 
@@ -30,9 +29,9 @@
                   (str "Unsupported OS: " (System/getProperty "os.name"))))
 
 (defonce swt-lib-resolution
-  (dynamo/import-dependencies [swt-lib]
-                              ['[org.eclipse.swt.widgets Display Shell]
-                               '[org.eclipse.swt SWT]]))
+  (dynamo/import-libs [swt-lib]
+                      ['[org.eclipse.swt.widgets Display Shell]
+                       '[org.eclipse.swt SWT]]))
 
 (def display (Display/getDefault))
 
@@ -50,10 +49,10 @@
 
   swt/platform-swt-lib
 
-  (dynamo/import-dependencies [platform-swt-lib]
+  (dynamo/import-libs [platform-swt-lib]
                               '[org.eclipse.swt.widgets Display Shell])
 
-  (dynamo/import-dependencies [platform-swt-lib]
+  (dynamo/import-libs [platform-swt-lib]
                               '[[org.eclipse.swt.widgets Display Shell]
                                 [org.eclipse.swt SWT]])
 

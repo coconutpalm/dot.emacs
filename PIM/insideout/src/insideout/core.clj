@@ -8,30 +8,28 @@
    [insideout.dynamo            :as dyn]
    [insideout.nrepl             :as nr]
    [util.core                   :as u])
+  (:import
+   [java.io FileNotFoundException])
   (:gen-class :main true))
 
 
 (def ^:dynamic *boot-script* nil)
 
-(defn start [args]
-  (dyn/resolve-sources)
-  (nr/start!))
 
-
-(defn- with-comments [tag forms]
+#_(defn- with-comments [tag forms]
   (string/join
    "\n"
    [(format ";; start %s" tag)
     forms
     (format ";; end %s" tag)]))
 
-(defn pr-boot-form [form]
+#_(defn pr-boot-form [form]
   (if (<= @u/*verbosity* 1)
     (pr-str form)
     (let [[op & [msg & more]] form]
       (with-out-str (pp/write form :dispatch pp/code-dispatch)))))
 
-(defn emit [boot? argv bootscript inits]
+#_(defn emit [boot? argv bootscript inits]
   (let [requires [['insideout.dynamo :as 'dynamo]]
         uses '[clojure.tools.namespace.repl clojure.repl]]
     (str
@@ -65,10 +63,11 @@
 
 (defn default-script []
   (-> "default-script.clj" io/resource slurp))
+
 (defn maybe-embedded-user-script []
   (some-> (u/config :startup-file) io/resource slurp))
 
-(defn -main [& args*]
+#_(defn -main [& args*]
   (let [[arg0 args args*] (if (seq args*)
                             [nil nil args*]
                             ["--help" nil ["--help"]])
@@ -133,8 +132,19 @@
 ;; dynamo over a unix domain socket (?) for monitoring/operability?
 
 
-#_(defn -main
-    "public static void main..."
-    [args]
-    (dyn/resolve-sources)
-    (nr/start!))
+
+(defn -main
+  "public static void main..."
+  [& args]
+  (dyn/add-source-folders-to-classpath)
+
+  (try
+    (require '[insideout.user])
+    (when-let [main (some-> 'insideout.user/main resolve var-get)]
+      (apply main (apply into [] args)))
+
+    (System/exit 0)
+
+    (catch FileNotFoundException e
+      (println "Error: Namespace `insideout.user` could not be found.")
+      (System/exit 1))))

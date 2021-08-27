@@ -5,12 +5,32 @@
    [clj-foundation.types :as tp]
    [cemerick.pomegranate :as pom])
   (:import [java.io File]
-           [java.net URL]))
+           [java.net URL]
+           [clojure.lang DynamicClassLoader RT]))
 
 
 (def ^:dynamic *extra-repositories*
   "Extra repositories in addition to Maven Central and Clojars. Default={}"
   {})
+
+(defn ^DynamicClassLoader
+  dyn-classloader []
+  (let [cl (var-get Compiler/LOADER)]
+    (if (instance? DynamicClassLoader cl)
+      cl
+      (let [_   (println cl)
+            dcl (cond
+                  (instance? ClassLoader cl)              (DynamicClassLoader. cl)
+                  (instance? ClassLoader (RT/baseLoader)) (DynamicClassLoader. (RT/baseLoader))
+                  :default                                (DynamicClassLoader. (.getContextClassLoader (Thread/currentThread))))]
+        (alter-var-root Compiler/LOADER (constantly dcl))
+        dcl))))
+
+(comment
+  (dyn-classloader)
+  ,)
+#_(def ^DynamicClassLoader
+    dyn-classloader (delay (->> Compiler/LOADER deref .getParent .getParent)))
 
 
 ;; Encapsulate cemerick.pomegranate
@@ -28,10 +48,10 @@
                                               {"clojars" "https://clojars.org/repo"}
                                               *extra-repositories*)))
   ([coordinates]
-   (resolve-libs (. (. (. Compiler/LOADER deref) getParent) getParent) coordinates)))
+   (resolve-libs (dyn-classloader) coordinates)))
 
 
-(defn require-dependencies
+(defn require-libs
   "Download and require namespace(s) directly from Maven-style dependencies.
 
   [classloader coordinates require-params] or
@@ -50,14 +70,12 @@
        (require require-params))))
 
   ([coordinates require-params]
-   (require-dependencies (. (. (. Compiler/LOADER deref) getParent) getParent)
-                         coordinates
-                         require-params)))
+   (require-libs (dyn-classloader) coordinates require-params)))
 
 
 ;; This has to be a macro because `import` is a macro and has to
 ;; be executed inside the namespace into which the class will be imported.
-(defmacro import-dependencies
+(defmacro import-libs
   "Download and import classes directly from Maven-style dependencies.
 
   [coordinates import-params] where
@@ -70,9 +88,9 @@
                   []
                   (if (every? sequential? import-params)
                     (map (fn [i] `(import ~i)) import-params)
-                    [~(import import-params)]))]
+                    [`(import ~import-params)]))]
     `(do
-       (resolve-libs (. (. (. Compiler/LOADER deref) getParent) getParent) ~coordinates)
+       (resolve-libs (dyn-classloader) ~coordinates)
        ~@imports)))
 
 
@@ -85,15 +103,39 @@
        (take 1 (filter #(->> (File. %) (.exists)) paths)))
      conv-over-config)))
 
-(def ^:dynamic *classpath-dirs* (find-src+test+res))
+(def ^:dynamic *classpath-dirs*
+  (map (fn [rel-path] (-> rel-path File.))
+       (find-src+test+res)))
 
 
-(defn resolve-sources []
-  (map pom/add-classpath *classpath-dirs*))
+(defn add-source-folders-to-classpath
+  "Adds the java.io.File objects in *classpath-dirs* to the classpath."
+  []
+  (println "Adding to classpath:")
+  (clojure.pprint/pprint *classpath-dirs*)
+
+  (let [cl ^DynamicClassLoader (dyn-classloader)]
+    (doseq [f *classpath-dirs*]
+      (.addURL cl (.toURL f)))))
 
 
+(defn classloader-hierarchy
+  "Return the current classloader hierarchy."
+  []
+  (pom/classloader-hierarchy))
+
+
+(defn get-classpath
+  "Return the current classpath."
+  []
+  (pom/get-classpath))
 
 (comment
+  (->> "src" File. .toURL)
+
+  (let [^DynamicClassLoader cl (dyn-classloader)]
+    (-> cl (.addURL (->> "src" File. .toURL))))
+
   ;; Need service classloader management life cycle
   ;;      add deps to service classloader
   ;;      event bus for service comms

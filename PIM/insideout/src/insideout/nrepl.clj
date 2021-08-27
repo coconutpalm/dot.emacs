@@ -25,7 +25,7 @@
            []}                          ;Defensive programming
 
    :cider {:dependencies
-           '[[cider/cider-nrepl "0.26.0-SNAPSHOT"]
+           '[[cider/cider-nrepl "0.26.0"]
              [refactor-nrepl "2.5.1"]]
            :requires
            [['cider.nrepl :as 'cider]
@@ -59,8 +59,8 @@
 
 
 ;; Dynamically load dependencies when (require)'d
-(dyn/require-dependencies (deps :nrepl)
-                          (reqs :nrepl))
+(dyn/require-libs (deps :nrepl)
+                  (reqs :nrepl))
 
 
 (defn- wrap-init-vars
@@ -145,7 +145,7 @@
   (let [sources (mapcat deps modules)
         requires (mapcat reqs modules)]
 
-    (dyn/require-dependencies sources requires)
+    (dyn/require-libs sources requires)
     (mapcat mids modules)))
 
 
