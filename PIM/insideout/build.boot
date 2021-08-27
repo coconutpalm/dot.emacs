@@ -45,7 +45,7 @@
   []
   (require 'boot.repl)
   (swap! @(resolve 'boot.repl/*default-dependencies*)
-         concat '[[cider/cider-nrepl "0.26.0-SNAPSHOT"]
+         concat '[[cider/cider-nrepl "0.26.0"]
                   [refactor-nrepl "2.5.1"]])
   (swap! @(resolve 'boot.repl/*default-middleware*)
          concat '[cider.nrepl/cider-middleware
