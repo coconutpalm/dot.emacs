@@ -140,7 +140,7 @@
 
   (try
     (require '[insideout.user])
-    (when-let [main (some-> 'insideout.user/main resolve var-get)]
+    (when-let [main (some-> 'insideout.user/-main resolve var-get)]
       (apply main (apply into [] args)))
 
     (System/exit 0)

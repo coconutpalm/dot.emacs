@@ -25,7 +25,7 @@
            []}                          ;Defensive programming
 
    :cider {:dependencies
-           '[[cider/cider-nrepl "0.26.0"]
+           '[[cider/cider-nrepl "0.26.2"]
              [refactor-nrepl "2.5.1"]]
            :requires
            [['cider.nrepl :as 'cider]

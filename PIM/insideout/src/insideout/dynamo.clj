@@ -15,16 +15,24 @@
 
 (defn ^DynamicClassLoader
   dyn-classloader []
-  (let [cl (var-get Compiler/LOADER)]
+  (let [cl (-> (Thread/currentThread) .getContextClassLoader)]
     (if (instance? DynamicClassLoader cl)
       cl
-      (let [_   (println cl)
-            dcl (cond
-                  (instance? ClassLoader cl)              (DynamicClassLoader. cl)
-                  (instance? ClassLoader (RT/baseLoader)) (DynamicClassLoader. (RT/baseLoader))
-                  :default                                (DynamicClassLoader. (.getContextClassLoader (Thread/currentThread))))]
-        (alter-var-root Compiler/LOADER (constantly dcl))
+      (let [dcl (DynamicClassLoader. cl)]
+        (-> (Thread/currentThread) (.setContextClassloader dcl))
         dcl))))
+
+#_(defn ^DynamicClassLoader
+    dyn-classloader []
+    (let [cl (var-get Compiler/LOADER)]
+      (if (instance? DynamicClassLoader cl)
+        cl
+        (let [dcl (cond
+                    (instance? ClassLoader cl)              (DynamicClassLoader. cl)
+                    (instance? ClassLoader (RT/baseLoader)) (DynamicClassLoader. (RT/baseLoader))
+                    :default                                (DynamicClassLoader. (.getContextClassLoader (Thread/currentThread))))]
+          (alter-var-root Compiler/LOADER (constantly dcl))
+          dcl))))
 
 (comment
   (dyn-classloader)
@@ -104,19 +112,16 @@
      conv-over-config)))
 
 (def ^:dynamic *classpath-dirs*
-  (map (fn [rel-path] (-> rel-path File.))
+  (map (fn [rel-path] (-> rel-path File. .toURL))
        (find-src+test+res)))
 
 
 (defn add-source-folders-to-classpath
   "Adds the java.io.File objects in *classpath-dirs* to the classpath."
   []
-  (println "Adding to classpath:")
-  (clojure.pprint/pprint *classpath-dirs*)
-
   (let [cl ^DynamicClassLoader (dyn-classloader)]
-    (doseq [f *classpath-dirs*]
-      (.addURL cl (.toURL f)))))
+    (doseq [u *classpath-dirs*]
+      (.addURL cl u))))
 
 
 (defn classloader-hierarchy

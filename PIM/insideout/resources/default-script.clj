@@ -15,7 +15,7 @@
   (println "automatically included in the classpath in the usual way.")
   (println)
 
-  (dynamo/resolve-sources)
+  (dynamo/add-source-folders-to-classpath)
   (nrepl-server/start! :cider)
 
   (println "nrepl started.")
