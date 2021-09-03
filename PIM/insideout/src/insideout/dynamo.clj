@@ -103,9 +103,9 @@
 
 
 (defn find-src+test+res []
-  (let [conv-over-config [["src/main/clojure" "src/clojure" "src"]
-                          ["src/main/resources" "resources"]
-                          ["src/test/clojure" "test/clojure" "test"]]]
+  (let [conv-over-config [["src/main/clojure" "src/clojure" "src/main" "src"]
+                          ["src/main/resources" "src/resources" "resources"]
+                          ["src/test/clojure" "test/clojure" "src/test" "test"]]]
     (mapcat
      (fn [paths]
        (take 1 (filter #(->> (File. %) (.exists)) paths)))
