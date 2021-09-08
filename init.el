@@ -954,6 +954,7 @@ Approximates the rules of `clean-buffer-list'."
     ("C-p" . previous-line)
     ("C-n" . next-line)
     ("C-f" . isearch-forward)
+    ("S-C-f" . isearch-forward-regexp)
     ("C-r" . isearch-backward)
     ("C-m" . term-send-raw)
     ("M-f" . term-send-forward-word)
@@ -2387,6 +2388,12 @@ assuming it is in a maven-style project."
   (require 'sotclojure-on))
 
 
+;; Clojurescript/Reframe support
+(use-package re-jump
+  :straight (:type git :host github :repo "oliyh/re-jump.el"))
+
+
+
 ;; Lispy - VI-like keybindings to paredit (https://github.com/abo-abo/lispy)
 (use-package lispy
   :ensure t
@@ -3113,8 +3120,9 @@ buffer's."
 
 (global-set-key (kbd "C-s") 'save-and-prompt) ; Was isearch-forward
 (global-set-key (kbd "C-f") 'isearch-forward) ; Was find-file
+(global-set-key (kbd "S-C-f") 'isearch-forward-regexp) ; Was search/replace
 (define-key isearch-mode-map (kbd "C-f") 'isearch-repeat-forward)
-(global-set-key (kbd "S-C-f") 'query-replace)
+(global-set-key (kbd "S-M-f") 'query-replace)
 (global-set-key (kbd "M-o") 'helm-find-files)
 (global-set-key (kbd "s-o") 'helm-find-files)
 
