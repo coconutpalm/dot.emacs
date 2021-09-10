@@ -153,12 +153,13 @@
       some_name          -> :some-name
       customer.firstName -> :customer.first-name"
   [name]
-  (re-seq #"([A-Z _/]?[a-z1-9$\.]*)")   ; Seq of tokens: Leading delimeter + following chars
-  (map first)                           ; Take 1st element of each tuple in match seq
-  (map #(str/replace % #"[ _/]" ""))    ; Eliminate explicit delimeter characters
-  (filter #(not (empty? %)))            ; Some tokens will now be empty; throw them out
-  (str/join "-")                        ; Back to a string, joined by "-"
-  (str/lower-case))                     ; ...
+  (->> name
+     (re-seq #"([A-Z _/]*[a-z1-9$\.]*)") ; Seq of tokens: Leading delimeter + following chars
+     (map first)                         ; Take 1st element of each tuple in match seq
+     (map #(str/replace % #"[ _/]" ""))  ; Eliminate explicit delimeter characters
+     (filter #(not (empty? %)))          ; Some tokens will now be empty; throw them out
+     (str/join "-")                      ; Back to a string, joined by "-"
+     (str/lower-case)))                  ; ...
 
 
 (defn keywordize
