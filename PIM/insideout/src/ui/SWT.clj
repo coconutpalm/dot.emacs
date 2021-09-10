@@ -1,10 +1,12 @@
 (ns ui.SWT
-  (:require [ui.SWT-deps])
+  (:require [ui.SWT-deps]
+            [clj-foundation.data :refer [->kebab-case]])
   (:import [org.reflections Reflections]
            [org.reflections.scanners SubTypesScanner]))             ;Requiring the deps loads them
 
 (import '[org.eclipse.swt SWT]
-        '[org.eclipse.swt.widgets Display Shell Composite Widget Layout])
+        '[org.eclipse.swt.widgets Display Shell Composite Widget Layout]
+        '[org.eclipse.swt.opengl GLCanvas])
 
 (defn display [] (Display/getDefault))
 
@@ -27,11 +29,11 @@
   (doseq [init inits]
     (init control)))
 
-(defmacro composite*
-  "Meta-construct the specified SWT class derived from Composite."
-  [clazz style inits]
-  `(fn [parent#]
-     (let [^Composite child# (new ~clazz parent# ~style)]
+(defmacro widget*
+  "Meta-construct the specified SWT class derived from Widget."
+  [^Class clazz ^Integer style inits]
+  `(fn [^Composite parent#]
+     (let [child# (new ~clazz parent# ~style)]
        (run-inits child# ~inits)
        child#)))
 
@@ -47,22 +49,42 @@
   (let [sty (if (= style SWT/DEFAULT)
               SWT/SHELL_TRIM
               style)]
-    (composite* Shell sty (or inits []))))
+    (widget* Shell sty (or inits []))))
+
+
+(defn widget-ctors [classes]
+  (map (fn [clazz]
+                     (let [name (.getName clazz)
+                           doc (str "Construct a " name
+                                    "\n\nhttps://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fapi%2F"
+                                    (.replaceAll name "\\." "%2F") ".html")
+                           name-sym (symbol name)
+                           fn-name (symbol (-> (.getSimpleName clazz) ->kebab-case))]
+                       `(defn ~fn-name
+                          ~doc
+                          [style# & inits#]
+                          (widget* ~name-sym style# (or inits# [])))))
+                   classes))
 
 (def subtype-index (Reflections. (to-array [(SubTypesScanner.)])))
 
 (def swt-composites (->> (.getSubTypesOf subtype-index Composite)
                        (seq)
-                       (remove #(= Shell %))))
+                       (remove #{Shell GLCanvas})))
 
-(->> swt-composites
-   (map (fn [clazz]
-          [clazz {:simple-name (.getSimpleName clazz)
-                  :kebab-name ()}])))
+`[~@(widget-ctors swt-composites)]
+
+#_(defmacro composite-ctors []
+  (let [ctors (widget-ctors swt-composites)]
+    `[~@ctors]))
+
+#_(composite-ctors)
 
 (def swt-widgets (->> (.getSubTypesOf subtype-index Widget)
                     (seq)
                     (remove #(.isAssignableFrom Composite %))))
+
+`[~@(widget-ctors swt-widgets)]
 
 (def swt-layouts (-> (.getSubTypesOf subtype-index Layout)
                     (seq)))
@@ -168,7 +190,11 @@
 
   (.readAndDispatch (display))
 
-  (let [s (shell SWT/DEFAULT)]
+  (let [s (shell SWT/DEFAULT
+                 #(.setText % "Example SWT app")
+                 #(.setLayout % (FillLayout.))
+                 (group SWT/BORDER
+                        #(.setText "Example group")))]
     (event-loop! s))
 
 
