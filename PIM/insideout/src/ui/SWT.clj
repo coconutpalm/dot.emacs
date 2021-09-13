@@ -5,7 +5,9 @@
            [org.reflections.scanners SubTypesScanner]))             ;Requiring the deps loads them
 
 (import '[org.eclipse.swt SWT]
-        '[org.eclipse.swt.widgets Display Shell Composite Widget Layout]
+        '[org.eclipse.swt.layout RowLayout]
+        '[org.eclipse.swt.widgets Display Shell Composite Widget Layout
+          Tray TaskBar TaskItem ScrollBar]
         '[org.eclipse.swt.opengl GLCanvas])
 
 (defn display [] (Display/getDefault))
@@ -52,7 +54,7 @@
     (widget* Shell sty (or inits []))))
 
 
-(defn widget-ctors [classes]
+(defn clazzes->ctors [classes]
   (map (fn [clazz]
                      (let [name (.getName clazz)
                            doc (str "Construct a " name
@@ -72,19 +74,22 @@
                        (seq)
                        (remove #{Shell GLCanvas})))
 
-`[~@(widget-ctors swt-composites)]
+(defmacro composite-ctors []
+    (let [ctors (clazzes->ctors swt-composites)]
+      `[~@ctors]))
 
-#_(defmacro composite-ctors []
-  (let [ctors (widget-ctors swt-composites)]
-    `[~@ctors]))
-
-#_(composite-ctors)
+(composite-ctors)
 
 (def swt-widgets (->> (.getSubTypesOf subtype-index Widget)
                     (seq)
-                    (remove #(.isAssignableFrom Composite %))))
+                    (remove #(.isAssignableFrom Composite %))
+                    (remove #{Tray TaskBar TaskItem ScrollBar})))
 
-`[~@(widget-ctors swt-widgets)]
+(defmacro widget-ctors []
+  (let [ctors (clazzes->ctors swt-widgets)]
+    `[~@ctors]))
+
+(widget-ctors)
 
 (def swt-layouts (-> (.getSubTypesOf subtype-index Layout)
                     (seq)))
@@ -192,9 +197,13 @@
 
   (let [s (shell SWT/DEFAULT
                  #(.setText % "Example SWT app")
-                 #(.setLayout % (FillLayout.))
+                 #(.setLayout % (RowLayout. SWT/VERTICAL))
+                 (label SWT/NULL
+                        #(.setText % "Label"))
+                 (combo SWT/BORDER
+                        #(.setText % "Combo text"))
                  (group SWT/BORDER
-                        #(.setText "Example group")))]
+                        #(.setText % "Example group")))]
     (event-loop! s))
 
 
