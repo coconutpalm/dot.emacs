@@ -6,6 +6,7 @@
             [clj-foundation.patterns :refer [nothing]]
             [clj-foundation.data :refer [->kebab-case setter nothing->identity]])
   (:import [clojure.lang IFn Keyword Atom Reflector]
+           [java.io Closeable]
            [org.reflections Reflections]
            [org.reflections.scanners SubTypesScanner]))             ;Requiring the deps loads them
 
@@ -102,12 +103,16 @@
   [& inits]
   (let [[style
          inits] (extract-style-from-args inits)
-        style (nothing->identity SWT/SHELL_TRIM style)
-        style (if (= style SWT/DEFAULT)
-                SWT/SHELL_TRIM
-                style)]
-    (widget* Shell style (or inits []))))
+        style   (nothing->identity SWT/SHELL_TRIM style)
+        style   (if (= style SWT/DEFAULT)
+                  SWT/SHELL_TRIM
+                  style)
+        init    (widget* Shell style (or inits []))]
 
+    (fn [disp]
+      (let [sh (init disp)]
+        (.open sh)
+        sh))))
 
 
 (defn- clazzes->ctors [classes]
@@ -213,106 +218,56 @@
 (defn async-exec!
   "Synonym for Display.getDefault().asyncExec( () -> f() ); "
   [f]
-  (.asyncExec (display) f))
+  (.asyncExec (display) (runnable-fn f)))
 
 (defn- process-event
-  "Process a single event as long as Shell sa isn't disposed or Atom sa contains `true`."
-  [d sa]
-  (let [app-disposed (cond
-                       (instance? Atom sa) @sa
-                       :default            (.isDisposed sa))]
-    (ui [app-disposed
-         (and (not app-disposed)
-              (.readAndDispatch d))])))
+  "Process a single event iff Shell sh isn't disposed."
+  [d sh]
+  (let [disposed (.isDisposed sh)]
+    [disposed
+     (and (not disposed)
+          (.readAndDispatch d))]))
 
 (defn process-pending-events!
   "Process events until the event queue is exhausted."
   ([]
    (process-pending-events! (display)))
   ([display]
-   (if (on-ui-thread?)
-     (while (.readAndDispatch display))
-     (ui (while (.readAndDispatch display))))))
+   (while (.readAndDispatch display))))
 
-(defn open
-  "Open a shell given its init function.  Returns the opened shell object.  This doesn't spin the
-  event loop; if you don't have something else spinning the event loop, you may prefer to call `event-loop!`
-  instead."
-  [init-shell]
-  (let [d (display)
-        s (cond (instance? Shell init-shell) init-shell
-                (fn? init-shell)             (ui (init-shell d))
-                :default                     (throw (ex-info (str "Can't make a shell from "
-                                                                  init-shell) {:sh init-shell})))]
-    (ui
-     (when-not (.isVisible s)
-       (.open s)))
-    s))
 
 (defn event-loop!
-  "Run the event loop while the specified `sa` shell-or-atom is not disposed or atom contains true."
-  ([sa]
-   (let [d (display)
-         s (cond (instance? Shell sa)  sa
-                 (instance? Atom sa)   sa
-                 (fn? sa)              (ui (sa d)) ; An init function for a Shell
-                 :default              (throw (ex-info (str "Can't make a shell from " sa) {:shell-or-atom sa})))]
+  "Run the event loop while the specified `init` shell-or-fn is not disposed."
+  [init]
+  (let [d (display)
+        s (cond (instance? Shell init)  init
+                (fn? init)              (init d)
+                :default                (throw (ex-info (str "Can't make a shell from " init) {:shell-or-init init})))]
 
-     (when (instance? Shell s)
-       (ui
-        (when-not (.isVisible s)
-          (.open s))))
+    (loop [[disposed busy] (process-event d s)]
+      (when (not busy)
+        (.sleep d))
+      (when (not disposed)
+        (recur (process-event d s))))
 
-     (loop [[disposed busy] (process-event d s)]
-       (when (not busy)
-         (ui .sleep d))
-       (when (not disposed)
-         (recur (process-event d s))))
+    (process-pending-events!)))
 
-     (process-pending-events!))))
+
 
 
 (comment
 
-
-  (.readAndDispatch (display))
-
-  (let [s (shell "Example SWT app"
+  (event-loop!
+   (shell "Example SWT app"
+          :layout (RowLayout. SWT/VERTICAL)
+          (label "A. Label")
+          (combo SWT/BORDER "Default text")
+          (group "Example group"
                  :layout (RowLayout. SWT/VERTICAL)
                  (label "A. Label")
-                 (combo SWT/BORDER "Default text")
-                 (group "Example group"
-                        :layout (RowLayout. SWT/VERTICAL)
-                        (label "A. Label")
-                        (text SWT/BORDER "Default text")))]
-    (future (event-loop! s)))
+                 (text SWT/BORDER "Default text"))))
 
+  (ui (.dispose (display)))
 
-  (let [s (shell "Example SWT app"
-                 :layout (RowLayout. SWT/VERTICAL)
-                 (label "A. Label")
-                 (combo SWT/BORDER "Default text")
-                 (group "Example group"
-                        :layout (RowLayout. SWT/VERTICAL)
-                        (label "A. Label")
-                        (text SWT/BORDER "Default text")))]
-    (event-loop! s))
-
-
-
-
-  (clojure.core/require
-   '[clojure.core :refer :all]
-   '[clojure.repl :as repl]
-   '[ui.SWT :as swt])
-
-  swt/platform-swt-lib
-
-  (dynamo/import-libs [platform-swt-lib]
-                      '[org.eclipse.swt.widgets Display Shell])
-
-  (dynamo/import-libs [platform-swt-lib]
-                      '[[org.eclipse.swt.widgets Display Shell]
-                        [org.eclipse.swt SWT]])
 
   ,)
