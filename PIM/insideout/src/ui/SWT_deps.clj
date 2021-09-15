@@ -2,9 +2,9 @@
   (:require
    [insideout.dynamo :as dynamo]))
 
-;; ============================================================================
-;; Dynamically resolve/load SWT lib when this namespace is required
-;; ============================================================================
+;; ======================================================================================
+;; Dynamically resolve/load SWT subsystem dependencies when this namespace is required
+;; ======================================================================================
 
 (defonce os-code
   (let [os-fullname (System/getProperty "os.name")]
