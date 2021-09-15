@@ -116,33 +116,42 @@
   (str/replace (name value) #"[\-_]" replacement))
 
 
-(defn ->camelCase
-  "Translate property-name to camelCase.  Handles hyphenated-names and underscore_names as well as
-  names that are already camelCase."
-  [property-name]
-  (->> (str/split property-name #"[\_-]")
+(defn ->PascalCase
+  "Translate s to PascalCase.  Handles hyphenated-names and underscore_names as well as
+  names that are already PascalCase."
+  [s]
+  (->> (str/split s #"[\_-]")
      (map (f part =>
              (str (str/upper-case (first part))
                   (apply str (rest part)))))
      (str/join)))
 
 
+(defn ->camelCase
+  "Translate argument to camelCase.  Handles hyphenated-names and underscore_names as well as
+  names that are already camelCase."
+  [s]
+  (let [s' (->PascalCase s)]
+    (str (str/lower-case (first s'))
+         (apply str (rest s')))))
+
+
 (defn getter
   "Translate property-name to its Java getter syntax.  Handles hyphenated-names and underscore_names as well as
-  names that are already camelCase."
+  names that are already camelCase or PascalCase."
   [property-name]
   (->> property-name
-     ->camelCase
+     ->PascalCase
      (str "get")))
 
 
 (defn setter
   "Translate property-name to its Java setter syntax.  Handles hyphenated-names and underscore_names as well as
-  names that are already camelCase."
+  names that are already camelCase or PascalCase."
   [property-name]
   (->> property-name
      name
-     ->camelCase
+     ->PascalCase
      (str "set")))
 
 
