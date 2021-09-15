@@ -1,20 +1,17 @@
-(remove-ns 'ui.SWT)
-
 (ns ui.SWT
   (:refer-clojure :exclude [list])
   (:require [ui.SWT-deps]
-            [clj-foundation.patterns :refer [nothing]]
-            [clj-foundation.data :refer [->kebab-case setter nothing->identity]])
-  (:import [clojure.lang IFn Keyword Atom Reflector]
-           [java.io Closeable]
+            [ui.inits :refer [extract-style-from-args widget* widget-classes->inits]]
+            [clj-foundation.data :refer [nothing->identity]])
+  (:import [clojure.lang IFn]
            [org.reflections Reflections]
-           [org.reflections.scanners SubTypesScanner]))             ;Requiring the deps loads them
+           [org.reflections.scanners SubTypesScanner]
+           [org.eclipse.swt SWT]
+           [org.eclipse.swt.layout RowLayout]
+           [org.eclipse.swt.widgets Display Shell Composite Widget Layout
+            Tray TaskBar TaskItem ScrollBar]
+           [org.eclipse.swt.opengl GLCanvas]))
 
-(import '[org.eclipse.swt SWT]
-        '[org.eclipse.swt.layout RowLayout]
-        '[org.eclipse.swt.widgets Display Shell Composite Widget Layout
-          Tray TaskBar TaskItem ScrollBar]
-        '[org.eclipse.swt.opengl GLCanvas])
 
 (defn display [] (Display/getDefault))
 
@@ -32,65 +29,6 @@
 ;; setups is a f: parent => some-control
 ;;  where some-control could be the parent or could be a child
 
-
-(defn- run-inits
-  "Initialize the specified control using the functions in the `inits` seq."
-  [control inits]
-  (doseq [init inits]
-    (init control)))
-
-(defmulti ->init
-  "Convert first and second arguments (from front of vararg list) into an init function.  Returns the
-  function and the number of arguments consumed from the arglist."
-  (fn [arg1 _]
-    (class arg1)))
-
-(defmethod ->init
-  IFn [arg1 _]
-  [arg1 1])
-
-(defmethod ->init
-  String [arg1 _]
-  (letfn [(set-text-on [control]
-            (.setText control arg1))]
-    [set-text-on 1]))
-
-(defmethod ->init
-  Keyword [arg1 arg2]
-  (letfn [(set-property [o]
-            (Reflector/invokeInstanceMethod o
-             (setter arg1)
-             (into-array Object [arg2])))]
-    [set-property 2]))
-
-(defn- args->inits
-  [args]
-  (letfn [(process-args [inits args]
-            (let [arg1        (first args)
-                  arg2        (second args)
-                  [next-init
-                   args-used] (->init arg1 arg2)]
-              (cond
-                (nil? arg2)      (conj inits next-init)
-                (= 1 args-used) (process-args (conj inits next-init) (rest args))
-                (= 2 args-used) (process-args (conj inits next-init) (rest (rest args))))))]
-    (process-args [] args)))
-
-(defn- extract-style-from-args
-  [args]
-  (let [maybe-style (first args)]
-    (if (instance? Integer maybe-style)
-      [maybe-style (rest args)]
-      [nothing args])))
-
-(defmacro widget*
-  "Meta-construct the specified SWT class derived from Widget."
-  [^Class clazz style args]
-  `(fn [^Composite parent#]
-    (let [child# (new ~clazz parent# ~style)
-          inits# (args->inits ~args)]
-      (run-inits child# inits#)
-      child#)))
 
 (defn |
   "Combine the specified SWT style bits for the \"style\" constructor parameter.  A synonym
@@ -114,44 +52,26 @@
         (.open sh)
         sh))))
 
-
-(defn- clazzes->ctors [classes]
-  (map (fn [clazz]
-         (let [name (.getName clazz)
-               doc (str "Construct a " name
-                        "\n\nhttps://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fapi%2F"
-                        (.replaceAll name "\\." "%2F") ".html")
-               name-sym (symbol name)
-               fn-name (symbol (-> (.getSimpleName clazz) ->kebab-case))]
-           `(defn ~fn-name
-              ~doc
-              [& inits#]
-              (let [[style#
-                     inits#] (extract-style-from-args inits#)
-                    style# (nothing->identity SWT/NULL style#)]
-                (widget* ~name-sym style# (or inits# []))))))
-       classes))
-
 (def ^:private subtype-index (Reflections. (to-array [(SubTypesScanner.)])))
 
 (def ^:private swt-composites (->> (.getSubTypesOf subtype-index Composite)
                                  (seq)
                                  (remove #{Shell GLCanvas})))
 
-(defmacro ^:private composite-ctors []
-    (let [ctors (clazzes->ctors swt-composites)]
-      `[~@ctors]))
-(composite-ctors)
+(defmacro ^:private composite-inits []
+    (let [inits (widget-classes->inits swt-composites)]
+      `[~@inits]))
+(composite-inits)
 
 (def ^:private swt-widgets (->> (.getSubTypesOf subtype-index Widget)
                               (seq)
                               (remove #(.isAssignableFrom Composite %))
                               (remove #{Tray TaskBar TaskItem ScrollBar})))
 
-(defmacro ^:private widget-ctors []
-  (let [ctors (clazzes->ctors swt-widgets)]
-    `[~@ctors]))
-(widget-ctors)
+(defmacro ^:private widget-inits []
+  (let [inits (widget-classes->inits swt-widgets)]
+    `[~@inits]))
+(widget-inits)
 
 (def ^:private swt-layouts (-> (.getSubTypesOf subtype-index Layout)
                               (seq)))
@@ -191,15 +111,17 @@
         dt (.getThread (Display/getDefault))]
     (= t dt)))
 
-(defn with-ui* [f]
+(defn with-ui*
+  "Implementation detail: Use `sync-exec!` or `ui` instead."
+  [f]
   (if (on-ui-thread?)
-      (f)
-      (let [r (runnable-fn f)]
-        (.syncExec (display) r)
+    (f)
+    (let [r (runnable-fn f)]
+      (.syncExec (display) r)
 
-        (when @(:exception r)
-          (throw @(:exception r)))
-        @(:result r))))
+      (when @(:exception r)
+        (throw @(:exception r)))
+      @(:result r))))
 
 (defmacro ui
   "Run the specified code on the UI thread and return its results or rethrow exceptions."
@@ -221,7 +143,8 @@
   (.asyncExec (display) (runnable-fn f)))
 
 (defn- process-event
-  "Process a single event iff Shell sh isn't disposed."
+  "Process a single event iff Shell sh isn't disposed.  Returns a pair
+  [shell-disposed? event-queue-not-empty?]"
   [d sh]
   (let [disposed (.isDisposed sh)]
     [disposed
