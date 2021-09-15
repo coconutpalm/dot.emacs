@@ -2093,6 +2093,7 @@ assuming it is in a maven-style project."
   :config
   (setq
    lsp-lens-enable t
+   lsp-lens-place-position 'end-of-line
    lsp-signature-auto-activate nil      ;Because https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
    lsp-completion-provider :capf)
 
@@ -2348,12 +2349,12 @@ assuming it is in a maven-style project."
    ;; lsp-modeline-diagnostics-scope :workspace
 
    ;; popup documentation boxes
-   lsp-ui-doc-enable nil         ;; disable all doc popups
-   lsp-ui-doc-show-with-cursor nil       ;; doc popup for cursor
-   lsp-ui-doc-show-with-mouse t   ;; doc popup for mouse
-   lsp-ui-doc-delay 1            ;; delay in seconds for popup to display
-   lsp-ui-doc-include-signature t ;; include function signature
-   lsp-ui-doc-position 'at-point ;; positioning of doc popup: top bottom at-point
+   ;; lsp-ui-doc-enable nil         ;; disable all doc popups
+   lsp-ui-doc-show-with-cursor nil ;; doc popup for cursor
+   lsp-ui-doc-show-with-mouse t    ;; doc popup for mouse
+   lsp-ui-doc-delay 1              ;; delay in seconds for popup to display
+   lsp-ui-doc-include-signature t  ;; include function signature
+   lsp-ui-doc-position 'at-point   ;; positioning of doc popup: top bottom at-point
    ;; lsp-ui-doc-alignment 'window ;; relative location of doc popup: frame window
 
    ;; code actions and diagnostics text as right-hand side of buffer
@@ -2365,6 +2366,7 @@ assuming it is in a maven-style project."
 
    ;; reference count for functions (assume their maybe other lenses in future)
    lsp-lens-enable t
+   lsp-lens-place-position 'end-of-line
 
    ;; Efficient use of space in treemacs-lsp display
    ;; treemacs-space-between-root-nodes nil
@@ -2625,7 +2627,7 @@ buffer's."
   "Pretty symbols for Clojure code."
   (setq prettify-symbols-alist
         '(("fn" . 955)                  ; lambda
-          ("comp" . ?∘)               ; dot
+          ("comp" . ?∘)                 ; dot
           ("->" . ?→)
           ("->>" . ?↠)
           ("<-" . ?←)
@@ -2633,6 +2635,7 @@ buffer's."
           ("<=" . ?≤)
           (">=" . ?≥)
           ("=" . ?≡)
+          ("not=" . ?≠)
           ("unless" . ?≠))))
 
 (add-hook 'clojure-mode-hook
