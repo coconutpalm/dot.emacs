@@ -2,14 +2,17 @@
   (:refer-clojure :exclude [list])
   (:require [ui.SWT-deps]
             [ui.inits :refer [extract-style-from-args widget* widget-classes->inits]]
-            [clj-foundation.data :refer [nothing->identity]])
+            [clj-foundation.data :refer [nothing->identity ->kebab-case]])
   (:import [clojure.lang IFn]
-           [org.reflections Reflections]
+           [java.lang.reflect Modifier]
+           [org.reflections Reflections ReflectionUtils]
            [org.reflections.scanners SubTypesScanner]
            [org.eclipse.swt SWT]
+           [org.eclipse.swt.events TypedEvent]
+           [org.eclipse.swt.custom SashFormLayout ScrolledCompositeLayout CTabFolderLayout]
            [org.eclipse.swt.layout RowLayout]
            [org.eclipse.swt.widgets Display Shell Composite Widget Layout
-            Tray TaskBar TaskItem ScrollBar]
+            Tray TaskBar TaskItem ScrollBar Item Control]
            [org.eclipse.swt.opengl GLCanvas]))
 
 
@@ -52,9 +55,10 @@
         (.open sh)
         sh))))
 
-(def ^:private subtype-index (Reflections. (to-array [(SubTypesScanner.)])))
+(def ^:private swt-index
+  (-> (Reflections. (to-array [(SubTypesScanner.)]))))
 
-(def ^:private swt-composites (->> (.getSubTypesOf subtype-index Composite)
+(def ^:private swt-composites (->> (.getSubTypesOf swt-index Composite)
                                  (seq)
                                  (remove #{Shell GLCanvas})))
 
@@ -63,28 +67,91 @@
       `[~@inits]))
 (composite-inits)
 
-(def ^:private swt-widgets (->> (.getSubTypesOf subtype-index Widget)
+(def ^:private swt-widgets (->> (.getSubTypesOf swt-index Widget)
                               (seq)
                               (remove #(.isAssignableFrom Composite %))
-                              (remove #{Tray TaskBar TaskItem ScrollBar})))
+                              (remove #(.isAssignableFrom Item %))
+                              (remove #{Control Tray TaskBar TaskItem ScrollBar})))
 
 (defmacro ^:private widget-inits []
   (let [inits (widget-classes->inits swt-widgets)]
     `[~@inits]))
 (widget-inits)
 
-(def ^:private swt-layouts (-> (.getSubTypesOf subtype-index Layout)
-                              (seq)))
+(def ^:private swt-layouts (->> (.getSubTypesOf swt-index Layout)
+                              (seq)
+                              (remove #{SashFormLayout ScrolledCompositeLayout CTabFolderLayout})))
 
-(def ^:private layout-index (Reflections. (to-array ["org.eclipse.swt.layout" (SubTypesScanner. false)])))
+(defn- types-in-package [swt-package]
+  (->> (Reflections. (to-array [(str "org.eclipse.swt." swt-package)
+                              (SubTypesScanner. false)]))
+     (.getAllTypes)
+     (seq)
+     (sort)
+     (map #(Class/forName %))))
 
-(def ^:private swt-layoutdata (->> (.getAllTypes layout-index)
-                                 (seq)))
+(def ^:private swt-layoutdata (types-in-package "layout"))
 
+
+;; =====================================================================================
+;; Generate online docs from class metadata
+
+(defn- layoutdata-by-layout []
+  (letfn [(layout-type [clazz]
+            (-> (.getSimpleName clazz)
+               ->kebab-case
+               (.split "\\-")
+               first))]
+    (reduce (fn [cur layout-class]
+              (let [key (layout-type layout-class)
+                    layoutdata (filter #(= (layout-type %) key) swt-layoutdata)]
+                (conj cur [layout-class layoutdata])))
+            {}
+            swt-layouts)))
+
+(defn- fn-names<- [classes]
+  (letfn [(fn-name<- [clazz]
+            (-> (.getSimpleName clazz) ->kebab-case))]
+    (sort-by first (map (fn [c] [(fn-name<- c) c]) classes))))
+
+;; getAllMethods(someClasses,
+;;               Predicates.and(
+;;                       withModifier(Modifier.PUBLIC),
+;;                       withPrefix("get"),
+;;                       withParametersCount(0))
+
+#_(defn- getters [^Class clazz]
+  (ReflectionUtils/getAllMethods clazz (-> (ReflectionUtils/withModifier Modifier/PUBLIC)
+                                           (.and (ReflectionUtils/withPrefix "get"))
+                                           (.and (ReflectionUtils/withParametersCount 0)))))
+
+(defn- setters [^Class clazz]
+  (ReflectionUtils/getAllMethods clazz (-> (ReflectionUtils/withModifier Modifier/PUBLIC)
+                                           (.and (ReflectionUtils/withPrefix "set"))
+                                           (.and (ReflectionUtils/withParametersCount 1)))))
+
+(def ^:private documentation
+  {:composites (fn-names<- (conj swt-composites Shell))
+   :widgets (fn-names<- swt-widgets)
+   :items (->> (.getSubTypesOf swt-index Item) (seq) (sort-by #(.getSimpleName %)))
+   :events (->> (.getSubTypesOf swt-index TypedEvent) (seq) (sort-by #(.getSimpleName %)))
+   :graphics (types-in-package "graphics")
+   :program (types-in-package "program")
+   :layout-managers (layoutdata-by-layout)})
+
+(defn swtdoc
+  "Print documentation on the SWT library support."
+  [& more]
+  (let [topic (first more)]
+    (cond
+      (nil? topic)     (keys documentation)
+      (keyword? topic) (get documentation topic (str topic " not found"))
+      :else            "Unrecognized search command")))
 
 ;; =====================================================================================
 ;; A wrapped nullary function that captures its result or thrown exception in the
 ;; `result` and `exception` atoms respectively.  Construct using `runnable-fn`
+
 (defrecord RunnableFn [f result exception]
   IFn Runnable
   (run [this] (.invoke this))
@@ -176,10 +243,7 @@
     (process-pending-events!)))
 
 
-
-
-(comment
-
+(defn rowlayout-example []
   (event-loop!
    (shell "Example SWT app"
           :layout (RowLayout. SWT/VERTICAL)
@@ -188,7 +252,11 @@
           (group "Example group"
                  :layout (RowLayout. SWT/VERTICAL)
                  (label "A. Label")
-                 (text SWT/BORDER "Default text"))))
+                 (text SWT/BORDER "Default text")))))
+
+(comment
+
+
 
   (ui (.dispose (display)))
 
