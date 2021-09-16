@@ -41,19 +41,31 @@
   if you want to add Eclipse/P2 dependencies."
   {})
 
+(def ^:private dynamo-loader (atom nil))
 
 (defn ^DynamicClassLoader
-  dyn-classloader []
+  dyn-classloader
+  "Return the dynamic classloader for the thread's context classloader.  If a dynamic
+  classloader hasn't been added to the current thread, one is registered."
+  []
   (let [cl (-> (Thread/currentThread) .getContextClassLoader)]
     (if (instance? DynamicClassLoader cl)
-      cl
-      (let [dcl (DynamicClassLoader. cl)]
+      (reset! dynamo-loader cl)
+      (let [dcl (or @dynamo-loader (DynamicClassLoader. cl))]
         (-> (Thread/currentThread) (.setContextClassloader dcl))
-        dcl))))
+        (reset! dynamo-loader dcl)))))
 
-(comment
-  (dyn-classloader)
-  ,)
+
+(defn ^Thread new-thread
+  "Return a new thread preconfigured with the dynamo classloader.  Doesn't call `start`."
+  ([]
+   (let [t (Thread.)]
+     (.setContextClassloader t (dyn-classloader))
+     t))
+  ([runnable]
+   (let [t (Thread. runnable)]
+     (.setContextClassloader t (dyn-classloader))
+     t)))
 
 
 ;; Stub for supporting https://github.com/OpenNTF/p2-layout-provider
