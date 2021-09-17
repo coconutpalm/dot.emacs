@@ -3,7 +3,7 @@
   where the initial argument is the object to init and subsequent arguments (if any)
   define the values used for initialization."
   (:require [clj-foundation.patterns :refer [nothing]]
-            [clj-foundation.data :refer [->kebab-case setter nothing->identity]])
+            [clj-foundation.data :refer [->camelCase ->kebab-case setter nothing->identity]])
   (:import [clojure.lang IFn Keyword Reflector]
            [java.lang.reflect Modifier]
            [org.eclipse.swt.widgets Composite]))
@@ -34,7 +34,7 @@
 (defmethod ->init
   Keyword [arg1 arg2]
   (letfn [(set-property [o]
-            (let [field-name  (name arg1)
+            (let [field-name  (->camelCase arg1)
                   field       (->> (.getClass o)
                                  (.getDeclaredFields)
                                  (filter (fn [field]
