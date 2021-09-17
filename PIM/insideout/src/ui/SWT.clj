@@ -19,18 +19,10 @@
 
 (defn display [] (Display/getDefault))
 
-;; We have:
-;;
-;; Composite/Control
-;; Properties
-;; xxxListener
-;;
-;; Want:
-;;
 ;; All the above, plus derived, reactive (cell) properties
 ;; Lazy sequences of property values?  (via continuations)
 
-;; setups is a f: parent => some-control
+;; inits are f: arg-kvs => parent-control => anything
 ;;  where some-control could be the parent or could be a child
 
 
