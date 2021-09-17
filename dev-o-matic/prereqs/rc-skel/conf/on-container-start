@@ -51,6 +51,12 @@ if [ -z `ls idea* 2>/dev/null` ]; then
     ln -s idea.sh idea
 fi
 
+# pgmig  - Postgres migrator based on Migratus
+if [ -z `ls pgmig 2>/dev/null` ]; then
+    PGMIG_VERSION=`latest-release https://github.com/leafclick/pgmig.git`
+    PGMIG_URL="https://github.com/leafclick/pgmig/releases/download/${PGMIG_VERSION}/pgmig-${PGMIG_VERSION%?}-linux-amd64.zip"
+    wget -nc -O - "$PGMIG_URL" | gunzip -
+fi
 
 # Homebrew & friends
 if [ ! -d /home/linuxbrew/.linuxbrew ]; then

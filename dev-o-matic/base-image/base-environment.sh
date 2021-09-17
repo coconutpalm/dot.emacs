@@ -71,6 +71,9 @@ chmod +x /usr/local/bin/kubectl
 # google-drive-ocamlfuse
 add-apt-repository ppa:alessandro-strada/ppa
 
+# Inkscape
+add-apt-repository ppa:inkscape.dev/stable-1.1
+
 # Chrome
 wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
 sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list'
@@ -81,30 +84,35 @@ install -o root -g root -m 644 /tmp/microsoft.gpg /etc/apt/trusted.gpg.d/
 sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge-dev.list'
 rm /tmp/microsoft.gpg
 
-
 # aws-okta is now distributed via packagecloud.io, so we install its repository and...
 curl -s https://packagecloud.io/install/repositories/segment/aws-okta/script.deb.sh | sudo bash
 
+# emacs27 (because xwidgets isn't included in Ubuntu's stock build)
+#
+# From https://launchpad.net/~kelleyk/+archive/ubuntu/emacs
+add-apt-repository ppa:kelleyk/emacs
+
+# Peek screen recorder
+add-apt-repository ppa:peek-developers/stable
+
+
+#
 # Now update and install all the extra-packages
+#
 apt-get update
 apt-get install -y $(cat extra-packages.lst)
+#
+#
+#
 
 # Manual installs now that dependencies are installed
 
 wget https://downloads.rclone.org/rclone-current-linux-amd64.deb
 dpkg -i rclone-current-linux-amd64.deb
 
-# emacs (because xwidgets isn't included in Ubuntu's stock build)
-#
-# From https://launchpad.net/~kelleyk/+archive/ubuntu/emacs
-add-apt-repository ppa:kelleyk/emacs
-apt-get update
-apt-get -y install emacs27
-
-# Peek screen recorder
-add-apt-repository ppa:peek-developers/stable
-apt-get update
-apt-get -y install peek
+# DBeaver database tool
+wget https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
+dpkg -i dbeaver-ce_latest_amd64.deb
 
 # code
 wget -O code.deb 'https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64'

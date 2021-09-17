@@ -74,7 +74,8 @@ RUN mkdir -p /run/user/"${UID:?}"/dbus-1/ && \
    chown -R "${USER:?}:" /run/user/"${UID:?}"/
 
 # Configure SSHd
-RUN mkdir /run/sshd /home/${USER}/.ssh
+RUN mkdir /run/sshd
+RUN mkdir /home/${USER}/.ssh; echo "Ensure ~/.ssh"
 COPY /build/.ssh/ /home/${USER}/.ssh
 RUN chown -R ${USER}:${USER} /home/${USER}/.ssh && chmod 700 /home/${USER}/.ssh
 
