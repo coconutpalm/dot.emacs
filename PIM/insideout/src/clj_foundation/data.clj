@@ -221,13 +221,16 @@
          (string->keyword (name string))) list))
   ([list naming-exceptions]
    (map (fn [string]
-         (string->keyword (name string) naming-exceptions)) list)))
+          (string->keyword (name string) naming-exceptions)) list)))
 
 
-(defn constant-seq
-  "Return an infinite lazy seq of cs"
-  [c]
-  (lazy-seq (cons c (constant-seq c))))
+(defn array
+  "Return a Java array: `clazz`[] {`elements`...}
+
+  Optionally, `clazz` may be a single-element vector (for syntactic sugar) as in:
+    (array [Integer] 1 2 3)"
+  [clazz & elements]
+  (into-array (if (vector? clazz) (first clazz) clazz) elements))
 
 
 (defn set-map-entries
