@@ -4,6 +4,7 @@
             [ui.inits :refer [extract-style-from-args widget* widget-classes->inits]]
             [clj-foundation.data :refer [nothing->identity ->kebab-case]])
   (:import [clojure.lang IFn]
+           [java.util.function Predicate]
            [java.lang.reflect Modifier]
            [org.reflections Reflections ReflectionUtils]
            [org.reflections.scanners SubTypesScanner]
@@ -114,24 +115,26 @@
             (-> (.getSimpleName clazz) ->kebab-case))]
     (sort-by first (map (fn [c] [(fn-name<- c) c]) classes))))
 
-;; getAllMethods(someClasses,
-;;               Predicates.and(
-;;                       withModifier(Modifier.PUBLIC),
-;;                       withPrefix("get"),
-;;                       withParametersCount(0))
-
 #_(defn- getters [^Class clazz]
   (ReflectionUtils/getAllMethods clazz (-> (ReflectionUtils/withModifier Modifier/PUBLIC)
                                            (.and (ReflectionUtils/withPrefix "get"))
                                            (.and (ReflectionUtils/withParametersCount 0)))))
 
+(defn- fields [^Class clazz]
+  (ReflectionUtils/getAllFields clazz
+                                (into-array Predicate
+                                 [(ReflectionUtils/withModifier Modifier/PUBLIC)])))
+
 (defn- setters [^Class clazz]
-  (ReflectionUtils/getAllMethods clazz (-> (ReflectionUtils/withModifier Modifier/PUBLIC)
-                                           (.and (ReflectionUtils/withPrefix "set"))
-                                           (.and (ReflectionUtils/withParametersCount 1)))))
+  (ReflectionUtils/getAllMethods clazz
+                                 (into-array Predicate
+                                  [(-> (ReflectionUtils/withModifier Modifier/PUBLIC)
+                                      (.and (ReflectionUtils/withPrefix "set"))
+                                      (.and (ReflectionUtils/withParametersCount 1)))])))
 
 (def ^:private documentation
-  {:composites (fn-names<- (conj swt-composites Shell))
+  {:swt {SWT (->> (fields SWT) (map #(.getName %)) (sort))}
+   :composites (fn-names<- (conj swt-composites Shell))
    :widgets (fn-names<- swt-widgets)
    :items (->> (.getSubTypesOf swt-index Item) (seq) (sort-by #(.getSimpleName %)))
    :events (->> (.getSubTypesOf swt-index TypedEvent) (seq) (sort-by #(.getSimpleName %)))
