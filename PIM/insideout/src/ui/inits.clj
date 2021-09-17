@@ -1,7 +1,11 @@
 (ns ui.inits
+  "Defines API for defining and manipulating init functions.  An init function is a function
+  where the initial argument is the object to init and subsequent arguments (if any)
+  define the values used for initialization."
   (:require [clj-foundation.patterns :refer [nothing]]
             [clj-foundation.data :refer [->kebab-case setter nothing->identity]])
   (:import [clojure.lang IFn Keyword Reflector]
+           [java.lang.reflect Modifier]
            [org.eclipse.swt.widgets Composite]))
 
 
@@ -30,9 +34,19 @@
 (defmethod ->init
   Keyword [arg1 arg2]
   (letfn [(set-property [o]
-            (Reflector/invokeInstanceMethod o
-             (setter arg1)
-             (into-array Object [arg2])))]
+            (let [field-name  (name arg1)
+                  field       (->> (.getClass o)
+                                 (.getDeclaredFields)
+                                 (filter (fn [field]
+                                           (and (= field-name (.getName field))
+                                                (not= 0 (bit-and (.getModifiers field) Modifier/PUBLIC))
+                                                (Reflector/paramArgTypeMatch (.getType field) (class arg2)))))
+                                 (first))]
+              (if field
+                (Reflector/setInstanceField o field-name arg2)
+                (Reflector/invokeInstanceMethod o
+                 (setter arg1)
+                 (into-array Object [arg2])))))]
     [set-property 2]))
 
 (defn args->inits
