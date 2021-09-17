@@ -1,5 +1,6 @@
 (ns ui.gridlayout
-  (:require [ui.inits :refer [run-inits args->inits]])
+  (:require [ui.inits :refer [run-inits args->inits]]
+            [clj-foundation.data :refer [set-fields!]])
   (:import [org.eclipse.swt SWT]
            [org.eclipse.swt.layout GridLayout GridData]))
 
@@ -14,8 +15,8 @@
         (run-inits l inits)
         (.setLayout parent (GridLayout.))))))
 
-(defn- grid-data
-  [control]
+(defn- grid-data*
+  [inits control]
   (let [parent        (.getParent control)
         parent-layout (.getLayout parent)
         layout-data   (or (.getLayoutData control) (GridData.))]
@@ -25,24 +26,92 @@
                              (.getSimpleName (class parent-layout))
                              "nil")
                            " but must be GridLayout."))))
+    (run-inits layout-data inits)
     (.setLayoutData control layout-data)
     layout-data))
 
-(defmacro set-fields!
-  [obj & field-kvs]
-  (letfn [(set-field [o [f v]] `(set! (. ~o ~f) ~v))]
-    (let [x (gensym "x")
-          setters (map (partial set-field x) (partition 2 field-kvs))]
-      `(let [~x ~obj]
-         ~@setters
-         ~x))))
+(defn grid-data
+  "Construct and initialize a GridData on the specified control.  A GridLayout must
+  have previously been set on the control's parent."
+  [& more]
+  (partial grid-data* (args->inits more)))
 
-(defn cell-horizontal-fill []
+(defn cell-left-hgrab []
   (fn [control]
-    (let [layout-data (grid-data control)]
+    (let [layout-data (grid-data* [] control)]
+      (set-fields!
+       layout-data
+       horizontalAlignment SWT/LEFT
+       verticalAlignment SWT/CENTER
+       grabExcessHorizontalSpace true
+       grabExcessVerticalSpace false))))
+
+(defn cell-center-hgrab []
+  (fn [control]
+    (let [layout-data (grid-data* [] control)]
+      (set-fields!
+       layout-data
+       horizontalAlignment SWT/CENTER
+       verticalAlignment SWT/CENTER
+       grabExcessHorizontalSpace true
+       grabExcessVerticalSpace false))))
+
+(defn cell-right-hgrab []
+  (fn [control]
+    (let [layout-data (grid-data* [] control)]
+      (set-fields!
+       layout-data
+       horizontalAlignment SWT/RIGHT
+       verticalAlignment SWT/CENTER
+       grabExcessHorizontalSpace true
+       grabExcessVerticalSpace false))))
+
+(defn cell-vgrab []
+  (fn [control]
+    (let [layout-data (grid-data* [] control)]
       (set-fields!
        layout-data
        horizontalAlignment SWT/FILL
-       verticalAlignment SWT/CENTER
+       verticalAlignment SWT/FILL
+       grabExcessHorizontalSpace false
+       grabExcessVerticalSpace true))))
+
+(defn cell-grab-both []
+  (fn [control]
+    (let [layout-data (grid-data* [] control)]
+      (set-fields!
+       layout-data
+       horizontalAlignment SWT/FILL
+       verticalAlignment SWT/FILL
        grabExcessHorizontalSpace true
+       grabExcessVerticalSpace true))))
+
+(defn cell-left []
+  (fn [control]
+    (let [layout-data (grid-data* [] control)]
+      (set-fields!
+       layout-data
+       horizontalAlignment SWT/FILL
+       verticalAlignment SWT/FILL
+       grabExcessHorizontalSpace false
+       grabExcessVerticalSpace false))))
+
+(defn cell-center []
+  (fn [control]
+    (let [layout-data (grid-data* [] control)]
+      (set-fields!
+       layout-data
+       horizontalAlignment SWT/CENTER
+       verticalAlignment SWT/FILL
+       grabExcessHorizontalSpace false
+       grabExcessVerticalSpace false))))
+
+(defn cell-right []
+  (fn [control]
+    (let [layout-data (grid-data* [] control)]
+      (set-fields!
+       layout-data
+       horizontalAlignment SWT/RIGHT
+       verticalAlignment SWT/FILL
+       grabExcessHorizontalSpace false
        grabExcessVerticalSpace false))))

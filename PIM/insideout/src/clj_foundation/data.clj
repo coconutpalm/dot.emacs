@@ -224,6 +224,17 @@
           (string->keyword (name string) naming-exceptions)) list)))
 
 
+(defmacro set-fields!
+  "Set the Java object `obj` fields to the corresponding values in `fields-kvs`."
+  [obj & field-kvs]
+  (letfn [(set-field [o [f v]] `(set! (. ~o ~f) ~v))]
+    (let [x (gensym "x")
+          setters (map (partial set-field x) (partition 2 field-kvs))]
+      `(let [~x ~obj]
+         ~@setters
+         ~x))))
+
+
 (defn array
   "Return a Java array: `clazz`[] {`elements`...}
 
