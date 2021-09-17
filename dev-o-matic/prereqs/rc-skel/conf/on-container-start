@@ -131,9 +131,9 @@ if [ ! -d ~/.localhistory-emacs ]; then
     cd ~/bin && ln -s apache-maven* maven
     cd ~/bin && cat > ~/bin/mvn <<EOF
 #!/bin/bash
-export MAVEN_HOME="~/bin/maven"
-export M2_HOME="~/bin/maven"
-"$MAVEN_HOME/maven/bin/mvn" $@
+export MAVEN_HOME="$HOME/bin/maven"
+export M2_HOME="$HOME/bin/maven"
+"$MAVEN_HOME/bin/mvn" $@
 EOF
     chmod 755 ~/bin/mvn
 fi
