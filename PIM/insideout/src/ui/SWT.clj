@@ -27,6 +27,9 @@
 ;;   * An ui.SWT/top-level-shell atom.  Also set and cleared inside event-loop!
 ;;   * (rename event-loop! -> application ??)
 ;;
+;;   * Ability to background the Display thread in REPL.
+;;   * In REPL, top-level-shell hides; doesn't close.
+;;
 ;;   * A way to pass state into/out-of  UI:
 ;;     - Inits are f: arg-kvs => ( [props parent] => props )
 ;;     - (id! [kw] (fn [props parent] (swap! props assoc [kw parent])))
@@ -35,9 +38,6 @@
 ;;   * A basic InsideOut Shell:
 ;;     - F12 toggles design text editor with run mode using StackLayout
 ;;   * A draggable tabbed view framework using example snippet in Chrome on phone (for "run mode")
-;;
-;;   * Ability to background the Display thread in REPL.
-;;   * In REPL, top-level-shell hides; doesn't close.
 ;;
 ;;   * System tray icon when running, plus menu with show/hide toggle; add new..., etc.
 ;;
