@@ -1,8 +1,11 @@
+(remove-ns 'clj-foundation.data-test)
+
 (ns clj-foundation.data-test
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clj-foundation.unit-test-common :as common]
+            [clj-foundation.patterns :refer [nothing]]
             [clj-foundation.data :refer :all]))
 
 
@@ -47,11 +50,26 @@
 
 
 (deftest replace-nil-test
-  (is (= "" (replace-nil nil "")))
-  (is (= "data" (replace-nil "data" ""))))
+  (is (= "replacement" (replace-nil "replacement" nil)))
+  (is (= "data" (replace-nil "replacement" "data"))))
+
+
+(deftest replace-nothing-test
+  (is (= "replacement" (replace-nothing "replacement" nothing)))
+  (is (= "replacement" (replace-nothing "replacement" nil)))
+  (is (= "data" (replace-nothing "replacement" "data"))))
+
+
+(deftest nothing->identity-test
+  (let [to-valid-value (partial nothing->identity (*))]
+    (is (= 5 (* 5 (to-valid-value nothing))))
+    (is (= 10 (* 5 (to-valid-value 2))))))
 
 
 (deftest identity->nil-test
+  (testing "nothing is always considered an identity"
+    (is (nil?                 (identity->nil nothing))))
+
   (testing "Numbers use zero? as their default identity predicate"
     (is (nil?                (identity->nil 0)))
     (is (= 42                (identity->nil 42))))

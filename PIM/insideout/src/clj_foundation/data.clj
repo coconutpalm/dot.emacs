@@ -47,10 +47,18 @@
 (defn replace-nil
   "Accepts a value that cannot be nil; if it is not nil it returns it, else it
   returns its replacement."
-  [maybe-nil replacement]
+  [replacement maybe-nil]
   (if (nil? maybe-nil)
     replacement
     maybe-nil))
+
+
+(defn replace-nothing
+  "if maybe-value is nil or nothing, return replacement else return value"
+  [replacement maybe-value]
+  (if (p/something? maybe-value)
+    maybe-value
+    replacement))
 
 
 (defn nothing->identity
@@ -63,11 +71,8 @@
   for types where the Nothing type is ill-behaved (e.g.: Strings, Numbers, ...) for a given operation.
 
   Another name for this concept is the monadic zero for the type/operation."
-  [identity-value value]
-
-  (if (p/something? value)
-    value
-    identity-value))
+  [identity-value maybe-value]
+  (replace-nothing identity-value maybe-value))
 
 
 (defn identity->nil
@@ -80,6 +85,7 @@
   If value is empty (for its type's natural definition of empty), returns nil.  Otherwise returns
   value.
 
+  * The `nothing` value (and its synonyms) are identity values
   * Non-numeric values are empty iff (empty? value).
   * Numbers default to zero as their identity value.
   * The identity predicate may optionally be overridden in the second parameter."
@@ -88,25 +94,26 @@
 
   ([value]
    (cond
-     (number? value) (identity->nil value zero?)
-     :else           (identity->nil value empty?))))
+     (p/nothing? value) nil
+     (number? value)    (identity->nil value zero?)
+     :else              (identity->nil value empty?))))
 
 
 (defn translate-nothingness
   "If value is nil or an instance of Nothing, run f and return its result.  Else, return value."
   [value f]
   (if (or (nil? value)
-          (instance? (p/Nothing!) value))
+          (p/nothing? value))
     (f value)
     value))
 
 
 (defn translate-something
-  "If value is not Nothing return value, else run f and return its result."
+  "If value is not Nothing return (f value), else return nothing."
   [value f]
   (if (p/something? value)
-    value
-    (f value)))
+    (f value)
+    p/nothing))
 
 
 
@@ -173,19 +180,42 @@
   (str/replace (str value) match "-"))
 
 
+(defn lowercase-initial-chars
+  "Convert initial characters of s to lower case"
+  ([s] (lowercase-initial-chars "" s))
+  ([prefix s]
+   (if (Character/isUpperCase (.charAt s 0))
+     (lowercase-initial-chars (str prefix (str/lower-case (str (first s))))
+                              (.substring s 1))
+     (str prefix s))))
+
+
+(defn PascalCase->kebab-case
+  [s]
+  (-> s
+     lowercase-initial-chars
+     (str/replace #"([A-Z])"
+                  (fn [match]
+                    (str "-" (str/lower-case (first match)))))))
+
+                                        ;
 (defn ->kebab-case
   "Convert to kebab-case.
 
   Ex. camelCase          -> :camel-case
+      PascalCase         -> :pascal-case
       some_name          -> :some-name
       customer.firstName -> :customer.first-name"
   [name]
+  (letfn [(un-camel-case [s]
+            )])
   (->> name
-     (re-seq #"([A-Z _/]*[a-z1-9$\.]*)") ; Seq of tokens: Leading delimeter + following chars
-     (map first)                         ; Take 1st element of each tuple in match seq
-     (map #(str/replace % #"[ _/]" ""))  ; Eliminate explicit delimeter characters
-     (filter #(not (empty? %)))          ; Some tokens will now be empty; throw them out
-     (str/join "-")                      ; Back to a string, joined by "-"
+     (PascalCase->kebab-case)
+     (re-seq #"[ _/]*([a-z1-9$\.]*)")   ; Seq of tokens: Leading delimeter + following chars
+     (map first)                        ; Take 1st element of each tuple in match seq
+     (map #(str/replace % #"[ _/]" "")) ; Eliminate explicit delimeter characters
+     (filter #(not (empty? %)))         ; Some tokens will now be empty; throw them out
+     (str/join "-")                     ; Back to a string, joined by "-"
      (str/lower-case)))                  ; ...
 
 
