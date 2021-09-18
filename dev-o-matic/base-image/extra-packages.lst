@@ -9,6 +9,7 @@ deepin-icon-theme
 docker-ce
 docker-ce-cli
 elinks
+emacs27
 ffmpeg
 file
 geany
@@ -58,6 +59,7 @@ openclipart-libreoffice
 openssh-client
 openssh-server
 pandoc
+peek
 postgresql
 pulseaudio
 pulseaudio-utils
