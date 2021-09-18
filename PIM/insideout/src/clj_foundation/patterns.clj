@@ -83,6 +83,12 @@
   Nothing)
 
 
+(defn nothing?
+  "Returns true if value is an instance of Nothing and false otherwise"
+  [value]
+  (instance? (class nothing) value))
+
+
 (defn something?
   "Returns value if value is not nothing ; else returns nil."
   [value]
