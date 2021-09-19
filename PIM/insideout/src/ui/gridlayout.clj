@@ -1,6 +1,6 @@
 (ns ui.gridlayout
   (:require [ui.inits :refer [run-inits args->inits]]
-            [clj-foundation.data :refer [set-fields!]])
+            [clj-foundation.interop :refer [set-fields!]])
   (:import [org.eclipse.swt SWT]
            [org.eclipse.swt.layout GridLayout GridData]))
 

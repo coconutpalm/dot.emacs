@@ -1,18 +1,24 @@
+(remove 'ui.SWT)
+
 (ns ui.SWT
   (:refer-clojure :exclude [list])
   (:require [ui.SWT-deps]
-            [ui.inits :refer [extract-style-from-args widget* widget-classes->inits]]
+            [ui.inits :refer [extract-style-from-args widget* widget-classes->inits eclipsedoc-url]]
+            [ui.gridlayout]
+            [clojure.string :as str]
+            [clj-foundation.interop :refer [array]]
+            [clj-foundation.conversions :refer :all]
             [clj-foundation.data :refer [nothing->identity ->kebab-case]])
   (:import [clojure.lang IFn]
            [java.util.function Predicate]
-           [java.lang.reflect Modifier]
+           [java.lang.reflect Modifier Field]
            [org.reflections Reflections ReflectionUtils]
            [org.reflections.scanners SubTypesScanner]
            [org.eclipse.swt SWT]
            [org.eclipse.swt.events TypedEvent]
            [org.eclipse.swt.custom SashFormLayout ScrolledCompositeLayout CTabFolderLayout]
            [org.eclipse.swt.layout RowLayout]
-           [org.eclipse.swt.widgets Display Shell Composite Widget Layout
+           [org.eclipse.swt.widgets Display TypedListener Shell Composite Widget Layout
             Tray TaskBar TaskItem ScrollBar Item Control]
            [org.eclipse.swt.opengl GLCanvas]))
 
@@ -97,8 +103,9 @@
                               (remove #{SashFormLayout ScrolledCompositeLayout CTabFolderLayout})))
 
 (defn- types-in-package [swt-package]
-  (->> (Reflections. (to-array [(str "org.eclipse.swt." swt-package)
-                              (SubTypesScanner. false)]))
+  (->> (Reflections. (array [Object]
+                          (str "org.eclipse.swt." swt-package)
+                          (SubTypesScanner. false)))
      (.getAllTypes)
      (seq)
      (sort)
@@ -133,36 +140,101 @@
                                            (.and (ReflectionUtils/withPrefix "get"))
                                            (.and (ReflectionUtils/withParametersCount 0)))))
 
+(defn- extract-java-meta [xs]
+  (->> xs
+     (map (fn [x] [(symbol (str (.getName x)
+                               (if (instance? Field x)
+                                 ""
+                                 (str "("
+                                      (str/join ", " (map #(symbol (.getSimpleName %)) (.getParameterTypes x)))
+                                      ")"))))
+                  {:type (if (instance? Field x) (.getType x) (.getReturnType x))
+                   :declaring-class (.getDeclaringClass x)}]))
+     (sort-by first)))
+
+
 (defn- fields [^Class clazz]
-  (ReflectionUtils/getAllFields clazz
-                                (into-array Predicate
-                                 [(ReflectionUtils/withModifier Modifier/PUBLIC)])))
+  (->> (.getFields clazz)
+     (filter (fn [field] (not= 0 (bit-and (.getModifiers field) Modifier/PUBLIC))))
+     (extract-java-meta)))
 
 (defn- setters [^Class clazz]
-  (ReflectionUtils/getAllMethods clazz
-                                 (into-array Predicate
-                                  [(-> (ReflectionUtils/withModifier Modifier/PUBLIC)
-                                      (.and (ReflectionUtils/withPrefix "set"))
-                                      (.and (ReflectionUtils/withParametersCount 1)))])))
+  (->> (.getMethods clazz)
+     (filter (fn [method] (and (not= 0 (bit-and (.getModifiers method) Modifier/PUBLIC))
+                              (.startsWith (.getName method) "set"))))
+     (extract-java-meta)))
+
+(defn- non-prop-methods [^Class clazz]
+  (->> (.getMethods clazz)
+     (filter (fn [method] (and (not= 0 (bit-and (.getModifiers method) Modifier/PUBLIC))
+                              (not= Object (.getDeclaringClass method))
+                              (not (.startsWith (.getName method) "get"))
+                              (not (.startsWith (.getName method) "set")))))
+     (extract-java-meta)))
+
+(defn sorted-publics
+  "Like `ns-publics` but returns the results sorted by symbol name."
+  [ns]
+  (if (string? ns)
+    (sorted-publics (symbol ns))
+    (->> (ns-publics ns) vec (sort-by first))))
 
 (def ^:private documentation
-  {:swt {SWT (->> (fields SWT) (map #(.getName %)) (sort))}
-   :composites (fn-names<- (conj swt-composites Shell))
-   :widgets (fn-names<- swt-widgets)
-   :items (->> (.getSubTypesOf swt-index Item) (seq) (sort-by #(.getSimpleName %)))
-   :events (->> (.getSubTypesOf swt-index TypedEvent) (seq) (sort-by #(.getSimpleName %)))
-   :graphics (types-in-package "graphics")
-   :program (types-in-package "program")
-   :layout-managers (layoutdata-by-layout)})
+  {:package {:ui.SWT (sorted-publics 'ui.SWT)
+             :ui.gridlayout (sorted-publics 'ui.gridlayout)}
+   :swt {:SWT {SWT (fields SWT)}
+         :composites (fn-names<- (conj swt-composites Shell))
+         :widgets (fn-names<- swt-widgets)
+         :items (->> (.getSubTypesOf swt-index Item) (seq) (sort-by #(.getSimpleName %)))
+         :events (->> (.getSubTypesOf swt-index TypedEvent) (seq) (sort-by #(.getSimpleName %)))
+         :listeners (->> (.getSubTypesOf swt-index org.eclipse.swt.internal.SWTEventListener)
+                       (filter (fn [clazz] (not (.contains (.getSimpleName clazz) "$"))))
+                       (seq)
+                       (sort-by #(.getSimpleName %)))
+         :graphics (types-in-package "graphics")
+         :program (types-in-package "program")
+         :layout-managers (layoutdata-by-layout)}})
+
 
 (defn swtdoc
   "Print documentation on the SWT library support."
-  [& more]
-  (let [topic (first more)]
-    (cond
-      (nil? topic)     (keys documentation)
-      (keyword? topic) (get documentation topic (str topic " not found"))
-      :else            "Unrecognized search command")))
+  [& query]
+  (letfn [(doc-for-node [node]
+            (cond
+              (class? node)                         {:class node
+                                                     :fields (fields node)
+                                                     :properties (setters node)
+                                                     :methods (non-prop-methods node)
+                                                     :eclipsedoc (eclipsedoc-url node)}
+              (and (map? node)
+                   (not (empty? node))
+                   (keyword? (first (first node)))) {:subtopics (sort (keys node))}
+              (var? node)                           (or (:doc (meta node)) node)
+              :else                                 node))
+
+          (name-str [x] (name (convert clojure.lang.Named x)))
+
+          (traverse [current-doc topic]
+            (cond
+              (map? current-doc)        (get current-doc topic)
+              (sequential? current-doc) (if (sequential? (first current-doc))
+                                          (second (first (filter (fn [x] (>= (.indexOf (name-str (first x)) (name-str topic)) 0)) current-doc)))
+                                          (first (filter (fn [x] (>= (.indexOf (name-str x) (name-str topic)) 0)) current-doc)))
+              :default                  nil))
+
+          (swtdoc* [breadcrumb current-doc query]
+            (if-let [topic (first query)]
+              (if-let [next-doc (traverse current-doc topic)]
+                (swtdoc* (conj breadcrumb topic) next-doc (rest query))
+                (ex-info (str "Couldn't find documentation node: " topic) {:breadcrumb breadcrumb
+                                                                           :next-topic topic
+                                                                           :rest-of-query (rest query)}))
+              {:breadcrumb breadcrumb
+               :result (doc-for-node current-doc)}))]
+
+    (swtdoc* [] documentation query)))
+
+
 
 ;; =====================================================================================
 ;; A wrapped nullary function that captures its result or thrown exception in the
@@ -193,6 +265,7 @@
   (let [t (Thread/currentThread)
         dt (.getThread (Display/getDefault))]
     (= t dt)))
+
 
 (defn with-ui*
   "Implementation detail: Use `sync-exec!` or `ui` instead."

@@ -116,7 +116,6 @@
     p/nothing))
 
 
-
 (defn undasherize
   "Replace all instances of '-' or '_' with replacement"
   [replacement value]
@@ -184,10 +183,12 @@
   "Convert initial characters of s to lower case"
   ([s] (lowercase-initial-chars "" s))
   ([prefix s]
-   (if (Character/isUpperCase (.charAt s 0))
-     (lowercase-initial-chars (str prefix (str/lower-case (str (first s))))
-                              (.substring s 1))
-     (str prefix s))))
+   (if (empty? s)
+     s
+     (if (Character/isUpperCase (.charAt s 0))
+       (lowercase-initial-chars (str prefix (str/lower-case (str (first s))))
+                                (.substring s 1))
+       (str prefix s)))))
 
 
 (defn PascalCase->kebab-case
@@ -254,30 +255,10 @@
           (string->keyword (name string) naming-exceptions)) list)))
 
 
-(defmacro set-fields!
-  "Set the Java object `obj` fields to the corresponding values in `fields-kvs`."
-  [obj & field-kvs]
-  (letfn [(set-field [o [f v]] `(set! (. ~o ~f) ~v))]
-    (let [x (gensym "x")
-          setters (map (partial set-field x) (partition 2 field-kvs))]
-      `(let [~x ~obj]
-         ~@setters
-         ~x))))
-
-
-(defn array
-  "Return a Java array: `clazz`[] {`elements`...}
-
-  Optionally, `clazz` may be a single-element vector (for syntactic sugar) as in:
-    (array [Integer] 1 2 3)"
-  [clazz & elements]
-  (into-array (if (vector? clazz) (first clazz) clazz) elements))
-
-
 (defn set-map-entries
   "Returns a new copy of m where for all [k v] => if k is in entries, v is set to new-value."
   [m entries new-value]
-  (let [new-entries (zipmap entries (constant-seq new-value))]
+  (let [new-entries (zipmap entries (repeatedly #(constantly new-value)))]
     (merge m new-entries)))
 
 

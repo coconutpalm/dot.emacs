@@ -3,6 +3,7 @@
   where the initial argument is the object to init and subsequent arguments (if any)
   define the values used for initialization."
   (:require [clj-foundation.patterns :refer [nothing]]
+            [clj-foundation.interop :refer [array]]
             [clj-foundation.data :refer [->camelCase ->kebab-case setter nothing->identity]])
   (:import [clojure.lang IFn Keyword Reflector]
            [java.lang.reflect Modifier]
@@ -46,7 +47,7 @@
                 (Reflector/setInstanceField o field-name arg2)
                 (Reflector/invokeInstanceMethod o
                  (setter arg1)
-                 (into-array Object [arg2])))))]
+                 (array [Object] arg2)))))]
     [set-property 2]))
 
 (defn args->inits
@@ -79,12 +80,23 @@
       (run-inits child# inits#)
       child#)))
 
+(def ^:private eclipse-help-url-prefix
+  "https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fapi%2F")
+
+(defn eclipsedoc-url
+  "Return the URL for the specified class's documentation at Eclipse."
+  [clazz]
+  (cond
+    (instance? Class clazz) (eclipsedoc-url (.getName clazz))
+    (string? clazz)         (str eclipse-help-url-prefix
+                                 (.replaceAll clazz "\\." "%2F")
+                                 ".html")
+    :else                   (throw (IllegalArgumentException. (str "Invalid class name: " clazz)))))
+
 (defn widget-classes->inits [classes]
   (map (fn [clazz]
          (let [name (.getName clazz)
-               doc (str "Construct a " name
-                        "\n\nhttps://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fapi%2F"
-                        (.replaceAll name "\\." "%2F") ".html")
+               doc (str "Construct a " name "\n\n" (eclipsedoc-url name))
                name-sym (symbol name)
                fn-name (symbol (-> (.getSimpleName clazz) ->kebab-case))]
            `(defn ~fn-name
