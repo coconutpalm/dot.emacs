@@ -1,11 +1,31 @@
-(ns clj-foundation.jre-interop
+(ns clj-foundation.interop
   "Simplify Java object interop"
   (:require [clojure.string :as str]
             [clj-foundation.data :refer [keywordize getter]]))
 
 
 
-(defn get-package
+(defmacro set-fields!
+  "Set the Java object `obj` fields to the corresponding values in `fields-kvs`."
+  [obj & field-kvs]
+  (letfn [(set-field [o [f v]] `(set! (. ~o ~f) ~v))]
+    (let [x (gensym "x")
+          setters (map (partial set-field x) (partition 2 field-kvs))]
+      `(let [~x ~obj]
+         ~@setters
+         ~x))))
+
+
+(defn array
+  "Return a Java array: `clazz`[] {`elements`...}
+
+  Optionally, `clazz` may be a single-element vector (for syntactic sugar) as in:
+    (array [Integer] 1 2 3)"
+  [clazz & elements]
+  (into-array (if (vector? clazz) (first clazz) clazz) elements))
+
+
+(defn package-name
   "Returns the package name for the specified Class"
   [clazz]
   (->> (.split (.getName clazz) "\\.")
@@ -16,13 +36,10 @@
        (apply str)))
 
 
-(defn get-class-name
+(defn class-name
   "Returns the unqualified class name for the specified Class"
   [clazz]
-  (->> (.split (.getName clazz) "\\.")
-       reverse
-       first
-       (apply str)))
+  (.getSimpleName clazz))
 
 
 (defn arity
