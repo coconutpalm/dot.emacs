@@ -47,7 +47,14 @@
   (must-be "Vector/Seq must contain key-value pairs" (even? (count v)))
   (apply assoc {} v))
 
+;; What's in a name?
+(defmethod convert [clojure.lang.Named Class] [_ c]
+  (.getName c))
 
+(defmethod convert [clojure.lang.Named String] [_ x]
+  (symbol x))
+
+;; Date handling
 (defmethod convert [Long Date] [_ d]
   (.getTime d))
 (defmethod convert [Long/TYPE Date] [_ d]

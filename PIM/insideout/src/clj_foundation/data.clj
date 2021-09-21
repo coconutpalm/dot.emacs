@@ -47,10 +47,18 @@
 (defn replace-nil
   "Accepts a value that cannot be nil; if it is not nil it returns it, else it
   returns its replacement."
-  [maybe-nil replacement]
+  [replacement maybe-nil]
   (if (nil? maybe-nil)
     replacement
     maybe-nil))
+
+
+(defn replace-nothing
+  "if maybe-value is nil or nothing, return replacement else return value"
+  [replacement maybe-value]
+  (if (p/something? maybe-value)
+    maybe-value
+    replacement))
 
 
 (defn nothing->identity
@@ -63,11 +71,8 @@
   for types where the Nothing type is ill-behaved (e.g.: Strings, Numbers, ...) for a given operation.
 
   Another name for this concept is the monadic zero for the type/operation."
-  [identity-value value]
-
-  (if (p/something? value)
-    value
-    identity-value))
+  [identity-value maybe-value]
+  (replace-nothing identity-value maybe-value))
 
 
 (defn identity->nil
@@ -80,6 +85,7 @@
   If value is empty (for its type's natural definition of empty), returns nil.  Otherwise returns
   value.
 
+  * The `nothing` value (and its synonyms) are identity values
   * Non-numeric values are empty iff (empty? value).
   * Numbers default to zero as their identity value.
   * The identity predicate may optionally be overridden in the second parameter."
@@ -88,26 +94,26 @@
 
   ([value]
    (cond
-     (number? value) (identity->nil value zero?)
-     :else           (identity->nil value empty?))))
+     (p/nothing? value) nil
+     (number? value)    (identity->nil value zero?)
+     :else              (identity->nil value empty?))))
 
 
 (defn translate-nothingness
   "If value is nil or an instance of Nothing, run f and return its result.  Else, return value."
   [value f]
   (if (or (nil? value)
-          (instance? (p/Nothing!) value))
+          (p/nothing? value))
     (f value)
     value))
 
 
 (defn translate-something
-  "If value is not Nothing return value, else run f and return its result."
+  "If value is not Nothing return (f value), else return nothing."
   [value f]
   (if (p/something? value)
-    value
-    (f value)))
-
+    (f value)
+    p/nothing))
 
 
 (defn undasherize
@@ -116,16 +122,43 @@
   (str/replace (name value) #"[\-_]" replacement))
 
 
-(defn getter
-  [property-name]
-  "Translate property-name to its Java getter syntax.  Handles hyphenated-names and underscore_names as well as
+(defn ->PascalCase
+  "Translate s to PascalCase.  Handles hyphenated-names and underscore_names as well as
+  names that are already PascalCase."
+  [s]
+  (->> (str/split s #"[\_-]")
+     (map (f part =>
+             (str (str/upper-case (first part))
+                  (apply str (rest part)))))
+     (str/join)))
+
+
+(defn ->camelCase
+  "Translate argument to camelCase.  Handles hyphenated-names and underscore_names as well as
   names that are already camelCase."
-  (->> (str/split property-name #"[\_-]")
-       (map (f part =>
-               (str (str/upper-case (first part))
-                    (apply str (rest part)))))
-       (str/join)
-       (str "get")))
+  [s]
+  (let [s' (->PascalCase s)]
+    (str (str/lower-case (first s'))
+         (apply str (rest s')))))
+
+
+(defn getter
+  "Translate property-name to its Java getter syntax.  Handles hyphenated-names and underscore_names as well as
+  names that are already camelCase or PascalCase."
+  [property-name]
+  (->> property-name
+     ->PascalCase
+     (str "get")))
+
+
+(defn setter
+  "Translate property-name to its Java setter syntax.  Handles hyphenated-names and underscore_names as well as
+  names that are already camelCase or PascalCase."
+  [property-name]
+  (->> property-name
+     name
+     ->PascalCase
+     (str "set")))
 
 
 (defn ->SNAKE_CASE
@@ -146,6 +179,47 @@
   (str/replace (str value) match "-"))
 
 
+(defn lowercase-initial-chars
+  "Convert initial characters of s to lower case"
+  ([s] (lowercase-initial-chars "" s))
+  ([prefix s]
+   (if (empty? s)
+     s
+     (if (Character/isUpperCase (.charAt s 0))
+       (lowercase-initial-chars (str prefix (str/lower-case (str (first s))))
+                                (.substring s 1))
+       (str prefix s)))))
+
+
+(defn PascalCase->kebab-case
+  [s]
+  (-> s
+     lowercase-initial-chars
+     (str/replace #"([A-Z])"
+                  (fn [match]
+                    (str "-" (str/lower-case (first match)))))))
+
+                                        ;
+(defn ->kebab-case
+  "Convert to kebab-case.
+
+  Ex. camelCase          -> :camel-case
+      PascalCase         -> :pascal-case
+      some_name          -> :some-name
+      customer.firstName -> :customer.first-name"
+  [name]
+  (letfn [(un-camel-case [s]
+            )])
+  (->> name
+     (PascalCase->kebab-case)
+     (re-seq #"[ _/]*([a-z1-9$\.]*)")   ; Seq of tokens: Leading delimeter + following chars
+     (map first)                        ; Take 1st element of each tuple in match seq
+     (map #(str/replace % #"[ _/]" "")) ; Eliminate explicit delimeter characters
+     (filter #(not (empty? %)))         ; Some tokens will now be empty; throw them out
+     (str/join "-")                     ; Back to a string, joined by "-"
+     (str/lower-case)))                  ; ...
+
+
 (defn keywordize
   "Return dasherized keyword from camelCase underscore_names, namespaced/names, etc.
   See the unit tests for the complete set of supported cases.
@@ -155,13 +229,8 @@
       customer.firstName -> :customer.first-name"
   [name]
   (->> name
-       (re-seq #"([A-Z _/]?[a-z1-9$\.]*)") ; Seq of tokens: Leading delimeter + following chars
-       (map first)                         ; Take 1st element of each tuple in match seq
-       (map #(str/replace % #"[ _/]" ""))  ; Eliminate explicit delimeter characters
-       (filter #(not (empty? %)))          ; Some tokens will now be empty; throw them out
-       (str/join "-")                      ; Back to a string, joined by "-"
-       (str/lower-case)                    ; ...
-       (keyword)))
+     (->kebab-case)
+     (keyword)))
 
 
 (defn string->keyword
@@ -183,19 +252,13 @@
          (string->keyword (name string))) list))
   ([list naming-exceptions]
    (map (fn [string]
-         (string->keyword (name string) naming-exceptions)) list)))
-
-
-(defn constant-seq
-  "Return an infinite lazy seq of cs"
-  [c]
-  (lazy-seq (cons c (constant-seq c))))
+          (string->keyword (name string) naming-exceptions)) list)))
 
 
 (defn set-map-entries
   "Returns a new copy of m where for all [k v] => if k is in entries, v is set to new-value."
   [m entries new-value]
-  (let [new-entries (zipmap entries (constant-seq new-value))]
+  (let [new-entries (zipmap entries (repeatedly #(constantly new-value)))]
     (merge m new-entries)))
 
 

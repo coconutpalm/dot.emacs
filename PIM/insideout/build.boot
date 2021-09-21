@@ -1,21 +1,28 @@
 (set-env!
- :dependencies '[[nrepl                       "0.8.3" :scope "test"]
-                 [org.slf4j/slf4j-nop         "1.7.13" :scope "test"]
-                 [adzerk/boot-jar2bin         "1.2.0" :scope "test"]
-                 [adzerk/boot-reload          "0.6.1" :scope "test"]
+ :dependencies '[[nrepl                                "0.8.3" :scope "test"]
+                 [org.slf4j/slf4j-nop                  "1.7.13" :scope "test"]
+                 [adzerk/boot-jar2bin                  "1.2.0" :scope "test"]
+                 [adzerk/boot-reload                   "0.6.1" :scope "test"]
 
                  ;; Client and server
-                 #_[org.clojure/core.async      "1.3.610"]
-                 [org.clojure/data.xml        "0.0.8"]
-                 [org.slf4j/slf4j-simple      "1.7.5"]
-                 [juji/editscript             "0.5.4"]
+                 #_[org.clojure/core.async               "1.3.610"]
+                 [org.clojure/data.xml                 "0.0.8"]
+                 [org.slf4j/slf4j-simple               "1.7.5"]
+                 [juji/editscript                      "0.5.4"]
 
                  ;; Server-side dependencies
-                 [org.clojure/clojure         "1.10.3"]
-                 [org.clojure/tools.namespace "1.1.0"]
-                 [potemkin                    "0.4.3"]
-                 [clj-commons/pomegranate     "1.2.1"]]
+                 [org.clojure/clojure                  "1.10.3"]
+                 [org.clojure/tools.namespace          "1.1.0"]
+                 [potemkin                             "0.4.3"]
+                 [org.openntf.maven/p2-layout-resolver "1.2.0"]
+                 [clj-commons/pomegranate              "1.2.1"]]
 
+
+
+ :repositories #(conj %
+                      '["artifactory.openntf.org" {:url "https://artifactory.openntf.org/openntf"}]
+                      '["eclipse.org.p2" {:url "http://download.eclipse.org/releases/2021-09"
+                                          :layout "p2"}])
 
  :source-paths #{"src" "test" "resources"}
  :resource-paths #{"src" "resources"})
