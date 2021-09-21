@@ -16,6 +16,7 @@ sudo chgrp $USER /var/run/docker.sock
 export DOCKER_BUILDKIT=0
 export DOCKER_DEV_SCRIPTS="$(dirname $(deref $0))"
 export DOCKER_DEV_BIN="$DOCKER_DEV_SCRIPTS/../bin"
+export DOCKER_DEV_KBIN="$DOCKER_DEV_SCRIPTS/../kbin"
 export DOCKER_DEV="$DOCKER_DEV_SCRIPTS/.."
 
 source $DOCKER_DEV_SCRIPTS/environment
