@@ -49,9 +49,7 @@ RUN mkdir /tmp/.X11-unix/ && chmod 1777 /tmp/.X11-unix/
 COPY service/ /etc/sv/
 RUN ln -sv /etc/sv/sshd /etc/service/sshd && \
    ln -sv /etc/sv/dbus-daemon /etc/service/dbus-daemon && \
-   ln -sv /etc/sv/vncserver /etc/service/vncserver && \
-   ln -sv /etc/sv/vncserver /etc/service/postgresql && \
-   ln -sv /etc/sv/vncserver /etc/service/rabbitmq
+   ln -sv /etc/sv/vncserver /etc/service/vncserver
 
 # Root configuration
 RUN rm -fr /etc/skel && \

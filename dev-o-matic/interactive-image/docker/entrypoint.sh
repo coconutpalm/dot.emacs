@@ -11,6 +11,10 @@ cd /home/$USER_LOGINNAME
 # Allow plenty of open files
 bin/maximize-open-files
 
+# Run init scripts
+/etc/init.d/postgresql start
+/etc/init.d/rabbitmq-server start
+
 # Run the system service daemon (lighter-weight than systemd)
 runsvdir -P /etc/service/ &
 
