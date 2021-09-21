@@ -1,4 +1,4 @@
 #!/bin/sh
 
 exec 2>&1
-exec postgres -D /usr/local/pgsql/data >/var/log/postgres 2>&1
+exec rabbitmq-server start

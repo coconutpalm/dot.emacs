@@ -60,6 +60,7 @@ openssh-client
 openssh-server
 pandoc
 peek
+pgadmin4
 postgresql
 pulseaudio
 pulseaudio-utils
