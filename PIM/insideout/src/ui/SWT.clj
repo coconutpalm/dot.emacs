@@ -332,6 +332,12 @@
     {:child (child-init-fn props parent)
      :props @props}))
 
+;; Make an init function for setting initial "props state" for before (shell ..)
+;; Make an (init [app-behavior]) for after the shell call that takes [props display] and
+;; and sets up the initial app.
+
+;; Make id! hierarchical.  An id! on a Text inside a Composite with an id winds
+;;  up as {:composite-id {:text-id the-text}}
 
 (defn application
   "Run the event loop while the specified `init` shell-or-fn is not disposed."
