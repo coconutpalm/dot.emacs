@@ -339,6 +339,8 @@
 ;; Make id! hierarchical.  An id! on a Text inside a Composite with an id winds
 ;;  up as {:composite-id {:text-id the-text}}
 
+;;  (ap->let the-map & exprs) - Top-level keywords become variables in the let binding
+
 (defn application
   "Run the event loop while the specified `init` shell-or-fn is not disposed."
   [& more]
