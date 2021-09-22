@@ -126,7 +126,7 @@
   "Translate s to PascalCase.  Handles hyphenated-names and underscore_names as well as
   names that are already PascalCase."
   [s]
-  (->> (str/split s #"[\_-]")
+  (->> (str/split (name s) #"[\_-]")
      (map (f part =>
              (str (str/upper-case (first part))
                   (apply str (rest part)))))
@@ -137,7 +137,7 @@
   "Translate argument to camelCase.  Handles hyphenated-names and underscore_names as well as
   names that are already camelCase."
   [s]
-  (let [s' (->PascalCase s)]
+  (let [s' (->PascalCase (name s))]
     (str (str/lower-case (first s'))
          (apply str (rest s')))))
 

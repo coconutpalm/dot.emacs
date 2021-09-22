@@ -12,9 +12,8 @@
 
 (defn run-inits
   "Initialize the specified control using the functions in the `inits` seq."
-  [control inits]
-  (doseq [init inits]
-    (init control)))
+  [props control inits]
+  (doall (map #(apply % props control []) inits)))
 
 (defmulti ->init
   "Convert first and second arguments (from front of vararg list) into an init function.  Returns the
@@ -28,13 +27,13 @@
 
 (defmethod ->init
   String [arg1 _]
-  (letfn [(set-text-on [control]
+  (letfn [(set-text-on [_ control]
             (.setText control arg1))]
     [set-text-on 1]))
 
 (defmethod ->init
   Keyword [arg1 arg2]
-  (letfn [(set-property [o]
+  (letfn [(set-property [_ o]
             (let [field-name  (->camelCase arg1)
                   field       (->> (.getClass o)
                                  (.getDeclaredFields)
@@ -74,10 +73,10 @@
 (defmacro widget*
   "Meta-construct the specified SWT class derived from Widget."
   [^Class clazz style args]
-  `(fn [^Composite parent#]
+  `(fn [props# ^Composite parent#]
     (let [child# (new ~clazz parent# ~style)
           inits# (args->inits ~args)]
-      (run-inits child# inits#)
+      (run-inits props# child# inits#)
       child#)))
 
 (def ^:private eclipse-help-url-prefix

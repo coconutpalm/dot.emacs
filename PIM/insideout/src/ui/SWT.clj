@@ -3,27 +3,30 @@
 (ns ui.SWT
   (:refer-clojure :exclude [list])
   (:require [ui.SWT-deps]
-            [ui.inits :refer [extract-style-from-args widget* widget-classes->inits eclipsedoc-url]]
+            [ui.inits :refer [extract-style-from-args args->inits widget*
+                              widget-classes->inits eclipsedoc-url run-inits]]
             [ui.gridlayout]
             [clojure.string :as str]
             [clj-foundation.interop :refer [array]]
+            [clj-foundation.patterns :refer [nothing]]
             [clj-foundation.conversions :refer :all]
             [clj-foundation.data :refer [nothing->identity ->kebab-case]])
   (:import [clojure.lang IFn]
-           [java.util.function Predicate]
            [java.lang.reflect Modifier Field]
-           [org.reflections Reflections ReflectionUtils]
+           [org.reflections Reflections]
            [org.reflections.scanners SubTypesScanner]
            [org.eclipse.swt SWT]
            [org.eclipse.swt.events TypedEvent]
            [org.eclipse.swt.custom SashFormLayout ScrolledCompositeLayout CTabFolderLayout]
            [org.eclipse.swt.layout RowLayout]
-           [org.eclipse.swt.widgets Display TypedListener Shell Composite Widget Layout
+           [org.eclipse.swt.widgets Display Shell Composite Widget Layout
             Tray TaskBar TaskItem ScrollBar Item Control]
            [org.eclipse.swt.opengl GLCanvas]))
 
 
-(defn display [] (Display/getDefault))
+(def display        (atom nothing))
+(def toplevel-shell (atom nothing))
+(def props          (atom nothing))
 
 ;; All the above, plus derived, reactive (cell) properties
 ;; Lazy sequences of property values?  (via continuations)
@@ -70,8 +73,8 @@
                   style)
         init    (widget* Shell style (or inits []))]
 
-    (fn [disp]
-      (let [sh (init disp)]
+    (fn [props disp]
+      (let [sh (init props disp)]
         (.open sh)
         sh))))
 
@@ -113,6 +116,12 @@
 
 (def ^:private swt-layoutdata (types-in-package "layout"))
 
+
+(defn id!
+  "(swap! props assoc kw parent-control; Names parent-control using kw inside the props."
+  [kw]
+  (fn [props parent]
+    (swap! props assoc kw parent)))
 
 ;; =====================================================================================
 ;; Generate online docs from class metadata
@@ -273,7 +282,7 @@
   (if (on-ui-thread?)
     (f)
     (let [r (runnable-fn f)]
-      (.syncExec (display) r)
+      (.syncExec @display r)
 
       (when @(:exception r)
         (throw @(:exception r)))
@@ -296,7 +305,7 @@
 (defn async-exec!
   "Synonym for Display.getDefault().asyncExec( () -> f() ); "
   [f]
-  (.asyncExec (display) (runnable-fn f)))
+  (.asyncExec @display (runnable-fn f)))
 
 (defn- process-event
   "Process a single event iff Shell sh isn't disposed.  Returns a pair
@@ -310,44 +319,74 @@
 (defn process-pending-events!
   "Process events until the event queue is exhausted."
   ([]
-   (process-pending-events! (display)))
+   (process-pending-events! @display))
   ([display]
    (while (.readAndDispatch display))))
 
 
-(defn event-loop!
+(defn child
+  "Mount the child specified by child-init-fn inside parent passing initial-props-value inside the props atom.
+  Returns a map containing the :child and resulting :props"
+  [child-init-fn initial-props-value parent]
+  (let [props (atom initial-props-value)]
+    {:child (child-init-fn props parent)
+     :props @props}))
+
+
+(defn application
   "Run the event loop while the specified `init` shell-or-fn is not disposed."
-  [init]
-  (let [d (display)
-        s (cond (instance? Shell init)  init
-                (fn? init)              (init d)
-                :default                (throw (ex-info (str "Can't make a shell from " init) {:shell-or-init init})))]
+  [& more]
+  (let [d (Display/getDefault)
+        i (args->inits more)]
 
-    (loop [[disposed busy] (process-event d s)]
-      (when (not busy)
-        (.sleep d))
-      (when (not disposed)
-        (recur (process-event d s))))
+    (try
+      (reset! display d)
+      (swap! props #(nothing->identity {} %))
 
-    (process-pending-events!)))
+      (let [init-results (run-inits props d i)
+            maybe-shell  (first (filter #(instance? Shell %) init-results))
+            s            (if (instance? Shell maybe-shell)
+                           maybe-shell
+                           (throw (ex-info "Couldn't make shell from args" {:args more})))]
+
+        (reset! toplevel-shell s)
+        (loop [[disposed busy] (process-event d s)]
+          (when (not busy)
+            (.sleep d))
+          (when (not disposed)
+            (recur (process-event d s)))))
+
+      (process-pending-events!)
+
+      (catch Throwable t
+        (reset! display nothing)
+        (reset! toplevel-shell nothing)
+        (throw t)))))
+
+(defn background
+  "Runs `f` in a background thread.  Returns the thread."
+  [f]
+  (let [t (Thread. f)]
+    (.start t)
+    t))
 
 
 (defn rowlayout-example []
-  (event-loop!
+  (application
    (shell "Example SWT app"
           :layout (RowLayout. SWT/VERTICAL)
           (label "A. Label")
-          (combo SWT/BORDER "Default text")
+          (combo SWT/BORDER (id! :address/state) "Default text")
           (group "Example group"
                  :layout (RowLayout. SWT/VERTICAL)
                  (label "A. Label")
-                 (text SWT/BORDER "Default text")))))
+                 (text SWT/BORDER (id! :address/zip) "Default text")))))
 
 (comment
 
 
 
-  (ui (.dispose (display)))
+  (ui (.dispose @display))
 
 
   ,)
