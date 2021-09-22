@@ -1142,29 +1142,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (set-face-foreground 'slack-mrkdwn-code-block-face "LightSalmon")
 
   (slack-register-team
-   :name "Rally Health"
+   :name "clojurians"
    :default t
    :token (auth-source-pick-first-password
-           :host "rallyhealth.slack.com"
-           :user "david.orme@rallyhealth.com")
-   :full-and-display-names t
-   :subscribed-channels
-   '((care-echo
-      care-ui
-      connect-fpc
-      domain-unification
-      linux-laptops
-      scala-discussions
-      openapi-codegen
-      backend-bootcamp
-      backend-geeks
-      clojure)))
-
-  (slack-register-team
-   :name "clojurians"
-   :token (auth-source-pick-first-password
            :host "clojurians.slack.com"
-           :user "david@coconut-palm-software.com")
+           :user "djo@coconut-palm-software.com")
    :full-and-display-names t
    :subscribed-channels
    '((announcements

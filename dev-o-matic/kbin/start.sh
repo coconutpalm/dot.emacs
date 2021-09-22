@@ -6,6 +6,10 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 name: development
 
+networking:
+  apiServerAddress: "127.0.0.1"
+  apiServerPort: 7443
+
 nodes:
 - role: control-plane
 
@@ -19,20 +23,28 @@ nodes:
   extraMounts:
   - hostPath: /var/run/docker.sock
     containerPath: /var/run/docker.sock
+    propogation: Bidirectional
     consistency: delegated
   - hostPath: ${DOCKER_DEV_USERSTATE}
     containerPath: target=/home
+    propogation: Bidirectional
     consistency: delegated
   - hostPath: ${DOCKER_DEV_CONFDIR}
     containerPath: /tmp/devrc.rc
+    propogation: Bidirectional
     consistency: delegated
   - hostPath: ${DOCKER_DEV_USERDOCS}
     containerPath: /tmp/devrc.docs
-    consistency: delegated \
+    propogation: Bidirectional
+    consistency: delegated
 
   extraPortMappings:
   - containerPort: 30000
     hostPort: 30000
+    listenAddress: 127.0.0.1
+    protocol: TCP
+  - containerPort: 31000
+    hostPort: 31000
     listenAddress: 127.0.0.1
     protocol: TCP
   - containerPort: 22
