@@ -1,10 +1,15 @@
 # K8s dev-o-matic
 
+## First things first
+
+* Local Docker repository
+* `dev` container working
+
 ## Baseline config
 
 * kind create cluster
 * Specify host directory for k8s storage allocation / configure storage
-* Docker registry inside k8s - https://kind.sigs.k8s.io/docs/user/private-registries/
+* Docker registry inside k8s - https://kind.sigs.k8s.io/docs/user/private-registries/ .  Registry expects to run on port 443, so in k8s one could set up a "registry" service exposing the registry on port 443 and have a nice DNS name to push to.
 * Git hosting inside k8s for gitops
 * Get dev environment running as a privileged pod with SSHD port-forwarded
 * Postgres
@@ -21,6 +26,11 @@ Custom WSL DNS settings
 
 Local DNS and Kind
 * https://mjpitz.com/blog/2020/10/21/local-ingress-domains-kind/
+
+More `dnsmasq`:
+* https://programmer.help/blogs/docker-sets-up-dns-server-in-1-minute.html
+* https://github.com/jpillora/docker-dnsmasq
+* https://blog.csainty.com/2016/09/running-dnsmasq-in-docker.html
 
 Trow - container registry
 * https://github.com/ContainerSolutions/trow
