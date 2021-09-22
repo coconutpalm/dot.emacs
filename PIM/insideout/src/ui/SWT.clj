@@ -324,10 +324,10 @@
    (while (.readAndDispatch display))))
 
 
-(defn child
+(defn child-of
   "Mount the child specified by child-init-fn inside parent passing initial-props-value inside the props atom.
   Returns a map containing the :child and resulting :props"
-  [child-init-fn initial-props-value parent]
+  [parent initial-props-value child-init-fn]
   (let [props (atom initial-props-value)]
     {:child (child-init-fn props parent)
      :props @props}))
@@ -367,6 +367,7 @@
   "Runs `f` in a background thread.  Returns the thread."
   [f]
   (let [t (Thread. f)]
+    (.setContextClassLoader t (.getContextClassLoader (Thread/currentThread)))
     (.start t)
     t))
 
