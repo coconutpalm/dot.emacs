@@ -1,43 +1,34 @@
-(remove 'ui.SWT)
-
 (ns ui.SWT
   (:refer-clojure :exclude [list])
-  (:require [ui.SWT-deps]
-            [ui.inits :refer [extract-style-from-args args->inits widget*
-                              widget-classes->inits eclipsedoc-url run-inits]]
+  (:require [ui.internal.SWT-deps]
+            [ui.internal.reflectivity :as meta]
+            [ui.inits :as i]
             [ui.gridlayout]
-            [clojure.string :as str]
-            [clj-foundation.interop :refer [array]]
             [clj-foundation.patterns :refer [nothing]]
             [clj-foundation.conversions :refer :all]
             [clj-foundation.data :refer [nothing->identity ->kebab-case]])
   (:import [clojure.lang IFn]
-           [java.lang.reflect Modifier Field]
-           [org.reflections Reflections]
-           [org.reflections.scanners SubTypesScanner]
            [org.eclipse.swt SWT]
-           [org.eclipse.swt.events TypedEvent]
-           [org.eclipse.swt.custom SashFormLayout ScrolledCompositeLayout CTabFolderLayout]
            [org.eclipse.swt.layout RowLayout]
-           [org.eclipse.swt.widgets Display Shell Composite Widget Layout
-            Tray TaskBar TaskItem ScrollBar Item Control]
-           [org.eclipse.swt.opengl GLCanvas]))
+           [org.eclipse.swt.widgets Display Shell]))
+
+(def display
+  "The default SWT Display object or `nothing`"
+  (atom nothing))
+
+(def toplevel-shell
+  "The top-level application shell or `nothing`"
+  (atom nothing))
 
 
-(def display        (atom nothing))
-(def toplevel-shell (atom nothing))
-(def props          (atom nothing))
-
-;; All the above, plus derived, reactive (cell) properties
+;; Wishlist:
+;;
+;; derived, reactive (cell) properties
 ;; Lazy sequences of property values?  (via continuations)
 
 ;; TODO!
-;;   * Make display func ^^above^^ an atom.  Construct explicitly in event-loop! and clear on close.
-;;   * An ui.SWT/top-level-shell atom.  Also set and cleared inside event-loop!
-;;   * (rename event-loop! -> application ??)
-;;
 ;;   * Ability to background the Display thread in REPL.
-;;   * In REPL, top-level-shell hides; doesn't close.
+;;   * In REPL, top-level-shell hides; doesn't close?
 ;;
 ;;   * A way to pass state into/out-of  UI:
 ;;     - Inits are f: arg-kvs => ( [props parent] => props )
@@ -56,12 +47,19 @@
 ;;   * Start putting things in Crux
 ;;
 ;;   * Use Java reflection to learn parameter types and guard API calls using (convert DestType val)
-
-
+;;
 ;; Make id! hierarchical.  An id! on a Text inside a Composite with an id winds
 ;;  up as {:composite-id {:text-id the-text}}
 
 ;;  (ap->let the-map & exprs) - Top-level keywords become variables in the let binding
+
+
+;; =====================================================================================
+;; Reflectively generate the API here
+
+(meta/composite-inits)
+(meta/widget-inits)
+
 
 ;; =====================================================================================
 ;; Props manipulation
@@ -99,134 +97,21 @@
   "org.eclipse.swt.widgets.Shell"
   [& inits]
   (let [[style
-         inits] (extract-style-from-args inits)
+         inits] (i/extract-style-from-args inits)
         style   (nothing->identity SWT/SHELL_TRIM style)
         style   (if (= style SWT/DEFAULT)
                   SWT/SHELL_TRIM
                   style)
-        init    (widget* Shell style (or inits []))]
+        init    (i/widget* Shell style (or inits []))]
 
     (fn [props disp]
       (let [sh (init props disp)]
         (.open sh)
         sh))))
 
-(def ^:private swt-index
-  (-> (Reflections. (to-array [(SubTypesScanner.)]))))
-
-(def ^:private swt-composites (->> (.getSubTypesOf swt-index Composite)
-                                 (seq)
-                                 (remove #{Shell GLCanvas})))
-
-(defmacro ^:private composite-inits []
-    (let [inits (widget-classes->inits swt-composites)]
-      `[~@inits]))
-(composite-inits)
-
-(def ^:private swt-widgets (->> (.getSubTypesOf swt-index Widget)
-                              (seq)
-                              (remove #(.isAssignableFrom Composite %))
-                              (remove #(.isAssignableFrom Item %))
-                              (remove #{Control Tray TaskBar TaskItem ScrollBar})))
-
-(defmacro ^:private widget-inits []
-  (let [inits (widget-classes->inits swt-widgets)]
-    `[~@inits]))
-(widget-inits)
-
-(def ^:private swt-layouts (->> (.getSubTypesOf swt-index Layout)
-                              (seq)
-                              (remove #{SashFormLayout ScrolledCompositeLayout CTabFolderLayout})))
-
-(defn- types-in-package [swt-package]
-  (->> (Reflections. (array [Object]
-                          (str "org.eclipse.swt." swt-package)
-                          (SubTypesScanner. false)))
-     (.getAllTypes)
-     (seq)
-     (sort)
-     (map #(Class/forName %))))
-
-(def ^:private swt-layoutdata (types-in-package "layout"))
-
 
 ;; =====================================================================================
-;; Generate online docs from class metadata
-
-(defn- layoutdata-by-layout []
-  (letfn [(layout-type [clazz]
-            (-> (.getSimpleName clazz)
-               ->kebab-case
-               (.split "\\-")
-               first))]
-    (reduce (fn [cur layout-class]
-              (let [key (layout-type layout-class)
-                    layoutdata (filter #(= (layout-type %) key) swt-layoutdata)]
-                (conj cur [layout-class layoutdata])))
-            {}
-            swt-layouts)))
-
-(defn- fn-names<- [classes]
-  (letfn [(fn-name<- [clazz]
-            (-> (.getSimpleName clazz) ->kebab-case))]
-    (sort-by first (map (fn [c] [(fn-name<- c) c]) classes))))
-
-
-(defn- extract-java-meta [xs]
-  (->> xs
-     (map (fn [x] [(symbol (str (.getName x)
-                               (if (instance? Field x)
-                                 ""
-                                 (str "("
-                                      (str/join ", " (map #(symbol (.getSimpleName %)) (.getParameterTypes x)))
-                                      ")"))))
-                  {:type (if (instance? Field x) (.getType x) (.getReturnType x))
-                   :declaring-class (.getDeclaringClass x)}]))
-     (sort-by first)))
-
-
-(defn- fields [^Class clazz]
-  (->> (.getFields clazz)
-     (filter (fn [field] (not= 0 (bit-and (.getModifiers field) Modifier/PUBLIC))))
-     (extract-java-meta)))
-
-(defn- setters [^Class clazz]
-  (->> (.getMethods clazz)
-     (filter (fn [method] (and (not= 0 (bit-and (.getModifiers method) Modifier/PUBLIC))
-                              (.startsWith (.getName method) "set"))))
-     (extract-java-meta)))
-
-(defn- non-prop-methods [^Class clazz]
-  (->> (.getMethods clazz)
-     (filter (fn [method] (and (not= 0 (bit-and (.getModifiers method) Modifier/PUBLIC))
-                              (not= Object (.getDeclaringClass method))
-                              (not (.startsWith (.getName method) "get"))
-                              (not (.startsWith (.getName method) "set")))))
-     (extract-java-meta)))
-
-(defn sorted-publics
-  "Like `ns-publics` but returns the results sorted by symbol name."
-  [ns]
-  (if (string? ns)
-    (sorted-publics (symbol ns))
-    (->> (ns-publics ns) vec (sort-by first))))
-
-(def ^:private documentation
-  {:package {:ui.SWT (sorted-publics 'ui.SWT)
-             :ui.gridlayout (sorted-publics 'ui.gridlayout)}
-   :swt {:SWT {SWT (fields SWT)}
-         :composites (fn-names<- (conj swt-composites Shell))
-         :widgets (fn-names<- swt-widgets)
-         :items (->> (.getSubTypesOf swt-index Item) (seq) (sort-by #(.getSimpleName %)))
-         :events (->> (.getSubTypesOf swt-index TypedEvent) (seq) (sort-by #(.getSimpleName %)))
-         :listeners (->> (.getSubTypesOf swt-index org.eclipse.swt.internal.SWTEventListener)
-                       (filter (fn [clazz] (not (.contains (.getSimpleName clazz) "$"))))
-                       (seq)
-                       (sort-by #(.getSimpleName %)))
-         :graphics (types-in-package "graphics")
-         :program (types-in-package "program")
-         :layout-managers (layoutdata-by-layout)}})
-
+;; Specialized online docs
 
 (defn swtdoc
   "Print documentation on the SWT library support."
@@ -234,10 +119,10 @@
   (letfn [(doc-for-node [node]
             (cond
               (class? node)                         {:class node
-                                                     :fields (fields node)
-                                                     :properties (setters node)
-                                                     :methods (non-prop-methods node)
-                                                     :eclipsedoc (eclipsedoc-url node)}
+                                                     :fields (meta/fields node)
+                                                     :properties (meta/setters node)
+                                                     :methods (meta/non-prop-methods node)
+                                                     :eclipsedoc (i/eclipsedoc-url node)}
               (and (map? node)
                    (not (empty? node))
                    (keyword? (first (first node)))) {:subtopics (sort (keys node))}
@@ -264,7 +149,7 @@
               {:breadcrumb breadcrumb
                :result (doc-for-node current-doc)}))]
 
-    (swtdoc* [] documentation query)))
+    (swtdoc* [] meta/documentation query)))
 
 
 
@@ -300,7 +185,8 @@
 
 
 (defn with-ui*
-  "Implementation detail: Use `sync-exec!` or `ui` instead."
+  "Implementation detail: Use `sync-exec!` or `ui` instead.  Public because it's called
+  from the `ui` macro."
   [f]
   (if (on-ui-thread?)
     (f)
@@ -359,14 +245,14 @@
 (defn application
   "Run the event loop while the specified `init` shell-or-fn is not disposed."
   [& more]
-  (let [d (Display/getDefault)
-        i (args->inits more)]
+  (let [props (atom {})
+        d (Display/getDefault)
+        i (i/args->inits more)]
 
     (try
       (reset! display d)
-      (swap! props #(nothing->identity {} %))
 
-      (let [init-results (run-inits props d i)
+      (let [init-results (i/run-inits props d i)
             maybe-shell  (first (filter #(instance? Shell %) init-results))
             s            (if (instance? Shell maybe-shell)
                            maybe-shell
@@ -382,17 +268,25 @@
       (process-pending-events!)
 
       (catch Throwable t
-        (reset! display nothing)
         (reset! toplevel-shell nothing)
-        (throw t)))))
+        (throw t))
 
-(defn background
-  "Runs `f` in a background thread.  Returns the thread."
-  [f]
-  (let [t (Thread. f)]
-    (.setContextClassLoader t (.getContextClassLoader (Thread/currentThread)))
-    (.start t)
-    t))
+      (finally
+        (reset! toplevel-shell nothing)))))
+
+
+;;  Oddly, this throws ClassNotFoundException on Shell.
+#_(defn background
+    "Runs `f` in a background thread.  Returns the thread.  Propogates the context classloader to
+  the new thread."
+    [f]
+    (let [cl (.getContextClassLoader (Thread/currentThread))
+          job (fn []
+                (.setContextClassLoader (Thread/currentThread) cl)
+                (f))
+          t   (Thread. job)]
+      (.start t)
+      t))
 
 
 (defn rowlayout-example []
@@ -400,16 +294,14 @@
    (shell "Example SWT app"
           :layout (RowLayout. SWT/VERTICAL)
           (label "A. Label")
-          (combo SWT/BORDER (id! :address/state) "Default text")
-          (group "Example group"
+          (combo SWT/BORDER "Default text")
+          (group "Example group" (id! :name)
                  :layout (RowLayout. SWT/VERTICAL)
                  (label "A. Label")
-                 (text SWT/BORDER (id! :address/zip) "Default text")))))
+                 (text SWT/BORDER (id! :first) "Default text")))))
 
 (comment
-
-
-
+  (rowlayout-example)
   (ui (.dispose @display))
 
 

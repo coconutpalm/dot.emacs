@@ -1,4 +1,4 @@
-(ns ui.SWT-deps
+(ns ui.internal.SWT-deps
   (:require
    [insideout.dynamo :as dynamo]))
 

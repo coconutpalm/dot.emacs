@@ -15,6 +15,7 @@
   [props control inits]
   (doall (map #(apply % props control []) inits)))
 
+
 (defmulti ->init
   "Convert first and second arguments (from front of vararg list) into an init function.  Returns the
   function and the number of arguments consumed from the arglist."
