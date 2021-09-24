@@ -303,7 +303,8 @@
 
           (label "A. Label"
                  (layout/align-left))
-          (combo SWT/BORDER (layout/hgrab) "Default value")
+          (combo SWT/BORDER "Default value"
+                 (layout/hgrab))
 
           (group "Example group"
                  (id! :name)
@@ -312,9 +313,8 @@
                  (layout/grid-layout :numColumns 2 :makeColumnsEqualWidth false)
                  (label "A. Label"
                         (layout/align-left))
-                 (text SWT/BORDER
+                 (text SWT/BORDER "Default text"
                        (layout/align-left)
-                       "Default text"
                        (id! :default-text))))
 
    (main
