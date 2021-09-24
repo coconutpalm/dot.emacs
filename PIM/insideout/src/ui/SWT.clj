@@ -174,7 +174,9 @@
   [f]
   (RunnableFn. f (atom nil) (atom nil)))
 
+
 ;; =====================================================================================
+;; Event processing must happen on the UI thread.  Some helpers...
 
 (defn on-ui-thread?
   "Returns true if executing on the UI thread and false otherwise."
@@ -233,6 +235,9 @@
    (while (.readAndDispatch display))))
 
 
+;; =====================================================================================
+;; The main application and her children
+
 (defn child-of
   "Mount the child specified by child-init-fn inside parent passing initial-props-value inside the props atom.
   Returns a map containing the :child and resulting :props"
@@ -289,19 +294,38 @@
       t))
 
 
-(defn rowlayout-example []
+(require '[ui.gridlayout :as layout])
+
+(defn example-app []
   (application
    (shell "Example SWT app"
-          :layout (RowLayout. SWT/VERTICAL)
-          (label "A. Label")
-          (combo SWT/BORDER "Default text")
-          (group "Example group" (id! :name)
-                 :layout (RowLayout. SWT/VERTICAL)
-                 (label "A. Label")
-                 (text SWT/BORDER (id! :first) "Default text")))))
+          (layout/grid-layout :numColumns 2 :makeColumnsEqualWidth false)
+
+          (label "A. Label"
+                 (layout/align-left))
+          (combo SWT/BORDER (layout/hgrab) "Default value")
+
+          (group "Example group"
+                 (id! :name)
+                 (layout/align-left :horizontalSpan 2)
+
+                 (layout/grid-layout :numColumns 2 :makeColumnsEqualWidth false)
+                 (label "A. Label"
+                        (layout/align-left))
+                 (text SWT/BORDER
+                       (layout/align-left)
+                       "Default text"
+                       (id! :default-text))))
+
+   (main
+    (fn [props _]
+      (let [t (:default-text @props)]
+        ;; Set up event handlers, etc...
+        (println t))))))
+
 
 (comment
-  (rowlayout-example)
+  (example-app)
   (ui (.dispose @display))
 
 

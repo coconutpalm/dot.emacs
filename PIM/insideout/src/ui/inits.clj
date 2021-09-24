@@ -59,10 +59,12 @@
                   [next-init
                    args-used] (->init arg1 arg2)]
               (cond
-                (nil? arg2)      (conj inits next-init)
-                (= 1 args-used) (process-args (conj inits next-init) (rest args))
-                (= 2 args-used) (process-args (conj inits next-init) (rest (rest args))))))]
-    (process-args [] args)))
+                (nil? arg2)                 (conj inits next-init)
+                (= args-used (count args)) (conj inits next-init)
+                (= 1 args-used)            (process-args (conj inits next-init) (rest args))
+                (= 2 args-used)            (process-args (conj inits next-init) (rest (rest args))))))]
+    (when (first args)
+      (process-args [] args))))
 
 (defn extract-style-from-args
   [args]

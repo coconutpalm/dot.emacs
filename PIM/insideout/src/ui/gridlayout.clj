@@ -11,13 +11,13 @@
   :field1 val1 :field2 val2, etc., set the layout object's properties."
   [& more]
   (let [inits (args->inits more)]
-    (fn [parent]
+    (fn [props parent]
       (let [l (GridLayout.)]
-        (run-inits l inits)
-        (.setLayout parent (GridLayout.))))))
+        (run-inits props l inits)
+        (.setLayout parent l)))))
 
 (defn- grid-data*
-  [inits control]
+  [props control inits]
   (let [parent        (.getParent control)
         parent-layout (.getLayout parent)
         layout-data   (or (.getLayoutData control) (GridData.))]
@@ -27,7 +27,7 @@
                              (.getSimpleName (class parent-layout))
                              "nil")
                            " but must be GridLayout."))))
-    (run-inits layout-data inits)
+    (run-inits props layout-data inits)
     (.setLayoutData control layout-data)
     layout-data))
 
@@ -35,92 +35,104 @@
   "Construct and initialize a GridData on the specified control.  A GridLayout must
   have previously been set on the control's parent."
   [& more]
-  (partial grid-data* (args->inits more)))
+  (fn [props parent]
+    (grid-data* props parent (args->inits more))))
 
-(defn cell-left-hgrab [& more]
-  (fn [control]
-    (let [layout-data (grid-data* [] control)]
+(defn hgrab [& more]
+  (fn [props control]
+    (let [layout-data (grid-data* props control [])]
+      (set-fields!
+       layout-data
+       horizontalAlignment SWT/FILL
+       verticalAlignment SWT/CENTER
+       grabExcessHorizontalSpace true
+       grabExcessVerticalSpace false)
+      (run-inits props layout-data (args->inits more)))))
+
+(defn align-left-hgrab [& more]
+  (fn [props control]
+    (let [layout-data (grid-data* props control [])]
       (set-fields!
        layout-data
        horizontalAlignment SWT/LEFT
        verticalAlignment SWT/CENTER
        grabExcessHorizontalSpace true
        grabExcessVerticalSpace false)
-      (run-inits layout-data (args->inits more)))))
+      (run-inits props layout-data (args->inits more)))))
 
-(defn cell-center-hgrab [& more]
-  (fn [control]
-    (let [layout-data (grid-data* [] control)]
+(defn align-center-hgrab [& more]
+  (fn [props control]
+    (let [layout-data (grid-data* props control [])]
       (set-fields!
        layout-data
        horizontalAlignment SWT/CENTER
        verticalAlignment SWT/CENTER
        grabExcessHorizontalSpace true
        grabExcessVerticalSpace false)
-      (run-inits layout-data (args->inits more)))))
+      (run-inits props layout-data (args->inits more)))))
 
-(defn cell-right-hgrab [& more]
-  (fn [control]
-    (let [layout-data (grid-data* [] control)]
+(defn align-right-hgrab [& more]
+  (fn [props control]
+    (let [layout-data (grid-data* props control [])]
       (set-fields!
        layout-data
        horizontalAlignment SWT/RIGHT
        verticalAlignment SWT/CENTER
        grabExcessHorizontalSpace true
        grabExcessVerticalSpace false)
-      (run-inits layout-data (args->inits more)))))
+      (run-inits props layout-data (args->inits more)))))
 
-(defn cell-vgrab [& more]
-  (fn [control]
-    (let [layout-data (grid-data* [] control)]
+(defn vgrab [& more]
+  (fn [props control]
+    (let [layout-data (grid-data* props control [])]
       (set-fields!
        layout-data
        horizontalAlignment SWT/FILL
        verticalAlignment SWT/FILL
        grabExcessHorizontalSpace false
        grabExcessVerticalSpace true)
-      (run-inits layout-data (args->inits more)))))
+      (run-inits props layout-data (args->inits more)))))
 
-(defn cell-grab-both [& more]
-  (fn [control]
-    (let [layout-data (grid-data* [] control)]
+(defn grab-both [& more]
+  (fn [props control]
+    (let [layout-data (grid-data* props control [])]
       (set-fields!
        layout-data
        horizontalAlignment SWT/FILL
        verticalAlignment SWT/FILL
        grabExcessHorizontalSpace true
        grabExcessVerticalSpace true)
-      (run-inits layout-data (args->inits more)))))
+      (run-inits props layout-data (args->inits more)))))
 
-(defn cell-left [& more]
-  (fn [control]
-    (let [layout-data (grid-data* [] control)]
+(defn align-left [& more]
+  (fn [props control]
+    (let [layout-data (grid-data* props control [])]
       (set-fields!
        layout-data
-       horizontalAlignment SWT/FILL
+       horizontalAlignment SWT/LEFT
        verticalAlignment SWT/FILL
        grabExcessHorizontalSpace false
        grabExcessVerticalSpace false)
-      (run-inits layout-data (args->inits more)))))
+      (run-inits props layout-data (args->inits more)))))
 
-(defn cell-center [& more]
-  (fn [control]
-    (let [layout-data (grid-data* [] control)]
+(defn align-center [& more]
+  (fn [props control]
+    (let [layout-data (grid-data* props control [])]
       (set-fields!
        layout-data
        horizontalAlignment SWT/CENTER
        verticalAlignment SWT/FILL
        grabExcessHorizontalSpace false
        grabExcessVerticalSpace false)
-      (run-inits layout-data (args->inits more)))))
+      (run-inits props layout-data (args->inits more)))))
 
-(defn cell-right [& more]
-  (fn [control]
-    (let [layout-data (grid-data* [] control)]
+(defn align-right [& more]
+  (fn [props control]
+    (let [layout-data (grid-data* props control [])]
       (set-fields!
        layout-data
        horizontalAlignment SWT/RIGHT
        verticalAlignment SWT/FILL
        grabExcessHorizontalSpace false
        grabExcessVerticalSpace false)
-      (run-inits layout-data (args->inits more)))))
+      (run-inits props layout-data (args->inits more)))))
