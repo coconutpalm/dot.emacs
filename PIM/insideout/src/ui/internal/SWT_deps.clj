@@ -1,10 +1,8 @@
 (ns ui.internal.SWT-deps
+  "Dynamically resolve/load SWT subsystem dependencies when this namespace is required"
   (:require
    [insideout.dynamo :as dynamo]))
 
-;; ======================================================================================
-;; Dynamically resolve/load SWT subsystem dependencies when this namespace is required
-;; ======================================================================================
 
 (defonce os-code
   (let [os-fullname (System/getProperty "os.name")]
