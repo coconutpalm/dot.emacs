@@ -1,47 +1,34 @@
 (ns ui.internal.reflectivity
-  (:require [ui.inits :refer [widget-classes->inits]]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [clj-foundation.conversions :refer :all]
             [clj-foundation.data :refer [->kebab-case]]
-            [clj-foundation.interop :refer [array]]
-            [ui.gridlayout])
+            [clj-foundation.interop :refer [array]])
   (:import [java.lang.reflect Modifier Field]
            [org.reflections Reflections]
            [org.reflections.scanners SubTypesScanner]
-           [org.eclipse.swt SWT]
-           [org.eclipse.swt.events TypedEvent]
            [org.eclipse.swt.custom SashFormLayout ScrolledCompositeLayout CTabFolderLayout]
            [org.eclipse.swt.widgets Shell Composite Widget Layout
             Tray TaskBar TaskItem ScrollBar Item Control]
            [org.eclipse.swt.opengl GLCanvas]))
 
-(def ^:private swt-index
+(def swt-index
   (-> (Reflections. (to-array [(SubTypesScanner.)]))))
 
-(def ^:private swt-composites (->> (.getSubTypesOf swt-index Composite)
+(def swt-composites (->> (.getSubTypesOf swt-index Composite)
                                  (seq)
                                  (remove #{Shell GLCanvas})))
 
-(defmacro  composite-inits []
-  (let [inits (widget-classes->inits swt-composites)]
-    `[~@inits]))
-
-(def ^:private swt-widgets (->> (.getSubTypesOf swt-index Widget)
+(def swt-widgets (->> (.getSubTypesOf swt-index Widget)
                               (seq)
                               (remove #(.isAssignableFrom Composite %))
                               (remove #(.isAssignableFrom Item %))
                               (remove #{Control Tray TaskBar TaskItem ScrollBar})))
 
-(defmacro widget-inits []
-  (let [inits (widget-classes->inits swt-widgets)]
-    `[~@inits]))
-
-
-(def ^:private swt-layouts (->> (.getSubTypesOf swt-index Layout)
+(def swt-layouts (->> (.getSubTypesOf swt-index Layout)
                               (seq)
                               (remove #{SashFormLayout ScrolledCompositeLayout CTabFolderLayout})))
 
-(defn- types-in-package [swt-package]
+(defn types-in-package [swt-package]
   (->> (Reflections. (array [Object]
                           (str "org.eclipse.swt." swt-package)
                           (SubTypesScanner. false)))
@@ -56,7 +43,7 @@
 ;; =====================================================================================
 ;; Generate online docs from class metadata
 
-(defn- layoutdata-by-layout []
+(defn layoutdata-by-layout []
   (letfn [(layout-type [clazz]
             (-> (.getSimpleName clazz)
                ->kebab-case
@@ -69,7 +56,7 @@
             {}
             swt-layouts)))
 
-(defn- fn-names<- [classes]
+(defn fn-names<- [classes]
   (letfn [(fn-name<- [clazz]
             (-> (.getSimpleName clazz) ->kebab-case))]
     (sort-by first (map (fn [c] [(fn-name<- c) c]) classes))))
@@ -113,19 +100,3 @@
   (if (string? ns)
     (sorted-publics (symbol ns))
     (->> (ns-publics ns) vec (sort-by first))))
-
-(def documentation
-  {:package {:ui.SWT (sorted-publics 'ui.SWT)
-             :ui.gridlayout (sorted-publics 'ui.gridlayout)}
-   :swt {:SWT {SWT (fields SWT)}
-         :composites (fn-names<- (conj swt-composites Shell))
-         :widgets (fn-names<- swt-widgets)
-         :items (->> (.getSubTypesOf swt-index Item) (seq) (sort-by #(.getSimpleName %)))
-         :events (->> (.getSubTypesOf swt-index TypedEvent) (seq) (sort-by #(.getSimpleName %)))
-         :listeners (->> (.getSubTypesOf swt-index org.eclipse.swt.internal.SWTEventListener)
-                       (filter (fn [clazz] (not (.contains (.getSimpleName clazz) "$"))))
-                       (seq)
-                       (sort-by #(.getSimpleName %)))
-         :graphics (types-in-package "graphics")
-         :program (types-in-package "program")
-         :layout-managers (layoutdata-by-layout)}})

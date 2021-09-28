@@ -5,7 +5,6 @@
   (:import [org.eclipse.swt SWT]
            [org.eclipse.swt.layout GridLayout GridData]))
 
-
 (defn grid-layout
   "An init function for org.eclipse.swt.layout.GridLayout. Arguments in the form
   :field1 val1 :field2 val2, etc., set the layout object's properties."
@@ -15,6 +14,7 @@
       (let [l (GridLayout.)]
         (run-inits props l inits)
         (.setLayout parent l)))))
+
 
 (defn- grid-data*
   [props control inits]

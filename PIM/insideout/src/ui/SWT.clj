@@ -1,16 +1,17 @@
 (ns ui.SWT
   (:refer-clojure :exclude [list])
   (:require [ui.internal.SWT-deps]
+            [ui.internal.docs :as docs]
             [ui.internal.reflectivity :as meta]
             [ui.inits :as i]
             [ui.gridlayout]
             [clj-foundation.patterns :refer [nothing]]
-            [clj-foundation.conversions :refer :all]
             [clj-foundation.data :refer [nothing->identity ->kebab-case]])
   (:import [clojure.lang IFn]
            [org.eclipse.swt SWT]
-           [org.eclipse.swt.layout RowLayout]
-           [org.eclipse.swt.widgets Display Shell]))
+           [org.eclipse.swt.events TypedEvent]
+           [org.eclipse.swt.widgets Display Shell Item]))
+
 
 (def display
   "The default SWT Display object or `nothing`"
@@ -19,7 +20,6 @@
 (def toplevel-shell
   "The top-level application shell or `nothing`"
   (atom nothing))
-
 
 ;; Wishlist:
 ;;
@@ -57,8 +57,8 @@
 ;; =====================================================================================
 ;; Reflectively generate the API here
 
-(meta/composite-inits)
-(meta/widget-inits)
+(i/composite-inits)
+(i/widget-inits)
 
 
 ;; =====================================================================================
@@ -93,6 +93,16 @@
   [& styles]
   (apply bit-or styles))
 
+(declare process-pending-events!)
+
+(defn open-on-top
+  "A kludge to force a shell to open on top of the other windows."
+  [sh]
+  (.open sh)
+  (process-pending-events!)
+  (.setVisible sh false)
+  (.open sh))
+
 (defn shell
   "org.eclipse.swt.widgets.Shell"
   [& inits]
@@ -106,51 +116,33 @@
 
     (fn [props disp]
       (let [sh (init props disp)]
-        (.open sh)
+        (open-on-top sh)
         sh))))
 
 
 ;; =====================================================================================
 ;; Specialized online docs
 
+(def ^:private documentation
+  {:package {:ui.SWT (meta/sorted-publics 'ui.SWT)
+             :ui.gridlayout (meta/sorted-publics 'ui.gridlayout)}
+   :swt {:SWT {SWT (meta/fields SWT)}
+         :composites (meta/fn-names<- (conj meta/swt-composites Shell))
+         :widgets (meta/fn-names<- meta/swt-widgets)
+         :items (->> (.getSubTypesOf meta/swt-index Item) (seq) (sort-by #(.getSimpleName %)))
+         :events (->> (.getSubTypesOf meta/swt-index TypedEvent) (seq) (sort-by #(.getSimpleName %)))
+         :listeners (->> (.getSubTypesOf meta/swt-index org.eclipse.swt.internal.SWTEventListener)
+                       (filter (fn [clazz] (not (.contains (.getSimpleName clazz) "$"))))
+                       (seq)
+                       (sort-by #(.getSimpleName %)))
+         :graphics (meta/types-in-package "graphics")
+         :program (meta/types-in-package "program")
+         :layout-managers (meta/layoutdata-by-layout)}})
+
 (defn swtdoc
   "Print documentation on the SWT library support."
   [& query]
-  (letfn [(doc-for-node [node]
-            (cond
-              (class? node)                         {:class node
-                                                     :fields (meta/fields node)
-                                                     :properties (meta/setters node)
-                                                     :methods (meta/non-prop-methods node)
-                                                     :eclipsedoc (i/eclipsedoc-url node)}
-              (and (map? node)
-                   (not (empty? node))
-                   (keyword? (first (first node)))) {:subtopics (sort (keys node))}
-              (var? node)                           (or (:doc (meta node)) node)
-              :else                                 node))
-
-          (name-str [x] (name (convert clojure.lang.Named x)))
-
-          (traverse [current-doc topic]
-            (cond
-              (map? current-doc)        (get current-doc topic)
-              (sequential? current-doc) (if (sequential? (first current-doc))
-                                          (second (first (filter (fn [x] (>= (.indexOf (name-str (first x)) (name-str topic)) 0)) current-doc)))
-                                          (first (filter (fn [x] (>= (.indexOf (name-str x) (name-str topic)) 0)) current-doc)))
-              :default                  nil))
-
-          (swtdoc* [breadcrumb current-doc query]
-            (if-let [topic (first query)]
-              (if-let [next-doc (traverse current-doc topic)]
-                (swtdoc* (conj breadcrumb topic) next-doc (rest query))
-                (ex-info (str "Couldn't find documentation node: " topic) {:breadcrumb breadcrumb
-                                                                           :next-topic topic
-                                                                           :rest-of-query (rest query)}))
-              {:breadcrumb breadcrumb
-               :result (doc-for-node current-doc)}))]
-
-    (swtdoc* [] meta/documentation query)))
-
+  (docs/swtdoc* [] documentation query))
 
 
 ;; =====================================================================================
@@ -264,6 +256,7 @@
                            (throw (ex-info "Couldn't make shell from args" {:args more})))]
 
         (reset! toplevel-shell s)
+
         (loop [[disposed busy] (process-event d s)]
           (when (not busy)
             (.sleep d))
@@ -278,7 +271,6 @@
 
       (finally
         (reset! toplevel-shell nothing)))))
-
 
 ;;  Oddly, this throws ClassNotFoundException on Shell.
 #_(defn background
@@ -327,6 +319,5 @@
 (comment
   (example-app)
   (ui (.dispose @display))
-
 
   ,)
