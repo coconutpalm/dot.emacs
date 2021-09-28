@@ -7,7 +7,10 @@
    '("84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default))
  '(package-selected-packages
    '(helm-slack websocket alert oauth2 emojify graphiql-mode walkman impostman httprepl npm-mode bookmarks+ bookmark+ xwwp-follow-link-helm xwwp github-review magit-popup magit-gh-pulls redo-plus redoplus redo+ olivetti cider-repl writeroom-mode deft tide weatherline-mode weatherline nyan-mode smart-mode-line-powerline-theme centaur-tabs all-the-icons tree-mode smart-mode-line cider-hydra helm-cider kaocha-runner clojure-mode-extra-font-locking lispy clj-refactor clojure-mode smartparens smart-tabs-mode lsp-ui lsp-metals lsp-mode sbt-mode scala-mode play-routes-mode dockerfile-mode docker-compose-mode docker-api docker popup-imenu goto-chg highlight-symbol treemacs-magit treemacs-icons-dired treemacs-projectile treemacs perspective helm-projectile projectile helm-descbinds helm-ag helm git-timemachine magit git-gutter edbi adoc-mode markdown-mode+ markdown-toc markdown-mode impatient-mode simple-httpd web-mode json-mode sass-mode js-comint prettier-js xref-js2 js2-mode typescript-mode restclient jenkinsfile-mode groovy-mode flycheck-cask flycheck-status-emoji flycheck-pos-tip flycheck-color-mode-line flycheck spinner exec-path-from-shell multiple-cursors discover which-key hydra company-box company-quickhelp company epl dimmer nginx-mode ag base16-theme package-utils use-package))
- '(safe-local-variable-values '((dockerfile-image-name . "connect-devenv"))))
+ '(safe-local-variable-values
+   '((eval with-eval-after-load 'cider
+           (setq cider-default-cljs-repl 'figwheel))
+     (dockerfile-image-name . "connect-devenv"))))
 
 ;; Use 2*fibonacci number to determine heights
 (custom-set-faces
