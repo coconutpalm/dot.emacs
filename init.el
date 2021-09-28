@@ -2590,7 +2590,7 @@ buffer's."
                  (string= filename "build.boot")
                  (ends-with? filename "scratchpad.clj")
                  (ends-with? filename ".edn")))
-        (cider-ns-refresh))))
+        (cider-ns-reload))))
 
 (add-hook 'cider-mode-hook
    '(lambda () (add-hook 'after-save-hook
