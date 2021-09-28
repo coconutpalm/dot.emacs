@@ -2,13 +2,14 @@
   "Defines API for defining and manipulating init functions.  An init function is a function
   where the initial argument is the object to init and subsequent arguments (if any)
   define the values used for initialization."
-  (:require [clj-foundation.patterns :refer [nothing]]
+  (:require [ui.internal.reflectivity :as meta]
+            [clj-foundation.patterns :refer [nothing]]
             [clj-foundation.interop :refer [array]]
+            [clj-foundation.conversions :refer :all]
             [clj-foundation.data :refer [->camelCase ->kebab-case setter nothing->identity]])
   (:import [clojure.lang IFn Keyword Reflector]
            [java.lang.reflect Modifier]
            [org.eclipse.swt.widgets Composite]))
-
 
 (defn run-inits
   "Initialize the specified control using the functions in the `inits` seq."
@@ -31,6 +32,14 @@
   (letfn [(set-text-on [_ control]
             (.setText control arg1))]
     [set-text-on 1]))
+
+(defn set-property
+  [object property-name new-value]
+  (let [setter-name (setter property-name)
+        ms          (->> object
+                         (.getClass)
+                         (.getMethods)
+                         (filter #(= setter-name (.getName %))))]))
 
 (defmethod ->init
   Keyword [arg1 arg2]
@@ -82,23 +91,10 @@
       (run-inits props# child# inits#)
       child#)))
 
-(def ^:private eclipse-help-url-prefix
-  "https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fapi%2F")
-
-(defn eclipsedoc-url
-  "Return the URL for the specified class's documentation at Eclipse."
-  [clazz]
-  (cond
-    (instance? Class clazz) (eclipsedoc-url (.getName clazz))
-    (string? clazz)         (str eclipse-help-url-prefix
-                                 (.replaceAll clazz "\\." "%2F")
-                                 ".html")
-    :else                   (throw (IllegalArgumentException. (str "Invalid class name: " clazz)))))
-
 (defn widget-classes->inits [classes]
   (map (fn [clazz]
          (let [name (.getName clazz)
-               doc (str "Construct a " name "\n\n" (eclipsedoc-url name))
+               doc (str "Construct a " name "\n\n" (ui.internal.docs/eclipsedoc-url name))
                name-sym (symbol name)
                fn-name (symbol (-> (.getSimpleName clazz) ->kebab-case))]
            `(defn ~fn-name
@@ -109,3 +105,11 @@
                     style# (nothing->identity SWT/NULL style#)]
                 (widget* ~name-sym style# (or inits# []))))))
        classes))
+
+(defmacro  composite-inits []
+  (let [inits (widget-classes->inits meta/swt-composites)]
+    `[~@inits]))
+
+(defmacro widget-inits []
+  (let [inits (widget-classes->inits meta/swt-widgets)]
+    `[~@inits]))
