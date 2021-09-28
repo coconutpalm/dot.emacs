@@ -296,6 +296,7 @@
           (label "A. Label"
                  (layout/align-left))
           (combo SWT/BORDER "Default value"
+                 :items ["one" "two" "three" "Default value" "four"]
                  (layout/hgrab))
 
           (group "Example group"

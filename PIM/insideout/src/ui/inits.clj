@@ -5,6 +5,7 @@
   (:require [ui.internal.reflectivity :as meta]
             [clj-foundation.patterns :refer [nothing]]
             [clj-foundation.interop :refer [array]]
+            [clj-foundation.conversions :refer :all]
             [clj-foundation.data :refer [->camelCase ->kebab-case setter nothing->identity]])
   (:import [clojure.lang IFn Keyword Reflector]
            [java.lang.reflect Modifier]
@@ -31,6 +32,14 @@
   (letfn [(set-text-on [_ control]
             (.setText control arg1))]
     [set-text-on 1]))
+
+(defn set-property
+  [object property-name new-value]
+  (let [setter-name (setter property-name)
+        ms          (->> object
+                         (.getClass)
+                         (.getMethods)
+                         (filter #(= setter-name (.getName %))))]))
 
 (defmethod ->init
   Keyword [arg1 arg2]
