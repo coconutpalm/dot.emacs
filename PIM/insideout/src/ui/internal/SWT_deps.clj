@@ -10,11 +10,11 @@
        (.substring 0 3)
        (.toLowerCase))))
 
-;; Sure would be nice to have a newer version available through Maven...
-(def swt-version "4.3")
+
+(def ^:dynamic *swt-version* "3.117.0")
 
 (defn swt-coordinates [platform]
-  [(symbol "org.eclipse.swt" (str "org.eclipse.swt." (str platform))) swt-version])
+  [(symbol "org.eclipse.platform" (str "org.eclipse.swt." (str platform))) *swt-version*])
 
 (def swt-libs
   {"lin" (swt-coordinates 'gtk.linux.x86_64)
