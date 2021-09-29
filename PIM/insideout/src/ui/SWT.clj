@@ -4,13 +4,21 @@
             [ui.internal.docs :as docs]
             [ui.internal.reflectivity :as meta]
             [ui.inits :as i]
-            [ui.gridlayout]
-            [clj-foundation.patterns :refer [nothing]]
-            [clj-foundation.data :refer [nothing->identity ->kebab-case]])
+            [clj-foundation.patterns :refer [nothing something?]]
+            [clj-foundation.data :refer [nothing->identity]])
   (:import [clojure.lang IFn]
            [org.eclipse.swt SWT]
            [org.eclipse.swt.events TypedEvent]
            [org.eclipse.swt.widgets Display Shell Item]))
+
+
+(defn ui-scale!
+  "Scale the user interface by `factor`.  Must be called before
+  the Display is initialized."
+  [factor]
+  (let [multiplier (str factor)]
+    (System/setProperty "sun.java2d.uiScale" multiplier)
+    (System/setProperty "glass.gtk.uiScale" multiplier)))
 
 
 (def display
@@ -97,6 +105,10 @@
   [sh]
   (.open sh)
   (process-pending-events!)
+  (.setVisible sh false)
+  (process-pending-events!)
+  (.open sh)
+  (process-pending-events!)
   (.forceActive sh))
 
 (defn shell
@@ -118,6 +130,8 @@
 
 ;; =====================================================================================
 ;; Specialized online docs
+
+(require '[ui.gridlayout :as layout])
 
 (def ^:private documentation
   {:package {:ui.SWT (meta/sorted-publics 'ui.SWT)
@@ -170,7 +184,8 @@
   "Returns true if executing on the UI thread and false otherwise."
   []
   (let [t (Thread/currentThread)
-        dt (.getThread (Display/getDefault))]
+        dt (and (something? @display)
+                (.getThread @display))]
     (= t dt)))
 
 
@@ -272,9 +287,9 @@
       (.start t)
       t))
 
-(require '[ui.gridlayout :as layout])
-
 (defn example-app []
+  (ui-scale! 2)
+
   (application
    (shell "Example SWT app"
           (layout/grid-layout :num-columns 2 :make-columns-equal-width false)
