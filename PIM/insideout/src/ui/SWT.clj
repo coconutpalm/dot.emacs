@@ -17,9 +17,6 @@
   "The default SWT Display object or `nothing`"
   (atom nothing))
 
-(def toplevel-shell
-  "The top-level application shell or `nothing`"
-  (atom nothing))
 
 ;; Wishlist:
 ;;
@@ -100,8 +97,7 @@
   [sh]
   (.open sh)
   (process-pending-events!)
-  (.setVisible sh false)
-  (.open sh))
+  (.forceActive sh))
 
 (defn shell
   "org.eclipse.swt.widgets.Shell"
@@ -211,10 +207,10 @@
   (.asyncExec @display (runnable-fn f)))
 
 (defn- process-event
-  "Process a single event iff Shell sh isn't disposed.  Returns a pair
-  [shell-disposed? event-queue-not-empty?]"
-  [d sh]
-  (let [disposed (.isDisposed sh)]
+  "Process a single event iff all shells aren't disposed.  Returns a pair
+  [shells-disposed? event-queue-not-empty?]"
+  [d]
+  (let [disposed (empty? (.getShells d))]
     [disposed
      (and (not disposed)
           (.readAndDispatch d))]))
@@ -255,22 +251,13 @@
                            maybe-shell
                            (throw (ex-info "Couldn't make shell from args" {:args more})))]
 
-        (reset! toplevel-shell s)
-
-        (loop [[disposed busy] (process-event d s)]
+        (loop [[disposed busy] (process-event d)]
           (when (not busy)
             (.sleep d))
           (when (not disposed)
-            (recur (process-event d s)))))
+            (recur (process-event d)))))
 
-      (process-pending-events!)
-
-      (catch Throwable t
-        (reset! toplevel-shell nothing)
-        (throw t))
-
-      (finally
-        (reset! toplevel-shell nothing)))))
+      (process-pending-events!))))
 
 ;;  Oddly, this throws ClassNotFoundException on Shell.
 #_(defn background
@@ -285,25 +272,25 @@
       (.start t)
       t))
 
-
 (require '[ui.gridlayout :as layout])
 
 (defn example-app []
   (application
    (shell "Example SWT app"
-          (layout/grid-layout :numColumns 2 :makeColumnsEqualWidth false)
+          (layout/grid-layout :num-columns 2 :make-columns-equal-width false)
 
           (label "A. Label"
                  (layout/align-left))
-          (combo SWT/BORDER "Default value"
+          (combo SWT/BORDER
                  :items ["one" "two" "three" "Default value" "four"]
+                 :select 1
                  (layout/hgrab))
 
           (group "Example group"
                  (id! :name)
-                 (layout/align-left :horizontalSpan 2)
+                 (layout/align-left :horizontal-span 2)
 
-                 (layout/grid-layout :numColumns 2 :makeColumnsEqualWidth false)
+                 (layout/grid-layout :num-columns 2 :make-columns-equal-width false)
                  (label "A. Label"
                         (layout/align-left))
                  (text SWT/BORDER "Default text"
@@ -315,6 +302,7 @@
       (let [t (:default-text @props)]
         ;; Set up event handlers, etc...
         (println t))))))
+
 
 
 (comment
