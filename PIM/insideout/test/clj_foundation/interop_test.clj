@@ -1,13 +1,40 @@
+(remove-ns 'clj-foundation.interop-test)
+
 (ns clj-foundation.interop-test
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clj-foundation.unit-test-common :as common]
-            [clj-foundation.interop :refer :all]))
+            [clj-foundation.conversions :refer [convert]]
+            [clj-foundation.interop :refer :all])
+  (:import [clojure.lang Keyword]))
 
 
 (common/register-fixtures)
 
+
+(deftest set-property!-test
+  (testing "Finds and executes setter without type conversion"
+
+    (let [t (Thread.)]
+      (set-property! t "name" "banana")
+      (is (= "banana" (.getName t)))))
+
+  (testing "Finds and executes setter with automatic type conversion when `convert` is defined"
+    (defmethod convert [String Keyword] [_ kw] (name kw))
+
+    (let [t (Thread.)]
+      (set-property! t "name" :grape)
+      (is (= "grape" (.getName t)))))
+
+  (testing "Sad case throws IllegalArgumentException"
+    (let [t (Thread.)]
+      (try
+        (set-property! t "name" false)
+        (throw (IllegalStateException. "Should throw IllegalArgumentException."))
+
+        ;; threw the right thing if:
+        (catch IllegalArgumentException _)))))
 
 ;; Schema/type tests ---------------------------------------------------------------------------------------
 
