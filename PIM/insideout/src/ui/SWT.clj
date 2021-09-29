@@ -8,6 +8,7 @@
             [clj-foundation.data :refer [nothing->identity]])
   (:import [clojure.lang IFn]
            [org.eclipse.swt SWT]
+           [org.eclipse.swt.layout FillLayout]
            [org.eclipse.swt.events TypedEvent]
            [org.eclipse.swt.widgets Display Shell Item]))
 
@@ -275,53 +276,42 @@
       (process-pending-events!))))
 
 ;;  Oddly, this throws ClassNotFoundException on Shell.
-#_(defn background
-    "Runs `f` in a background thread.  Returns the thread.  Propogates the context classloader to
+(defn background
+  "Runs `f` in a background thread.  Returns the thread.  Propogates the context classloader to
   the new thread."
-    [f]
-    (let [cl (.getContextClassLoader (Thread/currentThread))
-          job (fn []
-                (.setContextClassLoader (Thread/currentThread) cl)
-                (f))
-          t   (Thread. job)]
-      (.start t)
-      t))
+  [f]
+  (let [cl (insideout.dynamo/dyn-classloader)
+        job (fn []
+              (.setContextClassLoader (Thread/currentThread) cl)
+              (f))
+        t (Thread. job)]
+    (.start t)
+    t))
+
 
 (defn example-app []
   (ui-scale! 2)
 
   (application
-   (shell "Example SWT app"
-          (layout/grid-layout :num-columns 2 :make-columns-equal-width false)
+   (shell "Browser"
+          :layout (FillLayout.)
 
-          (label "A. Label"
-                 (layout/align-left))
-          (combo SWT/BORDER
-                 :items ["one" "two" "three" "Default value" "four"]
-                 :select 1
-                 (layout/hgrab))
-
-          (group "Example group"
-                 (id! :name)
-                 (layout/align-left :horizontal-span 2)
-
-                 (layout/grid-layout :num-columns 2 :make-columns-equal-width false)
-                 (label "A. Label"
-                        (layout/align-left))
-                 (text SWT/BORDER "Default text"
-                       (layout/align-left)
-                       (id! :default-text))))
+          (browser SWT/WEBKIT
+                   :url "https://www.google.com"
+                   (id! :editor)))
 
    (main
     (fn [props _]
-      (let [t (:default-text @props)]
-        ;; Set up event handlers, etc...
-        (println t))))))
+      ))))
 
 
 
 (comment
+  ;; Doesn't work. :-(
+  #_(def t (background example-app))
+
   (example-app)
+  (:editor @state)
   (ui (.dispose @display))
 
   ,)
