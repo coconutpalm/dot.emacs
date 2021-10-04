@@ -4,22 +4,28 @@
             [ui.internal.docs :as docs]
             [ui.internal.reflectivity :as meta]
             [ui.inits :as i]
-            [ui.gridlayout]
-            [clj-foundation.patterns :refer [nothing]]
-            [clj-foundation.data :refer [nothing->identity ->kebab-case]])
+            [clj-foundation.patterns :refer [nothing something?]]
+            [clj-foundation.data :refer [nothing->identity]])
   (:import [clojure.lang IFn]
            [org.eclipse.swt SWT]
+           [org.eclipse.swt.layout FillLayout]
            [org.eclipse.swt.events TypedEvent]
            [org.eclipse.swt.widgets Display Shell Item]))
+
+
+(defn ui-scale!
+  "Scale the user interface by `factor`.  Must be called before
+  the Display is initialized."
+  [factor]
+  (let [multiplier (str factor)]
+    (System/setProperty "sun.java2d.uiScale" multiplier)
+    (System/setProperty "glass.gtk.uiScale" multiplier)))
 
 
 (def display
   "The default SWT Display object or `nothing`"
   (atom nothing))
 
-(def toplevel-shell
-  "The top-level application shell or `nothing`"
-  (atom nothing))
 
 ;; Wishlist:
 ;;
@@ -101,7 +107,10 @@
   (.open sh)
   (process-pending-events!)
   (.setVisible sh false)
-  (.open sh))
+  (process-pending-events!)
+  (.open sh)
+  (process-pending-events!)
+  (.forceActive sh))
 
 (defn shell
   "org.eclipse.swt.widgets.Shell"
@@ -122,6 +131,8 @@
 
 ;; =====================================================================================
 ;; Specialized online docs
+
+(require '[ui.gridlayout :as layout])
 
 (def ^:private documentation
   {:package {:ui.SWT (meta/sorted-publics 'ui.SWT)
@@ -174,7 +185,8 @@
   "Returns true if executing on the UI thread and false otherwise."
   []
   (let [t (Thread/currentThread)
-        dt (.getThread (Display/getDefault))]
+        dt (and (something? @display)
+                (.getThread @display))]
     (= t dt)))
 
 
@@ -211,10 +223,10 @@
   (.asyncExec @display (runnable-fn f)))
 
 (defn- process-event
-  "Process a single event iff Shell sh isn't disposed.  Returns a pair
-  [shell-disposed? event-queue-not-empty?]"
-  [d sh]
-  (let [disposed (.isDisposed sh)]
+  "Process a single event iff all shells aren't disposed.  Returns a pair
+  [shells-disposed? event-queue-not-empty?]"
+  [d]
+  (let [disposed (empty? (.getShells d))]
     [disposed
      (and (not disposed)
           (.readAndDispatch d))]))
@@ -255,70 +267,52 @@
                            maybe-shell
                            (throw (ex-info "Couldn't make shell from args" {:args more})))]
 
-        (reset! toplevel-shell s)
-
-        (loop [[disposed busy] (process-event d s)]
+        (loop [[disposed busy] (process-event d)]
           (when (not busy)
             (.sleep d))
           (when (not disposed)
-            (recur (process-event d s)))))
+            (recur (process-event d)))))
 
-      (process-pending-events!)
+      (process-pending-events!))))
 
-      (catch Throwable t
-        (reset! toplevel-shell nothing)
-        (throw t))
-
-      (finally
-        (reset! toplevel-shell nothing)))))
 
 ;;  Oddly, this throws ClassNotFoundException on Shell.
-#_(defn background
-    "Runs `f` in a background thread.  Returns the thread.  Propogates the context classloader to
+(defn background
+  "Runs `f` in a background thread.  Returns the thread.  Propogates the context classloader to
   the new thread."
-    [f]
-    (let [cl (.getContextClassLoader (Thread/currentThread))
-          job (fn []
-                (.setContextClassLoader (Thread/currentThread) cl)
-                (f))
-          t   (Thread. job)]
-      (.start t)
-      t))
+  [f]
+  (let [cl (insideout.dynamo/dyn-classloader)
+        job (fn []
+              (.setContextClassLoader (Thread/currentThread) cl)
+              (f))
+        t (Thread. job)]
+    (.start t)
+    t))
 
-
-(require '[ui.gridlayout :as layout])
 
 (defn example-app []
+  (ui-scale! 2)
+
   (application
-   (shell "Example SWT app"
-          (layout/grid-layout :numColumns 2 :makeColumnsEqualWidth false)
+   (shell "Browser"
+          :layout (FillLayout.)
 
-          (label "A. Label"
-                 (layout/align-left))
-          (combo SWT/BORDER "Default value"
-                 :items ["one" "two" "three" "Default value" "four"]
-                 (layout/hgrab))
-
-          (group "Example group"
-                 (id! :name)
-                 (layout/align-left :horizontalSpan 2)
-
-                 (layout/grid-layout :numColumns 2 :makeColumnsEqualWidth false)
-                 (label "A. Label"
-                        (layout/align-left))
-                 (text SWT/BORDER "Default text"
-                       (layout/align-left)
-                       (id! :default-text))))
+          (browser SWT/WEBKIT
+                   :url "https://www.google.com"
+                   (id! :editor)))
 
    (main
     (fn [props _]
-      (let [t (:default-text @props)]
-        ;; Set up event handlers, etc...
-        (println t))))))
+      ))))
+
 
 
 (comment
+  ;; Doesn't work. :-(
+  #_(def t (background example-app))
+
   (example-app)
+  (:editor @state)
   (ui (.dispose @display))
 
   ,)

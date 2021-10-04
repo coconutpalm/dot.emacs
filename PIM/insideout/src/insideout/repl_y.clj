@@ -7,9 +7,20 @@
  [['reply "0.5.1"]]
  ['reply.main])
 
-(defn start-repl-y []
+
+(defn background-repl-y
+  "Start repl-y in a background thread."
+  []
   (let [t (Thread.
            (fn [] ((ns-resolve 'reply.main 'launch)
-                  {:custom-eval '(do (println "Welcome to this awesome app"))
+                  {:custom-eval '(do (println "Welcome to inside-out!"))
                    :port 9999})))]
     (.start t)))
+
+
+(defn start
+  "Start repl-y using the current thread."
+  []
+  ((ns-resolve 'reply.main 'launch)
+   {:custom-eval '(do (println "Welcome to inside-out!"))
+    :port 9999}))

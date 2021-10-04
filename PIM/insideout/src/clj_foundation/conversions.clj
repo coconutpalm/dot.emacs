@@ -1,7 +1,7 @@
 (ns clj-foundation.conversions
   "A 'convert' multimethod that can convert between arbitrary types.  Default implementations
   are supplied for Clojure's built-in types."
-  (:require [clj-foundation.errors :refer [failure? must-be]]
+  (:require [clj-foundation.errors :refer [must-be]]
             [clj-foundation.patterns :as patterns]))
 
 
@@ -99,4 +99,4 @@
 (defmethod convert :default [dest-class src-instance]
   (if (.isAssignableFrom dest-class (.getClass src-instance))
     src-instance
-    (throw (IllegalArgumentException. (str "Cannot convert from " (.getClass src-instance) " to " dest-class)))))
+    (patterns/no-result (str "Cannot convert from " (.getClass src-instance) " to " dest-class) src-instance)))

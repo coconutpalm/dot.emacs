@@ -2,10 +2,10 @@
   "Defines API for defining and manipulating init functions.  An init function is a function
   where the initial argument is the object to init and subsequent arguments (if any)
   define the values used for initialization."
-  (:require [ui.internal.reflectivity :as meta]
+  (:require [ui.SWT-conversions :refer :all]
+            [ui.internal.reflectivity :as meta]
             [clj-foundation.patterns :refer [nothing]]
-            [clj-foundation.interop :refer [array]]
-            [clj-foundation.conversions :refer :all]
+            [clj-foundation.interop :refer [array set-property!]]
             [clj-foundation.data :refer [->camelCase ->kebab-case setter nothing->identity]])
   (:import [clojure.lang IFn Keyword Reflector]
            [java.lang.reflect Modifier]
@@ -33,14 +33,6 @@
             (.setText control arg1))]
     [set-text-on 1]))
 
-(defn set-property
-  [object property-name new-value]
-  (let [setter-name (setter property-name)
-        ms          (->> object
-                         (.getClass)
-                         (.getMethods)
-                         (filter #(= setter-name (.getName %))))]))
-
 (defmethod ->init
   Keyword [arg1 arg2]
   (letfn [(set-property [_ o]
@@ -54,9 +46,7 @@
                                  (first))]
               (if field
                 (Reflector/setInstanceField o field-name arg2)
-                (Reflector/invokeInstanceMethod o
-                 (setter arg1)
-                 (array [Object] arg2)))))]
+                (set-property! o (name arg1) arg2))))]
     [set-property 2]))
 
 (defn args->inits
@@ -91,9 +81,10 @@
       (run-inits props# child# inits#)
       child#)))
 
-(defn widget-classes->inits [classes]
-  (map (fn [clazz]
-         (let [name (.getName clazz)
+(require 'ui.internal.docs)
+
+(defn class->init [clazz]
+  (let [name (.getName clazz)
                doc (str "Construct a " name "\n\n" (ui.internal.docs/eclipsedoc-url name))
                name-sym (symbol name)
                fn-name (symbol (-> (.getSimpleName clazz) ->kebab-case))]
@@ -104,7 +95,10 @@
                      inits#] (extract-style-from-args inits#)
                     style# (nothing->identity SWT/NULL style#)]
                 (widget* ~name-sym style# (or inits# []))))))
-       classes))
+
+(defn widget-classes->inits [classes]
+  (map class->init classes))
+
 
 (defmacro  composite-inits []
   (let [inits (widget-classes->inits meta/swt-composites)]

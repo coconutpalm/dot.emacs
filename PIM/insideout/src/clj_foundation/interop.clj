@@ -1,7 +1,10 @@
 (ns clj-foundation.interop
   "Simplify Java object interop"
   (:require [clojure.string :as str]
-            [clj-foundation.data :refer [keywordize getter]]))
+            [clj-foundation.data :refer [keywordize getter setter]]
+            [clj-foundation.patterns :refer [something?]]
+            [clj-foundation.conversions :refer [convert] :refer :all])
+  (:import [clojure.lang Reflector]))
 
 
 
@@ -52,6 +55,36 @@
 
 
 ;; Bean things
+(defn set-property!
+  [object property-name new-value]
+  (letfn [(invoke-one-of [ms object new-value-class new-value]
+            (when-let [m (first ms)]
+              (if-let [arg (something? (convert (first (.getParameterTypes m)) new-value))]
+                (do
+                  (.invoke m object (array [Object] arg))
+                  true)
+                (invoke-one-of (rest ms) object new-value-class new-value))))
+
+          (invoke-with-conversion [setter-name object new-value-class arglist]
+            (let [ms (->> object
+                        (.getClass)
+                        (.getMethods)
+                        (filter #(= setter-name (.getName %)))
+                        (filter #(= 1 (count (.getParameterTypes %)))))]
+              (invoke-one-of ms object (class new-value) new-value)))
+
+          (set-using-name! [object setter-name new-value]
+            (try
+              (Reflector/invokeInstanceMethod object setter-name (array [Object] new-value))
+              true
+
+              (catch Throwable _
+                (invoke-with-conversion setter-name object (class new-value) new-value))))]
+
+    (or (set-using-name! object property-name new-value)
+        (set-using-name! object (setter property-name) new-value)
+        (throw (IllegalArgumentException. (str "Cannot set property: '" property-name "' from " (class new-value)))))))
+
 
 (defn- prop-name [prop] (if (keyword? prop) (name prop) (str prop)))
 
