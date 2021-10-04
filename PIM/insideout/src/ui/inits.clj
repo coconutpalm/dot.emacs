@@ -81,9 +81,10 @@
       (run-inits props# child# inits#)
       child#)))
 
-(defn widget-classes->inits [classes]
-  (map (fn [clazz]
-         (let [name (.getName clazz)
+(require 'ui.internal.docs)
+
+(defn class->init [clazz]
+  (let [name (.getName clazz)
                doc (str "Construct a " name "\n\n" (ui.internal.docs/eclipsedoc-url name))
                name-sym (symbol name)
                fn-name (symbol (-> (.getSimpleName clazz) ->kebab-case))]
@@ -94,7 +95,10 @@
                      inits#] (extract-style-from-args inits#)
                     style# (nothing->identity SWT/NULL style#)]
                 (widget* ~name-sym style# (or inits# []))))))
-       classes))
+
+(defn widget-classes->inits [classes]
+  (map class->init classes))
+
 
 (defmacro  composite-inits []
   (let [inits (widget-classes->inits meta/swt-composites)]
