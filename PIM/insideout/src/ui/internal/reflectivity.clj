@@ -15,8 +15,9 @@
   (-> (Reflections. (to-array [(SubTypesScanner.)]))))
 
 (def swt-composites (->> (.getSubTypesOf swt-index Composite)
-                                 (seq)
-                                 (remove #{Shell GLCanvas})))
+                       (seq)
+                       (remove #{Shell GLCanvas})
+                       (#(conj % Composite))))
 
 (def swt-widgets (->> (.getSubTypesOf swt-index Widget)
                               (seq)
