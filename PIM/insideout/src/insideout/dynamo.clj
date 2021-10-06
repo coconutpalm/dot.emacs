@@ -3,6 +3,7 @@
   (:require
    [cemerick.pomegranate        :as pom]
    [cemerick.pomegranate.aether :as pom-mvn]
+   [clj-foundation.io           :refer [file-details]]
    [clojure.string              :as str]
    [clojure.java.io             :as io]
    [clojure.stacktrace :as stacktrace])
@@ -214,6 +215,7 @@
        ~@imports)))
 
 
+
 (defn find-src+test+res []
   (let [conv-over-config [["src/main/clojure" "src/clojure" "src/main" "src"]
                           ["src/main/resources" "src/resources" "resources"]
@@ -228,12 +230,52 @@
        (find-src+test+res)))
 
 
+;; Filesystem event handling
+#_(defn init-project [p]
+  (println (str "Initializing project " p)))
+
+(require-libs
+ [['clojure-watch "LATEST"]]
+ [['clojure-watch.core :refer ['start-watch]]])
+
+
+(defonce file-change (atom {}))
+
+(defn filesystem-change [event filename]
+  (reset! file-change {:event event
+                       :file (file-details (io/file filename))}))
+
+
+;; Set of filesystem events
+(def filesystem-event? #{:init :create :modify :delete})
+
+
+(let [end-watch (atom nil)]
+  (defn watch [watchinfo]
+    (swap! end-watch
+           (fn [end-watch]
+             (when end-watch (end-watch))
+             (start-watch watchinfo)))))
+
+
+(defn watch-classpath-dirs []
+  (letfn [(watchinfo [path] {:path path
+                             :event-types [:create :modify :delete]
+                             ;; :bootstrap init-project
+                             :callback filesystem-change
+                             :options {:recursive true}})]
+    (let [watch-config (map watchinfo *classpath-dirs*)]
+      (watch watch-config))))
+
+
 (defn add-source-folders-to-classpath
   "Adds the java.io.File objects in *classpath-dirs* to the classpath."
   []
   (let [cl ^DynamicClassLoader (dyn-classloader)]
     (doseq [u *classpath-dirs*]
-      (.addURL cl u))))
+      (.addURL cl u)))
+  (watch-classpath-dirs))
+
 
 
 (defn classloader-hierarchy
