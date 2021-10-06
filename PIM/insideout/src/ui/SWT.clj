@@ -8,6 +8,7 @@
             [clj-foundation.data :refer [nothing->identity]])
   (:import [clojure.lang IFn]
            [org.eclipse.swt SWT]
+           [org.eclipse.swt.graphics GC]
            [org.eclipse.swt.layout FillLayout]
            [org.eclipse.swt.events TypedEvent]
            [org.eclipse.swt.widgets Display Shell Item]))
@@ -27,20 +28,27 @@
   (atom nothing))
 
 
+(defn with-gc-on
+  "Create a graphics context on `drawable`, run `f`, and ensure the `gc` is disposed."
+  [drawable f]
+  (let [gc (GC. drawable)]
+    (try
+      (f gc)
+      (finally (.dispose gc)))))
+
+(defmacro doto-gc-on
+  "Like with-gc-on, but executes `forms` inside a `doto` block on the `gc`."
+  [drawable & forms]
+  `(with-gc-on ~drawable
+     (fn [gc#]
+       (doto gc# ~@forms))))
+
 ;; Wishlist:
 ;;
 ;; derived, reactive (cell) properties
 ;; Lazy sequences of property values?  (via continuations)
 
 ;; TODO!
-;;   * Ability to background the Display thread in REPL.
-;;   * In REPL, top-level-shell hides; doesn't close?
-;;
-;;   * A way to pass state into/out-of  UI:
-;;     - Inits are f: arg-kvs => ( [props parent] => props )
-;;     - (id! [kw] (fn [props parent] (swap! props assoc [kw parent])))
-;;        o Refactor existing inits to the above signature
-;;
 ;;   * A basic InsideOut Shell:
 ;;     - F12 toggles design text editor with run mode using StackLayout
 ;;   * A draggable tabbed view framework using example snippet in Chrome on phone (for "run mode")
