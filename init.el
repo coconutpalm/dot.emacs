@@ -38,7 +38,6 @@
 ;; Configure straight.el and use-package
 ;;
 ;; NOTE-When receiving an out-of-date certificate error, uncomment
-;;      (setq package-check-signature nil)               and
 ;;      (package-install 'gnu-elpa-keyring-update)       and reload
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -60,9 +59,6 @@
 
 (straight-use-package 'use-package)
 
-;; Upgrade packages automatically on startup
-;;  If you don't want this, comment out package-utils-upgrade-all
-;;   (package-utils-upgrade-all)
 ;;   (package-install 'gnu-elpa-keyring-update)
 
 (use-package spinner)
@@ -1283,6 +1279,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :config
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
   (setq org-src-fontify-natively t)
+  (setq org-support-shift-select t)
   (setq org-duration-format (quote (:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t)))
 
   :hook
@@ -2522,6 +2519,7 @@ assuming it is in a maven-style project."
   :config
   (setq
    cider-repl-use-content-types t
+   cider-ns-save-files-on-refresh t
    nrepl-hide-special-buffers t)
 
   :custom
@@ -2592,7 +2590,7 @@ buffer's."
                  (string= filename "build.boot")
                  (ends-with? filename "scratchpad.clj")
                  (ends-with? filename ".edn")))
-        (cider-load-buffer))))
+        (cider-ns-reload))))
 
 (add-hook 'cider-mode-hook
    '(lambda () (add-hook 'after-save-hook
@@ -3060,9 +3058,7 @@ buffer's."
 
   :config
   (setq persp-state-default-file (concat (expand-file-name "~/.emacs.d") "/perspectives.save" ))
-  (persp-mode)
-  (when (file-exists-p persp-state-default-file)
-    (persp-state-load persp-state-default-file)))
+  (persp-mode))
 
 
 ;; Save window layout perspectives per projectile project please
