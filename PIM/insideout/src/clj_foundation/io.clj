@@ -8,10 +8,30 @@
             [clj-foundation.patterns :as p]
             [clj-foundation.data :as data]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.edn :as edn])
 
   (:import [java.io InputStream File PrintWriter ByteArrayInputStream ByteArrayOutputStream]
            [java.net URI URL Socket]))
+
+
+;; File path stuff
+
+(defn expand-path [p]
+  (let [home (System/getProperty "user.home")]
+    (if (str/includes? p "~")
+      (str/replace p "~" home)
+      p)))
+
+(defn full-path [^String relative-path] (.getCanonicalPath (io/file relative-path)))
+
+(defn file-details [fileOrName]
+  (let [f (if (string? fileOrName) (io/file fileOrName) fileOrName)]
+    {:full-name (.getCanonicalPath f)
+     :short-name (.getName f)
+     :directory (.isDirectory f)
+     :hidden (.isHidden f)
+     :last-modified-millis (.lastModified f)}))
 
 
 ;; From the deprecated clojure.contrib.io library
