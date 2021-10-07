@@ -86,7 +86,7 @@ In addition:
 `C-f` - Incrementally-search forward from the cursor position
 `C-r` - Incrementally-search backward from the cursor position
 
-`C-k` - Delete (kill) the text up to the end of the current line to the clipboard/kill ring.
+`C-k` - Delete (kill) the text up to the end of the current line to the clipboard/kill ring.  Repeatedly pressing `C-k` cuts successive lines, adding to the clipboard each time.
 
 `C-d` - Delete the character to the right of the cursor
 `C-<delete>` - Delete the word to the right of the cursor; on macs, this behaves according to muscle-memory regardless of the label on the physical key.
@@ -96,7 +96,7 @@ In addition:
 
 `tab` - expands and collapses outline-like things.  The file browser.  Files in the Git Status view.  Outline headings.  You get the idea.
 
-`tab` also invokes content-assist.  For example, to fix a misspelled word, put your cursor after the last character and hit `tab`.
+`tab` also invokes content-assist/autocomplete.  For example, to fix a misspelled word, put your cursor after the last character and hit `tab`.
 
 ## Misc features
 
