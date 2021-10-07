@@ -104,5 +104,6 @@
   "Define init functions for the specified classes.  The classes must follow the SWT
   2-arg constructor convention [parent style]."
   [classes]
-  `(let [inits# (widget-classes->inits ~classes)]
-     [inits#]))
+  (let [inits (widget-classes->inits (var-get (resolve classes)))]
+    `(let []
+       ~@inits)))

@@ -27,6 +27,7 @@
 
 (def swt-items (->> (.getSubTypesOf swt-index Item)
                   (seq)
+                  (remove #{TaskItem})
                   (sort-by #(.getSimpleName %))))
 
 (def swt-layouts (->> (.getSubTypesOf swt-index Layout)

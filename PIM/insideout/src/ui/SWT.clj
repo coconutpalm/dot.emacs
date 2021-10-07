@@ -1,3 +1,5 @@
+(remove-ns 'ui.SWT)
+
 (ns ui.SWT
   (:refer-clojure :exclude [list])
   (:require [ui.internal.SWT-deps]
@@ -12,6 +14,17 @@
            [org.eclipse.swt.layout FillLayout]
            [org.eclipse.swt.events TypedEvent]
            [org.eclipse.swt.widgets Display Shell Item]))
+
+;; TODO
+;;
+;; Event handlers - Instead of proxy nonsense:
+;;  (on-widget-selected [event] &forms)
+;; Reflectively (.addSelectionListener (proxy [SelectionAdapter] [] (widgetSelected [event] ...
+;;
+;; Make id! hierarchical.  An id! on a Text inside a Composite with an id winds
+;;  up as {:composite-id {:text-id the-text}}
+;;
+;;  (ap->let the-map & exprs) - Top-level keywords become variables in the let binding
 
 
 (defn ui-scale!
@@ -43,33 +56,10 @@
      (fn [gc#]
        (doto gc# ~@forms))))
 
-;; Wishlist:
-;;
-;; derived, reactive (cell) properties
-;; Lazy sequences of property values?  (via continuations)
-
-;; TODO!
-;;   * A basic InsideOut Shell:
-;;     - F12 toggles design text editor with run mode using StackLayout
-;;   * A draggable tabbed view framework using example snippet in Chrome on phone (for "run mode")
-;;
-;;   * System tray icon when running, plus menu with show/hide toggle; add new..., etc.
-;;
-;;   * data-form - CompositeTable reimagined using an init to describe the row...
-;;   * code-mirror control
-;;
-;;   * Start putting things in Crux
-;;
-;;   * Use Java reflection to learn parameter types and guard API calls using (convert DestType val)
-;;
-;; Make id! hierarchical.  An id! on a Text inside a Composite with an id winds
-;;  up as {:composite-id {:text-id the-text}}
-
-;;  (ap->let the-map & exprs) - Top-level keywords become variables in the let binding
-
 
 ;; =====================================================================================
-;; Reflectively generate the API here
+;; Aaaaaand, here's the API!
+;; =====================================================================================
 
 (i/define-inits meta/swt-composites)
 (i/define-inits meta/swt-widgets)
@@ -144,7 +134,7 @@
    :swt {:SWT {SWT (meta/fields SWT)}
          :composites (meta/fn-names<- (conj meta/swt-composites Shell))
          :widgets (meta/fn-names<- meta/swt-widgets)
-         :items (->> (.getSubTypesOf meta/swt-index Item) (seq) (sort-by #(.getSimpleName %)))
+         :items (meta/fn-names<- meta/swt-items)
          :events (->> (.getSubTypesOf meta/swt-index TypedEvent) (seq) (sort-by #(.getSimpleName %)))
          :listeners (->> (.getSubTypesOf meta/swt-index org.eclipse.swt.internal.SWTEventListener)
                        (filter (fn [clazz] (not (.contains (.getSimpleName clazz) "$"))))
@@ -301,13 +291,18 @@
    (shell "Browser"
           :layout (FillLayout.)
 
+          #_(menu "&File"
+                (menu-item "&Open..." (id! :cmd/open-file))
+                (menu-item SWT/SEPARATOR)
+                (menu-item "&Exit" (id! :cmd/exit)))
+
           (browser SWT/WEBKIT
-                   :url "https://www.google.com"
-                   (id! :editor)))
+                   :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc)
+                   (id! :ui/editor)))
 
    (main
     (fn [props _]
-      ))))
+      (println (:ui/editor @props))))))
 
 
 
