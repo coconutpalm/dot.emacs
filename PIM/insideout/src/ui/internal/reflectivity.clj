@@ -25,9 +25,13 @@
                               (remove #(.isAssignableFrom Item %))
                               (remove #{Control Tray TaskBar TaskItem ScrollBar})))
 
+(def swt-items (->> (.getSubTypesOf swt-index Item)
+                  (seq)
+                  (sort-by #(.getSimpleName %))))
+
 (def swt-layouts (->> (.getSubTypesOf swt-index Layout)
-                              (seq)
-                              (remove #{SashFormLayout ScrolledCompositeLayout CTabFolderLayout})))
+                    (seq)
+                    (remove #{SashFormLayout ScrolledCompositeLayout CTabFolderLayout})))
 
 (defn types-in-package [swt-package]
   (->> (Reflections. (array [Object]

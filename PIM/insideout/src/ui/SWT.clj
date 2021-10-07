@@ -71,8 +71,9 @@
 ;; =====================================================================================
 ;; Reflectively generate the API here
 
-(i/composite-inits)
-(i/widget-inits)
+(i/define-inits meta/swt-composites)
+(i/define-inits meta/swt-widgets)
+(i/define-inits meta/swt-items)
 
 
 ;; =====================================================================================
@@ -99,7 +100,7 @@
 
 
 ;; =====================================================================================
-;; Generate main API
+;; Hand-coded APIs
 
 (defn |
   "Combine the specified SWT style bits for the \"style\" constructor parameter.  A synonym
@@ -107,18 +108,13 @@
   [& styles]
   (apply bit-or styles))
 
-(declare process-pending-events!)
 
-(defn open-on-top
-  "A kludge to force a shell to open on top of the other windows."
-  [sh]
-  (.open sh)
-  (process-pending-events!)
-  (.setVisible sh false)
-  (process-pending-events!)
-  (.open sh)
-  (process-pending-events!)
-  (.forceActive sh))
+(defn tray-item
+  "Define a system tray icon for the application.  Minimally, the `tray-item` needs
+  an `:image` and a `:highlighted-image`.  Many applications will also define a `:menu`."
+  [& inits]
+  )
+
 
 (defn shell
   "org.eclipse.swt.widgets.Shell"
@@ -133,7 +129,7 @@
 
     (fn [props disp]
       (let [sh (init props disp)]
-        (open-on-top sh)
+        (.open sh)
         sh))))
 
 

@@ -100,10 +100,9 @@
   (map class->init classes))
 
 
-(defmacro  composite-inits []
-  (let [inits (widget-classes->inits meta/swt-composites)]
-    `[~@inits]))
-
-(defmacro widget-inits []
-  (let [inits (widget-classes->inits meta/swt-widgets)]
-    `[~@inits]))
+(defmacro define-inits
+  "Define init functions for the specified classes.  The classes must follow the SWT
+  2-arg constructor convention [parent style]."
+  [classes]
+  `(let [inits# (widget-classes->inits ~classes)]
+     [inits#]))
