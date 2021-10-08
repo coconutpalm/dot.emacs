@@ -34,6 +34,30 @@
                     (seq)
                     (remove #{SashFormLayout ScrolledCompositeLayout CTabFolderLayout})))
 
+(def swt-listeners (->> (.getSubTypesOf swt-index org.eclipse.swt.internal.SWTEventListener)
+                      (filter #(.endsWith (.getSimpleName %) "Listener"))
+                      (filter #(> 0 (.indexOf (.getName %) "internal")))
+                      (sort-by #(.getSimpleName %))
+                      (map (fn [clazz] [clazz (->> (.getMethods clazz)
+                                                (remove #(.endsWith (str (.getDeclaringClass %)) "Object"))
+                                                (remove #(not= 0 (bit-and Modifier/STATIC (.getModifiers %)))))]))
+                      (into {})))
+
+(def widget-to-listener-methods
+  (apply merge
+         (->> (concat swt-composites swt-widgets swt-items)
+            (map (fn [clazz] {clazz (->> (.getMethods clazz)
+                                      (remove #(= "addListener" (.getName %)))
+                                      (filter (fn [m] (let [name (.getName m)]
+                                                       (and (.startsWith name "add")
+                                                            (.endsWith name "Listener")))))
+                                      (map (fn [m]
+                                             (let [listener-type (first (.getParameterTypes m))]
+                                               {:add-listener-method (.getName m)
+                                                :listener-type listener-type
+                                                :listener-methods (get swt-listeners listener-type)}))))})))))
+
+
 (defn types-in-package [swt-package]
   (->> (Reflections. (array [Object]
                           (str "org.eclipse.swt." swt-package)

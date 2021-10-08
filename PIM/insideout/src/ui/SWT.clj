@@ -136,10 +136,7 @@
          :widgets (meta/fn-names<- meta/swt-widgets)
          :items (meta/fn-names<- meta/swt-items)
          :events (->> (.getSubTypesOf meta/swt-index TypedEvent) (seq) (sort-by #(.getSimpleName %)))
-         :listeners (->> (.getSubTypesOf meta/swt-index org.eclipse.swt.internal.SWTEventListener)
-                       (filter (fn [clazz] (not (.contains (.getSimpleName clazz) "$"))))
-                       (seq)
-                       (sort-by #(.getSimpleName %)))
+         :listeners meta/swt-listeners
          :graphics (meta/types-in-package "graphics")
          :program (meta/types-in-package "program")
          :layout-managers (meta/layoutdata-by-layout)}})
