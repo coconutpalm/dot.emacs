@@ -113,16 +113,11 @@
   [& styles]
   (apply bit-or styles))
 
-	;; Image image = new Image (display, 16, 16);
-	;; Image image2 = new Image (display, 16, 16);
-	;; GC gc = new GC(image2);
-	;; gc.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
-	;; gc.fillRectangle(image2.getBounds());
-	;; gc.dispose();
 
-(defn tray-item
-  "Define a system tray icon for the application.  Minimally, the `tray-item` needs
-  an `:image` and a `:highlighted-image`.  Many applications will also define a `:menu`."
+(defn system-tray-item
+  "Define a system tray item.  Must be a child of the application node.  The :image
+  and :highlight-image should be 16x16 SWT Image objects.  `on-widget-selected` is
+  fired on clicks and `on-menu-detected` to request the right-click menu be displayed."
   [& inits]
   (let [[style
          inits] (i/extract-style-from-args inits)
@@ -132,12 +127,15 @@
         (let [tray-item (TrayItem. tray style)
               image (Image. disp 16 16)
               highlight-image (Image. disp 16 16)]
+
+          ;; Make some default/stub images
           (doto-gc-on image
                       (. setBackground (.getSystemColor disp SWT/COLOR_DARK_BLUE))
                       (. fillRectangle (.getBounds image)))
           (doto tray-item
             (. setImage image)
             (. setHighlightImage highlight-image))
+
           (i/run-inits props tray-item (or inits []))
           tray-item)))))
 
@@ -328,7 +326,7 @@
           #_(on-close [props event] (when-not (:closing @props)
                                       (set! (. event doit) false))))
 
-   (tray-item
+   (system-tray-item
     (on-menu-detected [props _] (.setVisible (:ui/tray-menu @props) true))
     (on-widget-selected [props _] (let [s (:ui/shell @props)]
                                     (if (.isVisible s)
