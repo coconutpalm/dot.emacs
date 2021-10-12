@@ -1,9 +1,12 @@
+(remove-ns 'ui.internal.reflectivity)
+
 (ns ui.internal.reflectivity
   (:require [clojure.string :as str]
             [clj-foundation.conversions :refer :all]
             [clj-foundation.data :refer [->kebab-case]]
             [clj-foundation.interop :refer [array]])
   (:import [java.lang.reflect Modifier Field]
+           [clojure.lang Symbol]
            [org.reflections Reflections]
            [org.reflections.scanners SubTypesScanner]
            [org.eclipse.swt.custom SashFormLayout ScrolledCompositeLayout CTabFolderLayout]
@@ -43,6 +46,7 @@
                                                 (remove #(not= 0 (bit-and Modifier/STATIC (.getModifiers %)))))]))
                       (into {})))
 
+;; TODO: Generate docstring for swt-events
 (def widget-to-listener-methods
   (apply merge
          (->> (concat swt-composites swt-widgets swt-items)
@@ -53,9 +57,69 @@
                                                             (.endsWith name "Listener")))))
                                       (map (fn [m]
                                              (let [listener-type (first (.getParameterTypes m))]
-                                               {:add-listener-method (.getName m)
+                                               {:add-method (.getName m)
                                                 :listener-type listener-type
                                                 :listener-methods (get swt-listeners listener-type)}))))})))))
+
+(def swt-event-methods (mapcat (fn [[_ events]] events) swt-listeners))
+
+
+(defn- event-method->listener
+  "Finds the listener information in swt-listeners corresponding to `event-method` (in camelCase)"
+  [^String event-method]
+  (first (filter
+          (fn [[_ methods]]
+            (some #(= event-method (.getName %)) methods))
+          swt-listeners)))
+
+
+(defn- listener-bodies-delegating [delegate-method-name methods]
+  (map
+   (fn [m]
+     (let [name-symbol (symbol (.getName m))]
+       (if (= delegate-method-name (.getName m))
+         (list name-symbol ['this 'e] '(delegate props e))
+         (list name-symbol ['this 'e]))))
+   methods))
+
+
+(defn init-for-event
+  ""
+  [^String delegate-method-name]
+  (let [[listener-class
+         methods] (event-method->listener delegate-method-name)
+
+        listener-class-name (symbol (.getName listener-class))
+        add-method (symbol (str ".add" (.getSimpleName listener-class)))
+        method-bodies (listener-bodies-delegating delegate-method-name methods)]
+
+    (list 'fn ['props 'parent]
+          (list add-method 'parent
+           `(reify ~listener-class-name
+             ~@method-bodies)))))
+
+(defn on* [^String event-method-name [props-name e-name] forms]
+  (let [delegate-fn (symbol "delegate")
+        initfn (init-for-event event-method-name)]
+    `(let [~delegate-fn (fn [~props-name ~e-name] ~@forms)]
+      ~initfn)))
+
+(defn on-event-name-macro
+  [event-method]
+  (let [macro-name (symbol (str "on-" (-> event-method (.getName) ->kebab-case)))
+        event-method-name (.getName event-method)]
+    `(defmacro ~macro-name
+       [[props# event#] & forms#]
+       (let [delegate-name# (symbol "delegate")
+             init-proxy# (init-for-event ~event-method-name)]
+         `(letfn [(~delegate-name# [~props# ~event#] ~@forms#)]
+            ~init-proxy#)))))
+
+
+(defmacro swt-events []
+  `(let []
+     ~@(map on-event-name-macro swt-event-methods)))
+
 
 
 (defn types-in-package [swt-package]

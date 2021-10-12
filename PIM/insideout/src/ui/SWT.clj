@@ -64,6 +64,7 @@
 (i/define-inits meta/swt-composites)
 (i/define-inits meta/swt-widgets)
 (i/define-inits meta/swt-items)
+(meta/swt-events)
 
 
 ;; =====================================================================================
@@ -289,13 +290,15 @@
           :layout (FillLayout.)
 
           #_(menu "&File"
-                (menu-item "&Open..." (id! :cmd/open-file))
-                (menu-item SWT/SEPARATOR)
-                (menu-item "&Exit" (id! :cmd/exit)))
+                  (menu-item "&Open..." (id! :cmd/open-file))
+                  (menu-item SWT/SEPARATOR)
+                  (menu-item "&Exit" (id! :cmd/exit)))
 
-          (browser SWT/WEBKIT
-                   :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc)
-                   (id! :ui/editor)))
+          (label "Hello, world"
+                 (on-mouse-down [props e] (println props)))
+          #_(browser SWT/WEBKIT
+                     :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc)
+                     (id! :ui/editor)))
 
    (main
     (fn [props _]
@@ -306,6 +309,7 @@
 (comment
   ;; Doesn't work. :-(
   #_(def t (background example-app))
+
 
   (example-app)
   (:editor @state)
