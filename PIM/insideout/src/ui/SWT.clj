@@ -303,6 +303,9 @@
       (process-pending-events!))))
 
 
+;; =====================================================================================
+;; An example app to test/prove the library's features
+
 (defn example-app []
   (ui-scale! 2)
 
