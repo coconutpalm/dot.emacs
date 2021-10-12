@@ -10,10 +10,10 @@
             [clj-foundation.data :refer [nothing->identity]])
   (:import [clojure.lang IFn]
            [org.eclipse.swt SWT]
-           [org.eclipse.swt.graphics GC]
+           [org.eclipse.swt.graphics GC Image]
            [org.eclipse.swt.layout FillLayout]
            [org.eclipse.swt.events TypedEvent]
-           [org.eclipse.swt.widgets Display Shell Item]))
+           [org.eclipse.swt.widgets Display Shell TrayItem]))
 
 ;; TODO
 ;;
@@ -28,7 +28,7 @@
 
 
 (defn ui-scale!
-  "Scale the user interface by `factor`.  Must be called before
+  "Scale the user interface by `factor` on GTK-based window systems.  Must be called before
   the Display is initialized."
   [factor]
   (let [multiplier (str factor)]
@@ -70,7 +70,7 @@
 ;; =====================================================================================
 ;; Props manipulation
 
-(defn with-props
+(defn initfn
   "Execute `f` passing `props` and `parent`.  Its purpose is to allow developers to inject or capture
   state using the `props` atom during construction of the user interface."
   [f]
@@ -81,7 +81,21 @@
   "Define the Application's main function.  By convention, must come after creating the application shell.
   Implemented as a synonym of `with-props`; it provides a way for a developer to communicate the intent
   \"here is where everything starts\"."
-  with-props)
+  initfn)
+
+
+(defmacro definit
+  "Syntactic sugar for (initfn (fn [props parent] forms))"
+  [[props parent] & forms]
+  `(let [f# (fn [~props ~parent] ~@forms)]
+     (initfn f#)))
+
+(defmacro defmain
+  "Syntactic sugar for (main (fn [props parent] forms))"
+  [[props parent] & forms]
+  `(let [f# (fn [~props ~parent] ~@forms)]
+     (initfn f#)))
+
 
 (defn id!
   "(swap! props assoc kw parent-control; Names parent-control using kw inside the props."
@@ -99,12 +113,33 @@
   [& styles]
   (apply bit-or styles))
 
+	;; Image image = new Image (display, 16, 16);
+	;; Image image2 = new Image (display, 16, 16);
+	;; GC gc = new GC(image2);
+	;; gc.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
+	;; gc.fillRectangle(image2.getBounds());
+	;; gc.dispose();
 
 (defn tray-item
   "Define a system tray icon for the application.  Minimally, the `tray-item` needs
   an `:image` and a `:highlighted-image`.  Many applications will also define a `:menu`."
   [& inits]
-  )
+  (let [[style
+         inits] (i/extract-style-from-args inits)
+        style   (nothing->identity SWT/NULL style)]
+    (fn [props disp]
+      (when-let [tray (.getSystemTray disp)]
+        (let [tray-item (TrayItem. tray style)
+              image (Image. disp 16 16)
+              highlight-image (Image. disp 16 16)]
+          (doto-gc-on image
+                      (. setBackground (.getSystemColor disp SWT/COLOR_DARK_BLUE))
+                      (. fillRectangle (.getBounds image)))
+          (doto tray-item
+            (. setImage image)
+            (. setHighlightImage highlight-image))
+          (i/run-inits props tray-item (or inits []))
+          tray-item)))))
 
 
 (defn shell
@@ -286,23 +321,33 @@
   (ui-scale! 2)
 
   (application
-   (shell "Browser"
+   (shell "Browser" (id! :ui/shell)
           :layout (FillLayout.)
 
-          #_(menu "&File"
-                  (menu-item "&Open..." (id! :cmd/open-file))
-                  (menu-item SWT/SEPARATOR)
-                  (menu-item "&Exit" (id! :cmd/exit)))
+          (menu SWT/POP_UP (id! :ui/tray-menu)
+                (menu-item SWT/PUSH "&Quit"
+                           (on-widget-selected [props _]
+                                               (swap! props #(update-in % [:closing] (constantly true)))
+                                               (.close (:ui/shell @props)))))
 
-          (label "Hello, world"
-                 (on-mouse-down [props e] (println props)))
-          #_(browser SWT/WEBKIT
-                     :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc)
-                     (id! :ui/editor)))
+          (browser SWT/WEBKIT
+                   :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc)
+                   (id! :ui/editor))
 
-   (main
-    (fn [props _]
-      (println (:ui/editor @props))))))
+          ;; BUG: on-close is defined for ShellListener and CTabFolder2Listener;
+          ;;      need to handle this case.
+          #_(on-close [props event] (when-not (:closing @props)
+                                      (set! (. event doit) false))))
+
+   (tray-item
+    (on-menu-detected [props _] (.setVisible (:ui/tray-menu @props) true))
+    (on-widget-selected [props _] (let [s (:ui/shell @props)]
+                                    (if (.isVisible s)
+                                      (.setVisible s false)
+                                      (.setVisible s true)))))
+
+   (defmain [props parent]
+     (println (str (:ui/editor @props) parent)))))
 
 
 
