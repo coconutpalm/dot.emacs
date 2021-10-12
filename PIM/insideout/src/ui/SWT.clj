@@ -303,20 +303,6 @@
       (process-pending-events!))))
 
 
-;;  Oddly, this throws ClassNotFoundException on Shell.
-(defn background
-  "Runs `f` in a background thread.  Returns the thread.  Propogates the context classloader to
-  the new thread."
-  [f]
-  (let [cl (insideout.dynamo/dyn-classloader)
-        job (fn []
-              (.setContextClassLoader (Thread/currentThread) cl)
-              (f))
-        t (Thread. job)]
-    (.start t)
-    t))
-
-
 (defn example-app []
   (ui-scale! 2)
 
