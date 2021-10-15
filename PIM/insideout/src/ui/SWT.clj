@@ -12,7 +12,7 @@
            [org.eclipse.swt SWT]
            [org.eclipse.swt.graphics GC Image]
            [org.eclipse.swt.layout FillLayout]
-           [org.eclipse.swt.events TypedEvent]
+           [org.eclipse.swt.events TypedEvent ShellListener]
            [org.eclipse.swt.widgets Display Shell TrayItem]))
 
 ;; TODO
@@ -114,7 +114,7 @@
   (apply bit-or styles))
 
 
-(defn system-tray-item
+(defn tray-item
   "Define a system tray item.  Must be a child of the application node.  The :image
   and :highlight-image should be 16x16 SWT Image objects.  `on-widget-selected` is
   fired on clicks and `on-menu-detected` to request the right-click menu be displayed."
@@ -311,30 +311,29 @@
    (shell "Browser" (id! :ui/shell)
           :layout (FillLayout.)
 
+          (browser SWT/WEBKIT (id! :ui/editor)
+                   :javascript-enabled true
+                   :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc))
+
+          (on-shell-closed [props event] (when-not (:closing @props)
+                                           (set! (. event doit) false)))
+
           (menu SWT/POP_UP (id! :ui/tray-menu)
                 (menu-item SWT/PUSH "&Quit"
                            (on-widget-selected [props _]
                                                (swap! props #(update-in % [:closing] (constantly true)))
-                                               (.close (:ui/shell @props)))))
+                                               (.close (:ui/shell @props))))))
 
-          (browser SWT/WEBKIT
-                   :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc)
-                   (id! :ui/editor))
-
-          ;; BUG: on-close is defined for ShellListener and CTabFolder2Listener;
-          ;;      need to handle this case.
-          #_(on-close [props event] (when-not (:closing @props)
-                                      (set! (. event doit) false))))
-
-   (system-tray-item
-    (on-menu-detected [props _] (.setVisible (:ui/tray-menu @props) true))
+   (tray-item
+    (on-menu-detected [props _]   (.setVisible (:ui/tray-menu @props) true))
     (on-widget-selected [props _] (let [s (:ui/shell @props)]
                                     (if (.isVisible s)
                                       (.setVisible s false)
                                       (.setVisible s true)))))
 
    (defmain [props parent]
-     (println (str (:ui/editor @props) parent)))))
+     ;; Bind data layer to UI or...
+     (println (str (:ui/editor @props) " " parent)))))
 
 
 
