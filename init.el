@@ -607,9 +607,9 @@ With ARG, do this that many times."
   :config (treemacs-icons-dired-mode))
 
 
-(use-package treemacs-magit
-  :after treemacs magit
-  :ensure t)
+;;(use-package treemacs-magit
+;;  :after treemacs magit
+;;  :ensure t)
 
 
 (use-package which-key
