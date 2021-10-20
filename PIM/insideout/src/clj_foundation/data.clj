@@ -115,6 +115,43 @@
     (f value)
     p/nothing))
 
+;; String utilities ----------------------------------------------------------------------------
+
+(defn strip-margin
+  "Like str, but given a multiline string where lines after the initial one are indented until a
+  pipe character '|', to mark the left margin, removes the spaces and the leading pipe character
+  from those subsequent lines.
+
+  For example:
+
+  (def x 5)
+
+  (def square-source
+    (strip-margin
+     \"(defn square [x]
+     |  (* x x))
+     |
+     |(square \" x \")\"))
+  "
+  [& things-to-stringify]
+  (let [s (apply str things-to-stringify)]
+    (str/join "\n"
+              (map
+               #(str/replace % #" +\|" "")
+               (str/split-lines s)))))
+
+(comment
+  (def x 5)
+  (def square-source
+    (strip-margin
+     "(defn square [x]
+     |  (* x x))
+     |
+     |(square " x ")"))
+
+  (println square-source)
+  ,)
+
 
 (defn undasherize
   "Replace all instances of '-' or '_' with replacement"
