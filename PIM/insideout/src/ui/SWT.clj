@@ -270,10 +270,12 @@
 (defn child-of
   "Mount the child specified by child-init-fn inside parent passing initial-props-value inside the props atom.
   Returns a map containing the :child and resulting :props"
-  [parent initial-props-value child-init-fn]
-  (let [props (atom initial-props-value)]
-    {:child (child-init-fn props parent)
-     :props @props}))
+  ([parent props child-init-fn]
+   {:child (child-init-fn props parent)
+    :props @props})
+  ([[parent props] child-init-fn]
+   {:child (child-init-fn props parent)
+    :props @props}))
 
 
 (defn application
