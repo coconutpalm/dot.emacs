@@ -108,10 +108,10 @@
 ;; Hand-coded APIs
 
 (defn |
-  "Combine the specified SWT style bits for the \"style\" constructor parameter.  A synonym
-  for `bit-or`."
+  "Like `bit-or`, but for Integers.  Intended for combining SWT style bits for the \"style\"
+  widget constructor parameter."
   [& styles]
-  (apply bit-or styles))
+  (int (apply bit-or styles)))
 
 
 (defn tray-item
