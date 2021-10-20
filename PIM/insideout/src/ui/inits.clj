@@ -35,8 +35,9 @@
 
 (defmethod ->init
   Keyword [arg1 arg2]
-  (letfn [(set-property [_ o]
+  (letfn [(set-property [props o]
             (let [field-name  (->camelCase arg1)
+                  arg2        (if (keyword? arg2) (get @props arg2 arg2) arg2)
                   field       (->> (.getClass o)
                                  (.getDeclaredFields)
                                  (filter (fn [field]
