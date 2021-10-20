@@ -33,7 +33,7 @@
             (.setText control arg1))]
     [set-text-on 1]))
 
-(defn- maybe-resolve-prop [maybe-keyword props]
+(defn- get-prop [maybe-keyword props]
   (if (keyword? maybe-keyword)
     (get @props maybe-keyword maybe-keyword)
     maybe-keyword))
@@ -42,7 +42,7 @@
   Keyword [arg1 arg2]
   (letfn [(set-property [props o]
             (let [field-name  (->camelCase arg1)
-                  arg2        (maybe-resolve-prop arg2 props)
+                  arg2        (get-prop arg2 props)
                   field       (->> (.getClass o)
                                  (.getDeclaredFields)
                                  (filter (fn [field]
