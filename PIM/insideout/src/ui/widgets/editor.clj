@@ -1,70 +1,91 @@
-(remove-ns 'ui.widgets.editor)
-
 (ns ui.widgets.editor
   (:refer-clojure :exclude [list])
-  (:require [ui.inits :as i]
-            [ui.SWT :refer :all]
-            [clj-foundation.data :refer [nothing->identity]])
+  (:require [ui.SWT]
+            [ui.inits :as i]
+            [clojure.string :as str]
+            [clj-foundation.data :refer [nothing->identity strip-margin]])
   (:import [org.eclipse.swt SWT]
-           [org.eclipse.swt.browser Browser]
+           [org.eclipse.swt.layout FillLayout]
+           [org.eclipse.swt.browser Browser BrowserFunction]
            [org.eclipse.swt.graphics Rectangle]
            [org.eclipse.swt.events ModifyListener VerifyListener]
            [org.eclipse.swt.widgets Composite Menu]
            [org.eclipse.swt.layout FillLayout]))
 
 
-(definterface Editor
-  (setFocus [this])
-  (setLayoutData [this ^Object data])
-  (setMenu [this  ^Menu menu])
-  (setParent [this ^Composite parent])
-  (setSelection [this ^Rectangle bounds])
-  (clearSelection [this])
-  (setText [this ^String text])
-  (getLayoutData [this])
-  (getMenu [this])
-  (getParent [this])
-  (getSelection [this])
-  (getText [this])
-  (addModifyListener [this ^ModifyListener l])
-  (addVerifyListener [this ^VerifyListener l])
-  (removeModifyListener [this ^ModifyListener l])
-  (removeVerifyListener [this ^VerifyListener l])
-  (cut [this])
-  (copy [this])
-  (paste [this]))
+(defn ->js-string-literal
+  "Add quotes and character escape to make `s` into a valid Javascript string literal."
+  [s]
+  (str \"
+       (str/escape s {\newline   "\\n"
+                      \return    "\\r"
+                      \tab       "\\t"
+                      \backspace "\\b"
+                      \formfeed  "\\f"
+                      \'         "\\'"
+                      \"         "\\\""
+                      \\         "\\\\"})
+       \"))
 
 
-(defn composite-editor [parent style]
-  (let [browser (ref nil)
-        composite (proxy [Composite Editor] [parent style]
-                    (setFocus [this]
-                      (.setFocus @browser))
-                    (setSelection [this ^Rectangle bounds])
-                    (clearSelection [this])
-                    (setText [this ^String text])
-                    (getSelection [this])
-                    (getText [this])
-                    (addModifyListener [this ^ModifyListener l])
-                    (addVerifyListener [this ^VerifyListener l])
-                    (removeModifyListener [this ^ModifyListener l])
-                    (removeVerifyListener [this ^VerifyListener l])
-                    (cut [this])
-                    (copy [this])
-                    (paste [this]))
-        b (new Browser composite SWT/WEBKIT)]
-    (reset! browser b)
-    composite))
+(comment
+  (proxy [org.eclipse.swt.widgets.Composite Editor] [parent style]
+    (setFocus [this]
+      (.setFocus @browser))
+    (getSelectionAtom [this]
+      selection)
+    (getTextAtom [this]
+      text)
+    (getText [this]
+      (.execute @browser "editor.state.doc.toString();"))
+    (setText [this content]
+      (let [text-length (count (.getText this))
+            transaction (strip-margin
+                         "editor.dispatch({
+                                         |  changes: {
+                                         |    from: 0,
+                                         |    to: " text-length ",
+                                         |    insert: " (->js-string-literal content) "
+                                         |  }
+                                         |})")]
+        (.execute @browser transaction)))
+    (cut [this]
+      (.execute @browser "editor.cut();"))
+    (copy [this]
+      (.execute @browser "editor.copy();"))
+    (paste [this]
+      (.execute @browser "editor.paste();")))
 
 
-(defn codemirror
+  (proxy [BrowserFunction] [b "clojure"]
+    (function [arg-array]
+      (let [args (vec arg-array)]
+        (println args))))
+
+  ,)
+
+(defprotocol TextEditor
+  :extend-via-metadata true
+  "Functions that interact with text editors"
+  (getSelectionAtom [editor])
+  (getTextAtom [editor])
+  (getText [editor])
+  (setText [editor content])
+  (cut [editor])
+  (copy [editor])
+  (paste [editor]))
+
+
+(defn codemirror6
   "Returns Code Mirror 6 inside a SWT Composite.  Implements the Editor protocol"
   [& more]
   (let [[style
          args] (i/extract-style-from-args more)
         style (nothing->identity SWT/NULL style)
         args (or args [])]
-    (fn [props ^Composite parent]
+
+    (fn [props ^Browser parent]
+
       (let [child (composite-editor parent style)
             inits (i/args->inits args)]
         (i/run-inits props child inits)
