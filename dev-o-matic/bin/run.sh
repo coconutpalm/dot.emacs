@@ -105,7 +105,8 @@ ensure_symlink "/tmp/devrc.docs" "${DOCKER_DEV_USERHOME}/.devrc/docs"
 # --[blah... fuse] stuff is to run AppImages without extracting them; SYS_ADMIN is redundent but there for documentation purposes
 #
 # Ports:
-# 89xx: ?
+# 89xx: Expose local dev ports
+# 3000: Expose local dev ports
 # 4713: PulseAudio
 # 59xx: VNC
 # 22: SSH
@@ -122,6 +123,7 @@ docker run -it \
      --mount type=bind,source="$DOCKER_DEV_USERDOCS",target=/tmp/devrc.docs,consistency=delegated \
      $MOUNTS $LINKS \
      -p 8900-8909:8900-8909 \
+     -p 3449-3559:3449-3559 \
      -p 4713:4713 \
      -p 5901:5901 \
      -p 5902:5902 \
