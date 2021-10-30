@@ -1750,6 +1750,8 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
          ("s-g" . magit-status)
          ("s-b" . magit-blame)))
 
+(require 'magit)
+
 (global-set-key (kbd "C-x g") 'magit-status)
 (global-set-key (kbd "C-x C-g") 'magit-status)
 (global-set-key (kbd "C-c C-g") 'magit-status)
@@ -1770,18 +1772,20 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
          git-timemachine-abbreviation-length 4))
 
 
-(use-package forge
-  :after magit)
-(require 'forge)
+;; These are generating stack traces whining about lack of auth tokens
+;;
+;; (use-package forge
+;;   :after magit)
+;; (require 'forge)
 
 
-(use-package github-review
-  :ensure t
-  :after forge
-  :config
-  (define-key magit-status-mode-map (kbd "g") 'github-review-forge-pr-at-point)
-  (define-key magit-mode-map (kbd "g") 'github-review-forge-pr-at-point))
-(require 'github-review)
+;; (use-package github-review
+;;   :ensure t
+;;   :after forge
+;;   :config
+;;   (define-key magit-status-mode-map (kbd "g") 'github-review-forge-pr-at-point)
+;;   (define-key magit-mode-map (kbd "g") 'github-review-forge-pr-at-point))
+;; (require 'github-review)
 
 
 (use-package ediff
