@@ -289,6 +289,18 @@
   []
   (pom/get-classpath))
 
+
+(defmacro realias
+  "clojure.tools.namespace.repl/refresh loses namespace aliases in reloaded namespaces.
+  This macro generates `alias` statements to restore them."
+  []
+  (let [realiases (->> *ns*
+                     (ns-aliases)
+                     (map (fn [[a n]] [a (symbol (.getName n))]))
+                     (map (fn [[a n]] `(alias ~a ~n))))]
+    `(do ~@realiases)))
+
+
 (comment
   (->> "src" File. .toURL)
 
