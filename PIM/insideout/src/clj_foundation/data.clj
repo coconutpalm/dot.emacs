@@ -7,12 +7,21 @@
   * Various functions for parsing and processing XML"
   (:require [clojure.data.xml :as xml]
             [clojure.string :as str]
-            [clj-foundation.patterns :as p :refer [f]]
-            [clj-foundation.errors :as err]
-            [potemkin :refer [def-map-type]])
+            [clj-foundation.patterns :as p :refer [f]])
   (:import [java.io StringReader]
            [clojure.lang Named])
   (:gen-class))
+
+
+;; Macro helper -----------------------------------------------------------------------------
+
+(defmacro local-bindings
+  "Produces a map of the names of local bindings to their values.
+   For now, strip out gensymed locals."
+  []
+  (let [symbols (remove #(.contains (str %) "_")
+                        (map key @clojure.lang.Compiler/LOCAL_ENV))]
+    (zipmap (map (fn [sym] `(quote ~sym)) symbols) symbols)))
 
 
 ;; Predicates and data conversion functions -------------------------------------------------
