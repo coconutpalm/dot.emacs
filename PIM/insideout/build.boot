@@ -18,7 +18,6 @@
                  [clj-commons/pomegranate              "1.2.1"]]
 
 
-
  :repositories #(conj %
                       '["artifactory.openntf.org" {:url "https://artifactory.openntf.org/openntf"}]
                       '["eclipse.org.p2" {:url "http://download.eclipse.org/releases/2021-09"
