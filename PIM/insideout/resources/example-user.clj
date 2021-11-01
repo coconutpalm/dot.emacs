@@ -18,7 +18,7 @@
   (reload/start-reload-watcher)
   (println "Watching classpath directories for source changes.")
 
-  (ui-scale! 2)
+  (ui-scale! 2)                         ;Needed for older JREs
 
   (application
    (shell "Browser" (id! :ui/shell)
