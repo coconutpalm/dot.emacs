@@ -102,7 +102,9 @@
     (binding [*print-dup* true] (prn data-structure))))
 
 
-(defn deserialize [filename]
+(defn deserialize
+  "Note that this uses `read` and will execute code!  Use clojure.edn (or `edn-seq` below) for untrusted data."
+  [filename]
   (with-open [r (java.io.PushbackReader. (java.io.FileReader. filename))]
     (read r)))
 
