@@ -313,9 +313,15 @@
    (shell "Browser" (id! :ui/shell)
           :layout (FillLayout.)
 
-          (browser SWT/WEBKIT (id! :ui/editor)
-                   :javascript-enabled true
-                   :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc))
+          (sash-form SWT/VERTICAL
+                     (text (| SWT/MULTI SWT/V_SCROLL) (id! :ui/textpane)
+                           (on-modify-text [props _] (println (.getText (:ui/textpane @props)))))
+
+                     (browser SWT/WEBKIT (id! :ui/editor)
+                              :javascript-enabled true
+                              :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc))
+
+                     :weights [20 80])
 
           (on-shell-closed [props event] (when-not (:closing @props)
                                            (set! (. event doit) false)))
@@ -340,9 +346,6 @@
 
 
 (comment
-  ;; Doesn't work. :-(
-  #_(def t (background example-app))
-
 
   (example-app)
   (:editor @state)
