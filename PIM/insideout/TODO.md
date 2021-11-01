@@ -2,8 +2,8 @@
 
 ## Immediate tasks
 *  on-xxx  functions - Infer adapter function type from parent type
-*  Breadcrumb prop during construction
-*  Try/catch everything; use breadcrumb; always construct as much as possible; never let UI exceptions propagate.
+*  ~~Breadcrumb prop during construction~~
+*  ~~Try/catch everythinguse breadcrumb; always construct as much as possible; never let UI exceptions propagate.~~
 
 ## Autorefresh
 *  Turn on autorefresh by default inside `src`; Leaning toward `c.t.n.repl/refresh`
