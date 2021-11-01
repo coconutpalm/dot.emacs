@@ -27,7 +27,7 @@
   `(try
      ~@forms
      (catch Throwable t#
-       (write-exception *err* t#)
+       (write-exception *ui-log* t#)
        nothing)))
 
 
