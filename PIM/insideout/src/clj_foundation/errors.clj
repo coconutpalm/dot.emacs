@@ -85,22 +85,24 @@
     (not (nil? failure))          (seq<- (exception<- failure))))
 
 
+;; Exceptions and stack traces ----------------------------------------------------------
 
-(def ^:dynamic ^{:doc "The barf log stream.  Defaults to *err*"}
-  *barf-log* *err*)
+(def ^:dynamic ^{:doc "The barf stream.  Defaults to *out*"}
+  *barf-log* *out*)
 
 (defmacro maybe-barf
   "Executes `forms` inside a try/catch.
 
-  If an exception occurs, barfs the stack trace to `*barf-log*` (which is bound to `*err*` by default),
-  then returns nil.
+  If an exception occurs, creates an `ex-info` containing `context` and wrapping the exception.  Then
+  barfs the full `ex-info` stack trace to `*barf-log*` (which is bound to `*out*` by default),
+  Then returns nil.
 
   (Why `maybe-barf`?  Because `slurp` and `spit` were feeling lonely.)"
-  [& forms]
+  [context & forms]
   `(try
      ~@forms
      (catch Throwable t#
-       (prettyexception/write-exception *barf-log* t#)
+       (prettyexception/write-exception *barf-log* (ex-info "Barfing!" {:context ~context} t#))
        nil)))
 
 

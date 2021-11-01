@@ -15,7 +15,7 @@
 (defn run-inits
   "Initialize the specified control using the functions in the `inits` seq."
   [props control inits]
-  (doall (map #(maybe-barf (apply % props control [])) inits)))
+  (doall (map #(maybe-barf @props (apply % props control [])) inits)))
 
 
 (defmulti ->init
@@ -83,8 +83,8 @@
   "Meta-construct the specified SWT class derived from Widget."
   [^Class clazz style args]
   `(fn [props# ^Composite parent#]
-     (let [child# (maybe-barf (new ~clazz parent# ~style))
-           inits# (maybe-barf (args->inits ~args))]
+     (let [child# (maybe-barf (deref props#) (new ~clazz parent# ~style))
+           inits# (maybe-barf (deref props#) (args->inits ~args))]
        (run-inits props# child# inits#)
        child#)))
 

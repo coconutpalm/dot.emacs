@@ -346,7 +346,6 @@
 
 
 (comment
-
   (example-app)
   (:editor @state)
   (ui (.dispose @display))
