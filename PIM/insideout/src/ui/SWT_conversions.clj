@@ -10,3 +10,8 @@
 
 (defmethod convert [string-array-class clojure.lang.PersistentVector] [_ s]
   (apply array [String] s))
+
+(defonce ^:private int-array-class (class (array [Integer/TYPE])))
+
+(defmethod convert [int-array-class clojure.lang.PersistentVector] [_ xs]
+  (apply array [Integer/TYPE] xs))
