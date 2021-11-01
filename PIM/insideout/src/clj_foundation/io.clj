@@ -132,7 +132,7 @@
 
 
 (defn close-on-eof
-  "Closes stream on EOF exception raised when consuming seq."
+  "Closes stream and returns ::EOF on EOF exception raised when consuming seq."
   [stream seq]
   (-> (try
        (cons (first seq) (close-on-eof stream (rest seq)))
