@@ -11,7 +11,7 @@
             [clojure.string :as str]
             [clojure.edn :as edn])
 
-  (:import [java.io InputStream File PrintWriter ByteArrayInputStream ByteArrayOutputStream]
+  (:import [java.io InputStream File FileInputStream PrintWriter ByteArrayInputStream ByteArrayOutputStream]
            [java.net URI URL Socket]))
 
 
@@ -26,13 +26,25 @@
 (defn full-path [^String relative-path] (.getCanonicalPath (io/file relative-path)))
 
 (defn file-details [fileOrName]
-  (let [f (if (string? fileOrName) (io/file fileOrName) fileOrName)]
-    {:full-name (.getCanonicalPath f)
-     :short-name (.getName f)
-     :directory (.isDirectory f)
-     :hidden (.isHidden f)
-     :last-modified-millis (.lastModified f)}))
+  (letfn [(extension [f]
+            (let [name (.getName f)
+                  last-dot (.lastIndexOf name ".")]
+              (if (and (not= last-dot -1) (not= last-dot -))
+                (.substring name (+ last-dot 1))
+                "")))]
 
+    (let [f (if (string? fileOrName) (io/file fileOrName) fileOrName)]
+      {:full-name (.getCanonicalPath f)
+       :short-name (.getName f)
+       :extension (extension f)
+       :directory (.isDirectory f)
+       :hidden (.isHidden f)
+       :last-modified-millis (.lastModified f)})))
+
+(comment
+  (println (.list (File. ".")))
+  (clojure.pprint/pprint (file-details "tests.edn"))
+  ,)
 
 ;; From the deprecated clojure.contrib.io library
 ;; https://github.com/clojure/clojure-contrib/blob/b6c6f0fa165975c416c7d135d1a844353527493b/src/main/clojure/clojure/contrib/io.clj#L352
