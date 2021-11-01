@@ -168,7 +168,7 @@
 
      (or (string? in)
          (instance? File in))    (let [stream (FileInputStream. in)]
-         (close-on-eof stream (edn-seq opts stream)))
+                                   (close-on-eof stream (edn-seq opts stream)))
 
      :else                       (throw (IllegalArgumentException.
                                          (str "Can't read seq from " (type in)))))))
