@@ -3,32 +3,13 @@
   where the initial argument is the object to init and subsequent arguments (if any)
   define the values used for initialization."
   (:require [ui.SWT-conversions :refer :all]
-            [boot.from.io.aviso.exception :refer [write-exception]]
+            [clj-foundation.errors :refer [maybe-barf]]
             [clj-foundation.patterns :refer [nothing]]
             [clj-foundation.interop :refer [array set-property!]]
             [clj-foundation.data :refer [->camelCase ->kebab-case setter nothing->identity]])
   (:import [clojure.lang IFn Keyword Reflector]
            [java.lang.reflect Modifier]
            [org.eclipse.swt.widgets Composite]))
-
-
-(def ^{:doc "The log stream for user interface construction."} ^:dynamic
-  *ui-log* *err*)
-
-
-(defmacro maybe-barf
-  "Executes `forms` inside a try/catch.
-
-  If an exception occurs, barfs the stack trace to `*ui-log*` (which is bound to `*err*` by default),
-  then returns `nothing`.
-
-  (Why `maybe-barf`?  Because `slurp` and `spit` were feeling lonely.)"
-  [& forms]
-  `(try
-     ~@forms
-     (catch Throwable t#
-       (write-exception *ui-log* t#)
-       nothing)))
 
 
 (defn run-inits

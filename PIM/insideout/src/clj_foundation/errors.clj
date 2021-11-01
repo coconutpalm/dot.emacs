@@ -9,7 +9,6 @@
   (:require [boot.from.io.aviso.exception      :as prettyexception]
             [clojure.string          :as str]
             [clj-foundation.patterns :refer :all]
-            [clj-foundation.millis   :as millis]
             [clj-foundation.types])     ; (Needed for :import to work below)
 
   (:import [java.util Date]
@@ -84,6 +83,25 @@
                                     (seq failure)
                                     (lazy-seq (cons failure (seq<- (.getCause failure)))))
     (not (nil? failure))          (seq<- (exception<- failure))))
+
+
+
+(def ^:dynamic ^{:doc "The barf log stream.  Defaults to *err*"}
+  *barf-log* *err*)
+
+(defmacro maybe-barf
+  "Executes `forms` inside a try/catch.
+
+  If an exception occurs, barfs the stack trace to `*barf-log*` (which is bound to `*err*` by default),
+  then returns nil.
+
+  (Why `maybe-barf`?  Because `slurp` and `spit` were feeling lonely.)"
+  [& forms]
+  `(try
+     ~@forms
+     (catch Throwable t#
+       (prettyexception/write-exception *barf-log* t#)
+       nil)))
 
 
 (defn stack-trace<-
