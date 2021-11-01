@@ -115,7 +115,8 @@ https://github.com/rweather/newhope-java
 https://noiseprotocol.org/
 
 Gossip
-https://github.com/flopezluis/gossiphttps://github.com/muattiyah/gossip
+https://github.com/flopezluis/gossip
+https://github.com/muattiyah/gossip
 
 
 ## edn-seq
