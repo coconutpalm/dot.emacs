@@ -11,14 +11,17 @@
  [['clojure-watch.core :refer ['start-watch]]])
 
 
+(defonce clojure-source #{"clj" "cljc" "cljs"})
+
 (defonce file-change (atom {}))
 (defonce refreshing (atom false))
 
 (defn filesystem-change [event filename]
-  (when @refreshing
-    (apply tns/refresh @refreshing))
-  (reset! file-change {:event event
-                       :file (file-details (io/file filename))}))
+  (let [details (file-details (io/file filename))]
+    (when (and @refreshing (clojure-source (:extension details)))
+      (apply tns/refresh @refreshing))
+    (reset! file-change {:event event
+                         :file details})))
 
 
 ;; Set of filesystem events
