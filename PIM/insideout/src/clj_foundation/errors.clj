@@ -102,7 +102,7 @@
   `(try
      ~@forms
      (catch Throwable t#
-       (prettyexception/write-exception *barf-log* (ex-info "Barfing!" {:context ~context} t#))
+       (prettyexception/write-exception *barf-log* (ex-info "Unexpected error: Barfing!" {:context ~context} t#))
        nil)))
 
 
