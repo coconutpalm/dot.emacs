@@ -3,6 +3,7 @@
   (:require [clojure.pprint :refer [pprint]]
             [insideout.nrepl :as nrepl-server]
             [insideout.dynamo :as dynamo]
+            [insideout.reload :as reload]
             [ui.SWT :refer :all]
             [ui.gridlayout :as layout])
   (:import [org.eclipse.swt SWT]))
@@ -11,35 +12,44 @@
 (defn -main [& args]
   (println "Starting...")
 
-  (pprint (nrepl-server/start! :cider :reveal))
+  (pprint (nrepl-server/start! :cider))
   (println "nrepl started.")
+
+  (reload/start-reload-watcher)
+  (println "Watching classpath directories for source changes.")
 
   (ui-scale! 2)
 
   (application
-   (shell "Example SWT app"
-          (layout/grid-layout :num-columns 2 :make-columns-equal-width false)
+   (shell "Browser" (id! :ui/shell)
+          :layout (FillLayout.)
 
-          (label "A. Label"
-                 (layout/align-left))
-          (combo SWT/BORDER
-                 :items ["one" "two" "three" "Default value" "four"]
-                 :select 1
-                 (layout/hgrab))
+          (sash-form SWT/VERTICAL
+                     (text (| SWT/MULTI SWT/V_SCROLL) (id! :ui/textpane)
+                           (on-modify-text [props _] (println (.getText (:ui/textpane @props)))))
 
-          (group "Example group"
-                 (id! :name)
-                 (layout/align-left :horizontal-span 2)
+                     (browser SWT/WEBKIT (id! :ui/editor)
+                              :javascript-enabled true
+                              :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc))
 
-                 (layout/grid-layout :num-columns 2 :make-columns-equal-width false)
-                 (label "A. Label"
-                        (layout/align-left))
-                 (text SWT/BORDER "Default text"
-                       (layout/align-left)
-                       (id! :default-text))))
+                     :weights [20 80])
 
-   (main
-    (fn [props _]
-      (let [t (:default-text @props)]
-        ;; Set up event handlers, etc...
-        (println t))))))
+          (on-shell-closed [props event] (when-not (:closing @props)
+                                           (set! (. event doit) false)))
+
+          (menu SWT/POP_UP (id! :ui/tray-menu)
+                (menu-item SWT/PUSH "&Quit"
+                           (on-widget-selected [props _]
+                                               (swap! props #(update-in % [:closing] (constantly true)))
+                                               (.close (:ui/shell @props))))))
+
+   (tray-item
+    (on-menu-detected [props _]   (.setVisible (:ui/tray-menu @props) true))
+    (on-widget-selected [props _] (let [s (:ui/shell @props)]
+                                    (if (.isVisible s)
+                                      (.setVisible s false)
+                                      (.setVisible s true)))))
+
+   (defmain [props parent]
+     ;; Bind data layer to UI or...
+     (println (str (:ui/editor @props) " " parent)))))
