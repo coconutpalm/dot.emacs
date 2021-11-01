@@ -133,8 +133,6 @@
 
   For example:
 
-  (def x 5)
-
   (def square-source
     (strip-margin
      \"(defn square [x]
@@ -150,7 +148,6 @@
                (str/split-lines s)))))
 
 (comment
-  (def x 5)
   (def square-source
     (strip-margin
      "(defn square [x]
