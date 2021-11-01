@@ -1,3 +1,5 @@
+(remove-ns 'ui.inits)
+
 (ns ui.inits
   "Defines API for defining and manipulating init functions.  An init function is a function
   where the initial argument is the object to init and subsequent arguments (if any)
@@ -85,8 +87,11 @@
   `(fn [props# ^Composite parent#]
      (let [child# (maybe-barf (deref props#) (new ~clazz parent# ~style))
            inits# (maybe-barf (deref props#) (args->inits ~args))]
+       (swap! props# update-in [:breadcrumb] #(vec (conj % (.getSimpleName ~clazz))))
        (run-inits props# child# inits#)
+       (swap! props# update-in [:breadcrumb] pop)
        child#)))
+
 
 (require 'ui.internal.docs)
 
