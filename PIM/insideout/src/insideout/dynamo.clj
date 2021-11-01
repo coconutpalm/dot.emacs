@@ -239,9 +239,7 @@
   []
   (let [cl ^DynamicClassLoader (dyn-classloader)]
     (doseq [u *classpath-dirs*]
-      (.addURL cl u)))
-  (watch-classpath-dirs))
-
+      (.addURL cl u))))
 
 
 (defn classloader-hierarchy
