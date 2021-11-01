@@ -120,6 +120,66 @@
         (.readObject inp)))
 
 
+(defn swallow-eof
+  "Ignore an EOF exception raised when consuming seq."
+  [seq]
+  (-> (try
+       (cons (first seq) (swallow-eof (rest seq)))
+       (catch java.lang.RuntimeException e
+         (when-not (= (.getMessage e) "EOF while reading")
+           (throw e))))
+     lazy-seq))
+
+
+(defn close-on-eof
+  "Closes stream on EOF exception raised when consuming seq."
+  [stream seq]
+  (-> (try
+       (cons (first seq) (close-on-eof stream (rest seq)))
+       (catch java.lang.RuntimeException e
+         (when-not (= (.getMessage e) "EOF while reading")
+           (throw e))
+         (.close stream)
+         ::EOF))
+     lazy-seq))
+
+
+(defn edn-seq
+  "Returns the objects from file/stream as a lazy sequence.
+
+  The nullary form reads from *in*.
+
+  Otherwise, if `in` is a `File` or a `String`, opens a `FileInputStream`
+  on it, returns `::EOF` as the final element, and automatically closes
+  the stream it opened on EOF.
+
+  If `in` is `*in*` or another already an opened stream, end-of-file handling
+  is as specified by `opts` as defined by `clojure.edn/read`."
+  ([]
+   (edn-seq *in*))
+
+  ([in]
+   (edn-seq {} in))
+
+  ([opts in]
+   (cond
+     (instance? InputStream in)  (lazy-seq (cons (clojure.edn/read opts in)
+                                                 (edn-seq opts in)))
+
+     (or (string? in)
+         (instance? File in))    (let [stream (FileInputStream. in)]
+         (close-on-eof stream (edn-seq opts stream)))
+
+     :else                       (throw (IllegalArgumentException.
+                                         (str "Can't read seq from " (type in)))))))
+
+
+(comment
+  (with-open [stream (java.io.PushbackReader. (clojure.java.io/reader "foo.txt"))]
+    (dorun (map println (swallow-eof (edn-seq stream)))))
+  ,)
+
+
 ;; Schema stubs - Leaving these in because they make good documentation
 
 (defn one [& xs]          [:schema/one xs])
