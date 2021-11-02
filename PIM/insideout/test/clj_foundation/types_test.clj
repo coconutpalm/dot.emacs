@@ -72,6 +72,7 @@
     (let [name-type (T {:first string?
                         (Opt. :middle) string?
                         :last string?})]
+
       (testing "Success - without optional key"
         (is (= {:first "Charles" :last "Brown"}
                (name-type {:first "Charles" :last "Brown"}))))
