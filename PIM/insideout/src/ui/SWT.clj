@@ -157,6 +157,22 @@
         sh))))
 
 
+(defn root-props
+  "Return the props atom associated with each open shell."
+  []
+  (->> (Display/getDefault)
+     (.getShells)
+     (map #(.getData %))))
+
+
+(defn defchildren
+  "Define children to add to specified parent"
+  [& args]
+  (let [inits (i/args->inits args)]
+    (fn [props parent]
+      (i/run-inits props parent inits))))
+
+
 ;; =====================================================================================
 ;; Specialized online docs
 
@@ -222,7 +238,7 @@
   (if (on-ui-thread?)
     (f)
     (let [r (runnable-fn f)]
-      (.syncExec @display r)
+      (.syncExec (Display/getDefault) r)
 
       (when @(:exception r)
         (throw @(:exception r)))

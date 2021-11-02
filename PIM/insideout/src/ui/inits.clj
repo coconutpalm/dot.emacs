@@ -11,7 +11,7 @@
             [clj-foundation.data :refer [->camelCase ->kebab-case setter nothing->identity]])
   (:import [clojure.lang IFn Keyword Reflector]
            [java.lang.reflect Modifier]
-           [org.eclipse.swt.widgets Composite]))
+           [org.eclipse.swt.widgets Widget Composite]))
 
 
 (defn run-inits
@@ -87,6 +87,8 @@
   `(fn [props# ^Composite parent#]
      (let [child# (maybe-barf (deref props#) (new ~clazz parent# ~style))
            inits# (maybe-barf (deref props#) (args->inits ~args))]
+       (when (instance? Widget child#)
+         (.setData child# props#))
        (swap! props# update-in [:breadcrumb] #(vec (conj % (.getSimpleName ~clazz))))
        (run-inits props# child# inits#)
        (swap! props# update-in [:breadcrumb] pop)

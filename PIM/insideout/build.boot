@@ -12,7 +12,7 @@
 
                  ;; Server-side dependencies
                  [org.clojure/clojure                  "1.10.3"]
-                 [org.clojure/tools.namespace          "1.1.0"]
+                 [ns-tracker                           "0.4.0"]
                  [potemkin                             "0.4.3"]
                  [org.openntf.maven/p2-layout-resolver "1.2.0"]
                  [clj-commons/pomegranate              "1.2.1"]]

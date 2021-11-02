@@ -3,9 +3,10 @@
   (:require
    [cemerick.pomegranate        :as pom]
    [cemerick.pomegranate.aether :as pom-mvn]
+   [ns-tracker.core             :as nt]
    [clojure.string              :as str]
    [clojure.java.io             :as io]
-   [clojure.stacktrace :as stacktrace])
+   [clojure.stacktrace          :as stacktrace])
   (:import
    [clojure.lang DynamicClassLoader]
    [java.io File]
@@ -228,10 +229,12 @@
   (map (fn [rel-path] (-> rel-path File. .toURL))
        (find-src+test+res)))
 
+(def out-of-date-namespaces (nt/ns-tracker (find-src+test+res)))
+
 
 ;; Filesystem event handling
 #_(defn init-project [p]
-  (println (str "Initializing project " p)))
+    (println (str "Initializing project " p)))
 
 
 (defn add-source-folders-to-classpath
@@ -252,17 +255,6 @@
   "Return the current classpath."
   []
   (pom/get-classpath))
-
-
-(defmacro realias
-  "clojure.tools.namespace.repl/refresh loses namespace aliases in reloaded namespaces.
-  This macro generates `alias` statements to restore them."
-  []
-  (let [realiases (->> *ns*
-                     (ns-aliases)
-                     (map (fn [[a n]] [a (symbol (.getName n))]))
-                     (map (fn [[a n]] `(alias ~a ~n))))]
-    `(do ~@realiases)))
 
 
 (comment

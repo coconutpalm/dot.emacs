@@ -1,12 +1,14 @@
 (ns insideout.user
   (:refer-clojure :exclude [list])
-  (:require [clojure.pprint :refer [pprint]]
+  (:require [ui.SWT :refer :all]
+            [ui.gridlayout :as layout]
+            [clojure.pprint :refer [pprint]]
             [insideout.nrepl :as nrepl-server]
             [insideout.dynamo :as dynamo]
             [insideout.reload :as reload]
-            [ui.SWT :refer :all]
-            [ui.gridlayout :as layout])
-  (:import [org.eclipse.swt SWT]))
+            [example.ui.core  :as ui])
+  (:import [org.eclipse.swt SWT]
+           [org.eclipse.swt.layout FillLayout]))
 
 
 (defn -main [& args]
@@ -23,16 +25,7 @@
   (application
    (shell "Browser" (id! :ui/shell)
           :layout (FillLayout.)
-
-          (sash-form SWT/VERTICAL
-                     (text (| SWT/MULTI SWT/V_SCROLL) (id! :ui/textpane)
-                           (on-modify-text [props _] (println (.getText (:ui/textpane @props)))))
-
-                     (browser SWT/WEBKIT (id! :ui/editor)
-                              :javascript-enabled true
-                              :url (-> (swtdoc :swt :program 'Program) :result :eclipsedoc))
-
-                     :weights [20 80])
+          (ui/add-content)
 
           (on-shell-closed [props event] (when-not (:closing @props)
                                            (set! (. event doit) false)))

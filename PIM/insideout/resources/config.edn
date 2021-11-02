@@ -1,3 +1,3 @@
-{:startup-file "user.clj"
+{:startup-file "insideout/user.clj"
  :file-watchers "${INSIDEOUT-WATCHERS}"
  :ansi-color "${INSIDEOUT-COLOR}"}
