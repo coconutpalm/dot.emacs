@@ -37,6 +37,7 @@ less
 libnss3-tools
 libtool-bin
 libvte9
+libwebkit2gtk-4.0-37
 libxcb-ewmh2
 libxml2-utils
 make
