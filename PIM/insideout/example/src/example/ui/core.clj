@@ -5,23 +5,32 @@
   (:require [ui.SWT :refer :all]
             [ui.gridlayout :as layout])
   (:import [org.eclipse.swt SWT]
+           [org.eclipse.swt.graphics Font FontData]
            [org.eclipse.swt.widgets Display]
            [org.eclipse.swt.layout FillLayout]))
 
 
-(def margin 25)
+(def margin 15)
 
 (defn system-color [name]
   (-> (Display/getDefault) (.getSystemColor name)))
 
-(defn system-font [name]
-  (-> (Display/getDefault) (.getSystemFont name)))
+(defn system-font []
+  (-> (Display/getDefault) (.getSystemFont)))
+
+(defn system-font-data [] (-> (system-font) (.getFontData) (first)))
+
+(defn title-font [] (Font. (Display/getDefault)
+                           (FontData. (.getName system-font-data)
+                                      (* 2 (.getSize system-font-data))
+                                      SWT/NONE)))
 
 (defn add-content []
   (sash-form SWT/HORIZONTAL (id! :ui/main-sash)
+             :sash-width (int (/ margin 2))
              (view-form (| SWT/BORDER SWT/FLAT)
-                        :margin-height 10
-                        :margin-width 10
+                        :margin-height margin
+                        :margin-width margin
                         :background (system-color SWT/COLOR_INFO_BACKGROUND)
                         :foreground (system-color SWT/COLOR_INFO_FOREGROUND)
 
@@ -29,6 +38,7 @@
                                    :layout (FillLayout.)
                                    :background (system-color SWT/COLOR_TITLE_BACKGROUND)
                                    (label "Contexts && Things"
+                                          ;; :font (title-font)
                                           :foreground (system-color SWT/COLOR_TITLE_FOREGROUND)))
                         :top-left :ui/sidebar-title)
              #_(text (| SWT/MULTI SWT/V_SCROLL) (id! :ui/textpane)
