@@ -10,7 +10,7 @@
            [org.eclipse.swt.layout FillLayout]))
 
 
-(def margin 15)
+(def margin 10)
 
 (defn system-color [name]
   (-> (Display/getDefault) (.getSystemColor name)))
