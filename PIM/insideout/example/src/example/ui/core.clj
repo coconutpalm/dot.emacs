@@ -3,27 +3,23 @@
    :on-post-reload 'post-reload}
   (:refer-clojure :exclude [list])
   (:require [ui.SWT :refer :all]
-            [ui.gridlayout :as layout])
+            [ui.gridlayout :as layout]
+            [example.styles :as s])
   (:import [org.eclipse.swt SWT]
            [org.eclipse.swt.graphics Font FontData]
            [org.eclipse.swt.widgets Display]
            [org.eclipse.swt.layout FillLayout]))
 
 
-(def margin 10)
+(comment
+  "Evolve into defcompopnent?"
 
-(defn system-color [name]
-  (-> (Display/getDefault) (.getSystemColor name)))
+(defn add-contents! [parent component]
+  (let [props (atom {})]
+    (component props parent)))
 
-(defn system-font []
-  (-> (Display/getDefault) (.getSystemFont)))
+  ,)
 
-(defn system-font-data [] (-> (system-font) (.getFontData) (first)))
-
-(defn title-font [] (Font. (Display/getDefault)
-                           (FontData. (.getName system-font-data)
-                                      (* 2 (.getSize system-font-data))
-                                      SWT/NONE)))
 
 (defn add-content []
   (sash-form SWT/HORIZONTAL (id! :ui/main-sash)

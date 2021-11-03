@@ -24,7 +24,7 @@
   (ui-scale! 2)                         ;Needed for older JREs
 
   (application
-   (shell "PIM" (id! :ui/shell)
+   (shell "FuseCode" (id! :ui/shell)
           :layout (FillLayout.)
           (ui/add-content)
 
