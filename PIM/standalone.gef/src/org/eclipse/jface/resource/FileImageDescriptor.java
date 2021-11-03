@@ -1,0 +1,267 @@
+/*******************************************************************************
+ * Copyright (c) 2000, 2020 IBM Corporation and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *     Christoph Läubrich - Bug 567898 - [JFace][HiDPI] ImageDescriptor support alternative naming scheme for high dpi
+ *******************************************************************************/
+package org.eclipse.jface.resource;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.internal.InternalPolicy;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
+import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageFileNameProvider;
+
+/**
+ * An image descriptor that loads its image information from a file.
+ */
+class FileImageDescriptor extends ImageDescriptor {
+
+	private static final Pattern XPATH_PATTERN = Pattern.compile("(\\d+)x(\\d+)"); //$NON-NLS-1$
+
+	private class ImageProvider implements ImageFileNameProvider {
+		@Override
+		public String getImagePath(int zoom) {
+			String xName = getxName(name, zoom);
+			if (xName != null) {
+				return getFilePath(xName, zoom == 100);
+			}
+			return null;
+		}
+	}
+
+	/**
+	 * The class whose resource directory contain the file, or <code>null</code>
+	 * if none.
+	 */
+	private Class<?> location;
+
+	/**
+	 * The name of the file.
+	 */
+	private String name;
+
+	/**
+	 * Creates a new file image descriptor. The file has the given file name and
+	 * is located in the given class's resource directory. If the given class is
+	 * <code>null</code>, the file name must be absolute.
+	 * <p>
+	 * Note that the file is not accessed until its <code>getImageDate</code>
+	 * method is called.
+	 * </p>
+	 *
+	 * @param clazz
+	 *            class for resource directory, or <code>null</code>
+	 * @param filename
+	 *            the name of the file
+	 */
+	FileImageDescriptor(Class<?> clazz, String filename) {
+		this.location = clazz;
+		this.name = filename;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof FileImageDescriptor)) {
+			return false;
+		}
+		FileImageDescriptor other = (FileImageDescriptor) o;
+		return Objects.equals(location, other.location) && Objects.equals(name, other.name);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * The FileImageDescriptor implementation of this method is not used by
+	 * {@link ImageDescriptor#createImage(boolean, Device)} as of version
+	 * 3.4 so that the SWT OS optimized loading can be used.
+	 */
+	@Override
+	public ImageData getImageData(int zoom) {
+		InputStream in = getStream(zoom);
+		if (in != null) {
+			try (BufferedInputStream stream = new BufferedInputStream(in)) {
+				return new ImageData(stream);
+			} catch (SWTException e) {
+				if (e.code != SWT.ERROR_INVALID_IMAGE) {
+					throw e;
+					// fall through otherwise
+				}
+			} catch (IOException ioe) {
+				// fall through
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Returns a stream on the image contents. Returns null if a stream could
+	 * not be opened.
+	 *
+	 * @param zoom the zoom factor
+	 * @return the buffered stream on the file or <code>null</code> if the
+	 *         file cannot be found
+	 */
+	private InputStream getStream(int zoom) {
+		if (zoom == 100) {
+			return getStream(name);
+		}
+
+		InputStream xstream = getStream(getxName(name, zoom));
+		if (xstream != null) {
+			return xstream;
+		}
+
+		InputStream xpath = getStream(getxPath(name, zoom));
+		if (xpath != null) {
+			return xpath;
+		}
+
+		return null;
+	}
+
+	/**
+	 * try to obtain a stream for a given name, if the name does not match a valid
+	 * resource null is returned
+	 *
+	 * @param fileName the filename to check
+	 * @return an {@link InputStream} to read from, or <code>null</code> if fileName
+	 *         does not denotes an existing resource
+	 */
+	private InputStream getStream(String fileName) {
+		if (fileName != null) {
+			if (location != null) {
+				return location.getResourceAsStream(fileName);
+			}
+			try {
+				return new FileInputStream(fileName);
+			} catch (FileNotFoundException e) {
+				return null;
+			}
+		}
+		return null;
+	}
+
+	static String getxPath(String name, int zoom) {
+		Matcher matcher = XPATH_PATTERN.matcher(name);
+		if (matcher.find()) {
+			try {
+				int current = Integer.parseInt(matcher.group(1));
+				int desired = (int) ((zoom / 100d) * current);
+				String lead = name.substring(0, matcher.start(1));
+				String tail = name.substring(matcher.end(2));
+				return lead + desired + "x" + desired + tail; //$NON-NLS-1$
+			} catch (RuntimeException e) {
+				// should never happen but if then we can't use the alternative name...
+			}
+		}
+		return null;
+	}
+
+	static String getxName(String name, int zoom) {
+		int dot = name.lastIndexOf('.');
+		if (dot != -1 && (zoom == 150 || zoom == 200)) {
+			String lead = name.substring(0, dot);
+			String tail = name.substring(dot);
+			if (InternalPolicy.DEBUG_LOAD_URL_IMAGE_DESCRIPTOR_2x_PNG_FOR_GIF && ".gif".equalsIgnoreCase(tail)) { //$NON-NLS-1$
+				tail = ".png"; //$NON-NLS-1$
+			}
+			String x = zoom == 150 ? "@1.5x" : "@2x"; //$NON-NLS-1$ //$NON-NLS-2$
+			return lead + x + tail;
+		}
+		return null;
+	}
+
+	@Override
+	public int hashCode() {
+		int code = name.hashCode();
+		if (location != null) {
+			code += location.hashCode();
+		}
+		return code;
+	}
+
+	/**
+	 * The <code>FileImageDescriptor</code> implementation of this
+	 * <code>Object</code> method returns a string representation of this
+	 * object which is suitable only for debugging.
+	 */
+	@Override
+	public String toString() {
+		return "FileImageDescriptor(location=" + location + ", name=" + name + ")";//$NON-NLS-3$//$NON-NLS-2$//$NON-NLS-1$
+	}
+
+	@Override
+	public Image createImage(boolean returnMissingImageOnError, Device device) {
+		if (InternalPolicy.DEBUG_LOAD_URL_IMAGE_DESCRIPTOR_2x) {
+			try {
+				return new Image(device, new ImageProvider());
+			} catch (SWTException | IllegalArgumentException exception) {
+				// If we fail, fall back to the old 1x implementation.
+			}
+		}
+
+		String path = getFilePath(name, true);
+		if (path == null)
+			return createDefaultImage(returnMissingImageOnError, device);
+		try {
+			return new Image(device, path);
+		} catch (SWTException exception) {
+			//if we fail try the default way using a stream
+		}
+		return super.createImage(returnMissingImageOnError, device);
+	}
+
+	/**
+	 * Return default image if returnMissingImageOnError is true.
+	 *
+	 * @param device
+	 * @return Image or <code>null</code>
+	 */
+	private Image createDefaultImage(boolean returnMissingImageOnError,
+			Device device) {
+		try {
+			if (returnMissingImageOnError)
+				return new Image(device, DEFAULT_IMAGE_DATA);
+		} catch (SWTException nextException) {
+			return null;
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the filename for the ImageData.
+	 *
+	 * @param name the file name
+	 * @return {@link String} or <code>null</code> if the file cannot be found
+	 */
+	String getFilePath(String name, boolean logIOException) {
+
+		if (location == null)
+			return new Path(name).toOSString();
+
+		URL url = location.getResource(name);
+		return url.getPath() + "/" + url.getFile();
+	}
+}
