@@ -53,6 +53,7 @@ project/
 request/
 *.persp
 target/
+bin/
 url/
 /.emacs.desktop
 perspectives.save
