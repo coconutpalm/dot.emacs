@@ -8,6 +8,7 @@
             [insideout.reload :as reload]
             [example.ui.core  :as ui])
   (:import [org.eclipse.swt SWT]
+           [org.eclipse.swt.widgets Display]
            [org.eclipse.swt.layout FillLayout]))
 
 
@@ -23,12 +24,14 @@
   (ui-scale! 2)                         ;Needed for older JREs
 
   (application
-   (shell "Browser" (id! :ui/shell)
+   (shell "PIM" (id! :ui/shell)
           :layout (FillLayout.)
           (ui/add-content)
 
-          (on-shell-closed [props event] (when-not (:closing @props)
-                                           (set! (. event doit) false)))
+          (on-shell-closed [props event]
+                           (when-not (:closing @props)
+                             (set! (. event doit) false))
+                           (.setVisible (first (.getShells (Display/getDefault))) false))
 
           (menu SWT/POP_UP (id! :ui/tray-menu)
                 (menu-item SWT/PUSH "&Quit"
