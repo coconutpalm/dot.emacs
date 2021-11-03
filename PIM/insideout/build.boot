@@ -24,7 +24,7 @@
                                           :layout "p2"}])
 
  :source-paths #{"src" "test" "resources"}
- :resource-paths #{"src" "resources"})
+ :resource-paths #{"src" "resources" "lib"})
 
 (require
  '[boot.pod :as pod]
