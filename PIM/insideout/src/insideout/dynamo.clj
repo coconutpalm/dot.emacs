@@ -35,12 +35,18 @@
    :url    (str "http://download.eclipse.org/releases/" (or (first YYYY-MM) "2021-09"))
    :layout "p2"})
 
+(defn cef-chromium-repo
+  []
+  {:id     "cef.chromium.p2"
+   :url    "http://dl.maketechnology.io/chromium-cef/rls/repository"
+   :layout "p2"})
+
 
 (def ^:dynamic *extra-repositories*
   "Extra repositories in addition to Maven Central and Clojars. Default={}.
   Use the `eclipse-repo` function to get an Eclipse P2 repository configuration
   if you want to add Eclipse/P2 dependencies."
-  {})
+  [])
 
 (def ^:private dynamo-loader (atom nil))
 
@@ -165,7 +171,7 @@
    (pom/add-dependencies :repository-session-fn repository-session-fn
                          :classloader classloader
                          :coordinates coordinates
-                         :repositories (merge cemerick.pomegranate.aether/maven-central
+                         :repositories (apply merge cemerick.pomegranate.aether/maven-central
                                               {"clojars" "https://clojars.org/repo"}
                                               *extra-repositories*)))
   ([coordinates]
