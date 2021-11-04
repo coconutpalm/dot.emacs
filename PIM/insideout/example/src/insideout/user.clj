@@ -27,6 +27,7 @@
 
     (application
      (shell "FuseCode" (id! :ui/shell)
+            :image app-icon
             :layout (FillLayout.)
 
             (ui/add-content)
@@ -43,6 +44,9 @@
                                                  (.close (:ui/shell @props))))))
 
      (tray-item
+      (fn [props parent]
+        (.setImage parent app-icon)
+        (.setHighlightImage parent app-icon))
       (on-menu-detected [props _]   (.setVisible (:ui/tray-menu @props) true))
       (on-widget-selected [props _] (let [s (:ui/shell @props)]
                                       (if (.isVisible s)
