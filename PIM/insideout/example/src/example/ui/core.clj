@@ -22,10 +22,6 @@
   ,)
 
 
-
-(defn append [browser text]
-  )
-
 (defn add-content []
   (sash-form SWT/HORIZONTAL (id! :ui/main-sash)
              :sash-width (int (/ s/margin 2))
@@ -42,13 +38,14 @@
                                           ;; :font (title-font)
                                           :foreground (s/system-color SWT/COLOR_TITLE_FOREGROUND)))
                         :top-left :ui/sidebar-title)
-             #_(text (| SWT/MULTI SWT/V_SCROLL) (id! :ui/textpane)
-                     (on-modify-text [props _] (println (.getText (:ui/textpane @props)))))
 
-             (browser SWT/WEBKIT (id! :ui/editor)
-                      :javascript-enabled true
-                      (fn [_ parent] (console/init parent))
-                      #_(-> (swtdoc :swt :program 'Program) :result :eclipsedoc))
+             (text (| SWT/MULTI SWT/V_SCROLL) (id! :ui/textpane)
+                   (on-modify-text [props _] (println (.getText (:ui/textpane @props)))))
+
+             #_(browser SWT/WEBKIT (id! :ui/editor)
+                        :javascript-enabled true
+                        (fn [_ parent] (console/init parent))
+                        #_(-> (swtdoc :swt :program 'Program) :result :eclipsedoc))
 
              :weights [25 75]))
 
