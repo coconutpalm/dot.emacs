@@ -48,3 +48,13 @@
                 |cdiv.innerHTML += html;
                 |window.scrollTo(0,document.body.scrollHeight);")]
     (.execute browser script)))
+
+
+(defn clear
+  "Clear console buffer"
+  [browser text]
+  (let [script (strip-margin
+                "var cdiv = document.getElementById(\"console\");
+                |cdiv.innerHTML = \"\";
+                |window.scrollTo(0,0);")]
+    (.execute browser script)))
