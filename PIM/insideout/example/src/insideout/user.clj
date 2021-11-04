@@ -8,44 +8,47 @@
             [insideout.reload :as reload]
             [example.ui.core  :as ui])
   (:import [org.eclipse.swt SWT]
+           [org.eclipse.swt.graphics Image]
            [org.eclipse.swt.widgets Display]
            [org.eclipse.swt.layout FillLayout]))
 
 
 (defn -main [& args]
-  (println "Starting...")
+  (let [app-icon (Image. (Display/getDefault) "resources/img/sidebar.png")]
+    (println "Starting...")
 
-  (pprint (nrepl-server/start! :cider))
-  (println "nrepl started.")
+    (pprint (nrepl-server/start! :cider))
+    (println "nrepl started.")
 
-  (reload/reload-classpath-dirs)
-  (println "Watching classpath directories for source changes.")
+    (reload/reload-classpath-dirs)
+    (println "Watching classpath directories for source changes.")
 
-  (ui-scale! 2)                         ;Needed for older JREs
+    (ui-scale! 2)                       ;Needed for older JREs
 
-  (application
-   (shell "FuseCode" (id! :ui/shell)
-          :layout (FillLayout.)
-          (ui/add-content)
+    (application
+     (shell "FuseCode" (id! :ui/shell)
+            :layout (FillLayout.)
 
-          (on-shell-closed [props event]
-                           (when-not (:closing @props)
-                             (set! (. event doit) false))
-                           (.setVisible (first (.getShells (Display/getDefault))) false))
+            (ui/add-content)
 
-          (menu SWT/POP_UP (id! :ui/tray-menu)
-                (menu-item SWT/PUSH "&Quit"
-                           (on-widget-selected [props _]
-                                               (swap! props #(update-in % [:closing] (constantly true)))
-                                               (.close (:ui/shell @props))))))
+            (on-shell-closed [props event]
+                             (when-not (:closing @props)
+                               (set! (. event doit) false))
+                             (.setVisible (first (.getShells (Display/getDefault))) false))
 
-   (tray-item
-    (on-menu-detected [props _]   (.setVisible (:ui/tray-menu @props) true))
-    (on-widget-selected [props _] (let [s (:ui/shell @props)]
-                                    (if (.isVisible s)
-                                      (.setVisible s false)
-                                      (.setVisible s true)))))
+            (menu SWT/POP_UP (id! :ui/tray-menu)
+                  (menu-item SWT/PUSH "&Quit"
+                             (on-widget-selected [props _]
+                                                 (swap! props #(update-in % [:closing] (constantly true)))
+                                                 (.close (:ui/shell @props))))))
 
-   (defmain [props parent]
-     ;; Bind data layer to UI or...
-     (println (str (:ui/editor @props) " " parent)))))
+     (tray-item
+      (on-menu-detected [props _]   (.setVisible (:ui/tray-menu @props) true))
+      (on-widget-selected [props _] (let [s (:ui/shell @props)]
+                                      (if (.isVisible s)
+                                        (.setVisible s false)
+                                        (.setVisible s true)))))
+
+     (defmain [props parent]
+       ;; Bind data layer to UI or...
+       (println (str (:ui/editor @props) " " parent))))))

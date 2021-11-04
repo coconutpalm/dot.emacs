@@ -158,6 +158,19 @@
   (println square-source)
   ,)
 
+(defn ->js-string-literal
+  "Add quotes and character escape to make `s` into a valid Javascript string literal."
+  [s]
+  (str \"
+       (str/escape s {\newline   "\\n"
+                      \return    "\\r"
+                      \tab       "\\t"
+                      \backspace "\\b"
+                      \formfeed  "\\f"
+                      \'         "\\'"
+                      \"         "\\\""
+                      \\         "\\\\"})
+       \"))
 
 (defn undasherize
   "Replace all instances of '-' or '_' with replacement"

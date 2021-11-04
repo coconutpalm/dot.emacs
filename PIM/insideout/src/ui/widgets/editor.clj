@@ -3,7 +3,7 @@
   (:require [ui.SWT]
             [ui.inits :as i]
             [clojure.string :as str]
-            [clj-foundation.data :refer [nothing->identity strip-margin]])
+            [clj-foundation.data :refer [nothing->identity strip-margin ->js-string-literal]])
   (:import [org.eclipse.swt SWT]
            [org.eclipse.swt.layout FillLayout]
            [org.eclipse.swt.browser Browser BrowserFunction]
@@ -12,20 +12,6 @@
            [org.eclipse.swt.widgets Composite Menu]
            [org.eclipse.swt.layout FillLayout]))
 
-
-(defn ->js-string-literal
-  "Add quotes and character escape to make `s` into a valid Javascript string literal."
-  [s]
-  (str \"
-       (str/escape s {\newline   "\\n"
-                      \return    "\\r"
-                      \tab       "\\t"
-                      \backspace "\\b"
-                      \formfeed  "\\f"
-                      \'         "\\'"
-                      \"         "\\\""
-                      \\         "\\\\"})
-       \"))
 
 
 (comment

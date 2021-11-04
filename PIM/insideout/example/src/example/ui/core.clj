@@ -4,7 +4,8 @@
   (:refer-clojure :exclude [list])
   (:require [ui.SWT :refer :all]
             [ui.gridlayout :as layout]
-            [example.styles :as s])
+            [example.ui.console :as console]
+            [example.ui.styles :as s])
   (:import [org.eclipse.swt SWT]
            [org.eclipse.swt.graphics Font FontData]
            [org.eclipse.swt.widgets Display]
@@ -21,30 +22,37 @@
   ,)
 
 
+
+(defn append [browser text]
+  )
+
 (defn add-content []
   (sash-form SWT/HORIZONTAL (id! :ui/main-sash)
-             :sash-width (int (/ margin 2))
+             :sash-width (int (/ s/margin 2))
              (view-form (| SWT/BORDER SWT/FLAT)
-                        :margin-height margin
-                        :margin-width margin
-                        :background (system-color SWT/COLOR_INFO_BACKGROUND)
-                        :foreground (system-color SWT/COLOR_INFO_FOREGROUND)
+                        :margin-height s/margin
+                        :margin-width s/margin
+                        :background (s/system-color SWT/COLOR_INFO_BACKGROUND)
+                        :foreground (s/system-color SWT/COLOR_INFO_FOREGROUND)
 
                         (composite (id! :ui/sidebar-title)
                                    :layout (FillLayout.)
-                                   :background (system-color SWT/COLOR_TITLE_BACKGROUND)
+                                   :background (s/system-color SWT/COLOR_TITLE_BACKGROUND)
                                    (label "Contexts && Things"
                                           ;; :font (title-font)
-                                          :foreground (system-color SWT/COLOR_TITLE_FOREGROUND)))
+                                          :foreground (s/system-color SWT/COLOR_TITLE_FOREGROUND)))
                         :top-left :ui/sidebar-title)
              #_(text (| SWT/MULTI SWT/V_SCROLL) (id! :ui/textpane)
                      (on-modify-text [props _] (println (.getText (:ui/textpane @props)))))
 
              (browser SWT/WEBKIT (id! :ui/editor)
                       :javascript-enabled true
-                      :url "http://www.google.com" #_(-> (swtdoc :swt :program 'Program) :result :eclipsedoc))
+                      (fn [_ parent] (console/init parent))
+                      #_(-> (swtdoc :swt :program 'Program) :result :eclipsedoc))
 
              :weights [25 75]))
+
+
 
 
 (defn pre-reload []
