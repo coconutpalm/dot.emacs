@@ -1,21 +1,52 @@
 (set-env!
- :dependencies '[[nrepl                                "0.8.3" :scope "test"]
-                 [org.slf4j/slf4j-nop                  "1.7.13" :scope "test"]
-                 [adzerk/boot-jar2bin                  "1.2.0" :scope "test"]
-                 [adzerk/boot-reload                   "0.6.1" :scope "test"]
+ :dependencies '[[nrepl "0.8.3" :scope "test"]
+                 [org.slf4j/slf4j-nop "1.7.13" :scope "test"]
+                 [adzerk/boot-jar2bin "1.2.0" :scope "test"]
+                 [adzerk/boot-reload "0.6.1" :scope "test"]
+
+                 [javax.inject/javax.inject "1" :scope "provided"]
+                 [org.eclipse.sisu/org.eclipse.sisu.inject "0.3.4" :scope "provided"]
 
                  ;; Client and server
-                 #_[org.clojure/core.async               "1.3.610"]
-                 [org.clojure/data.xml                 "0.0.8"]
-                 [org.slf4j/slf4j-simple               "1.7.5"]
-                 [juji/editscript                      "0.5.4"]
+                 #_ [org.clojure/core.async "1.3.610"]
+                 [org.clojure/data.xml "0.0.8"]
+                 [org.slf4j/slf4j-simple "1.7.5"]
+                 [juji/editscript "0.5.4"]
 
                  ;; Server-side dependencies
-                 [org.clojure/clojure                  "1.10.3"]
-                 [ns-tracker                           "0.4.0"]
-                 [potemkin                             "0.4.3"]
-                 [org.openntf.maven/p2-layout-resolver "1.2.0"]
-                 [clj-commons/pomegranate              "1.2.1"]]
+                 [org.clojure/clojure "1.10.3"]
+                 [ns-tracker "0.4.0"]
+                 [potemkin "0.4.3"]
+
+                 ;; Maven resolver / Pomegranate
+                 [org.tcrawley/dynapath "1.0.0"]
+                 [org.apache.maven.resolver/maven-resolver-api "1.6.3"]
+                 [org.apache.maven.resolver/maven-resolver-spi "1.6.3"]
+                 [org.apache.maven.resolver/maven-resolver-util "1.6.3"]
+                 [org.apache.maven.resolver/maven-resolver-impl "1.6.3"]
+                 [org.apache.maven.resolver/maven-resolver-transport-file "1.6.3"]
+                 [org.apache.maven.resolver/maven-resolver-transport-http "1.6.3"]
+                 [org.apache.maven.resolver/maven-resolver-transport-wagon "1.6.3"]
+                 [org.apache.maven.resolver/maven-resolver-connector-basic "1.6.3"]
+                 ;; https://mvnrepository.com/artifact/org.apache.maven/maven-aether-provider
+                 [org.apache.maven/maven-aether-provider "3.3.9"]
+                 [org.apache.maven.wagon/wagon-provider-api "3.3.2" :exclude [org.codehaus.plexus/plexus-utils]]
+                 [org.apache.maven.wagon/wagon-http "3.3.4"]
+                 [org.apache.maven.wagon/wagon-ssh "3.3.4"]
+                 [org.apache.httpcomponents/httpclient "4.5.8"]
+                 [org.apache.httpcomponents/httpcore "4.4.11"]
+
+                 ;; P2 repo utilities
+                 ;; OSGi processing
+                 [com.ibm.sbt/com.ibm.commons "9.0.0"]
+                 [org.eclipse.platform/org.eclipse.osgi "3.15.100"]
+
+                 ;; Checksums
+                 [commons-codec/commons-codec "1.13"]
+
+                 ;; Compressed remote streams
+                 [org.apache.commons/commons-compress "1.19"]
+                 [org.tukaani/xz "1.8"]]
 
 
  :repositories #(conj %
