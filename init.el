@@ -2373,6 +2373,13 @@ assuming it is in a maven-style project."
   (require 'sotclojure-on))
 
 
+(use-package eval-sexp-fu
+  :straight (:type git :host github :repo "hchbaw/eval-sexp-fu.el")
+  :config
+  (require 'eval-sexp-fu)
+  (turn-on-eval-sexp-fu-flash-mode))
+
+
 ;; Clojurescript/Reframe support
 (use-package re-jump
   :straight (:type git :host github :repo "oliyh/re-jump.el"))
