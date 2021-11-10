@@ -2078,7 +2078,7 @@ assuming it is in a maven-style project."
    lsp-lens-enable t
    lsp-lens-place-position 'end-of-line
    lsp-signature-auto-activate nil      ;Because https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
-   lsp-completion-provider :capf)
+   )                                    ; lsp-completion-provider :capf  << NOT!
 
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\docs\\'")
 
