@@ -2,6 +2,9 @@
 
 FROM docker-devenv-base
 
+# Make sure everything is up-to-date since base image was (re)built
+RUN apt-get update && apt-get -y upgrade
+
 # USER, GID, etc., are the developer's name/creds on the host
 ARG USER_NAME
 ARG USER_EMAIL
