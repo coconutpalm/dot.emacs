@@ -11,6 +11,13 @@
   (:import [clojure.lang Ratio Numbers]))
 
 
+(defn round
+  "Round a decimal `d` to the specified precision `p` (number of significant digits)"
+  [p d]
+  (let [factor (Math/pow 10 p)]
+    (/ (Math/round (* d factor) factor))))
+
+
 (defprotocol INumberParts
   "A protocol for numbers that can be split into parts."
   (decompose [this] "Returns a map consisting of the parts that make up 'this' number."))

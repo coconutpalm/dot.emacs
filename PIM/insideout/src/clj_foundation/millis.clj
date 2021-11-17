@@ -2,7 +2,8 @@
   "Convert various time values to milliseconds and back.  Decompose millis to days, hours, minutes, and seconds."
   (:require [clojure.string :as str :refer [trimr]]
             [clj-foundation.patterns :refer [let-map]]
-            [clj-foundation.math :refer [->MixedNumber INumberParts]]))
+            [clj-foundation.math :refer [->MixedNumber INumberParts round]])
+  (:import [java.util Date]))
 
 (defn <-seconds
   "Seconds to milliseconds"
@@ -72,3 +73,21 @@
                    (str whole (second (str part)) " ")
                    "")))
              [:days :hours :minutes :seconds]))))))
+
+(defn remaining-millis
+  "Given a start time in millis, the total number of steps, and the current
+  step number, estimates the remaining time in millis."
+  [start-time number-of-steps current-step]
+  (if (> current-step 0)
+    (let [elapsed-time (- (System/currentTimeMillis) start-time)]
+      (long (* (/ elapsed-time current-step)
+               (- number-of-steps current-step))))
+    (Long/MAX_VALUE)))
+
+(defn progress-report
+  "Calculate a progress report map containing the `:estimated-dmhs` along with the `:complete%`
+  to complete a process beginning at `start-time` with a total `number-of-steps`
+  that is about to process `current-step`."
+  [start-time number-of-steps current-step]
+  (let-map [estimated-dhms (dhms (remaining-millis start-time number-of-steps current-step))
+            complete%      (round 2 (* (/ (double current-step) (double number-of-steps))))]))
