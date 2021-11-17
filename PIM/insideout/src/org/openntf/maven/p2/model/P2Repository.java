@@ -105,7 +105,9 @@ public class P2Repository {
 	private static InputStream findXml(URI baseUri, String baseName) throws IOException, CompressorException {
 		URI xml = URI.create(PathUtil.concat(baseUri.toString(), baseName + ".xml", '/')); //$NON-NLS-1$
 		try {
-			return xml.toURL().openStream();
+          InputStream result = xml.toURL().openStream();
+          System.out.println("Found " + baseName + ".xml");
+          return result;
 		} catch(FileNotFoundException e) {
 			// Plain XML not present
 		}
@@ -113,6 +115,7 @@ public class P2Repository {
 		URI xz = URI.create(PathUtil.concat(baseUri.toString(), baseName + ".xml.xz", '/')); //$NON-NLS-1$
 		try {
 			InputStream is = xz.toURL().openStream();
+          System.out.println("Found " + baseName + ".xml.xz");
 			return CompressorStreamFactory.getSingleton().createCompressorInputStream(CompressorStreamFactory.getXz(), is);
 		} catch(FileNotFoundException e) {
 			// XZ-compressed XML not present
@@ -123,6 +126,7 @@ public class P2Repository {
 			InputStream is = jar.toURL().openStream();
 			JarInputStream jis = new JarInputStream(is);
 			jis.getNextEntry();
+         System.out.println("Found " + baseName + ".jar");
 			return jis;
 		} catch(FileNotFoundException e) {
 			// Jar-compressed XML not present

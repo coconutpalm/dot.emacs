@@ -29,6 +29,7 @@ import org.eclipse.aether.spi.log.LoggerFactory;
 import org.eclipse.aether.spi.log.Logger;
 import org.eclipse.aether.transfer.NoRepositoryLayoutException;
 import org.openntf.maven.p2.Messages;
+import org.openntf.maven.p2.util.StdoutLogger;
 
 @Named("p2")
 public class P2RepositoryLayoutFactory implements RepositoryLayoutFactory {
@@ -36,47 +37,18 @@ public class P2RepositoryLayoutFactory implements RepositoryLayoutFactory {
 
 	public P2RepositoryLayoutFactory(Logger log) {
 		this.log = log;
+      log.debug("P2RepositoryLayoutFactory Constructor");
 	}
 
 	@Inject
 	public P2RepositoryLayoutFactory(LoggerFactory loggerFactory) {
 		this.log = loggerFactory.getLogger(getClass().getPackage().getName());
+      log.debug("P2RepositoryLayoutFactory Constructor");
 	}
 
 	public P2RepositoryLayoutFactory() {
-		this.log = new Logger() {
-
-			@Override
-			public boolean isDebugEnabled() {
-				return true;
-			}
-
-			@Override
-			public void debug(String msg) {
-				System.out.println("DEBUG: " + msg);
-			}
-
-			@Override
-			public void debug(String msg, Throwable error) {
-				System.out.println("DEBUG: " + msg);
-				error.printStackTrace();
-			}
-
-			@Override
-			public boolean isWarnEnabled() {
-				return true;
-			}
-
-			@Override
-			public void warn(String msg) {
-				System.out.println("WARN: " + msg);
-			}
-
-			@Override
-			public void warn(String msg, Throwable error) {
-				System.out.println("WARN: " + msg);
-				error.printStackTrace();
-			}};
+       this.log = StdoutLogger.log;
+      log.debug("P2RepositoryLayoutFactory Constructor");
 	}
 
 
@@ -86,6 +58,7 @@ public class P2RepositoryLayoutFactory implements RepositoryLayoutFactory {
 		if (!"p2".equals(repository.getContentType())) { //$NON-NLS-1$
 			throw new NoRepositoryLayoutException(repository);
 		}
+      log.debug("P2RepositoryLayoutFactory newInstance");
 
 		if(log.isDebugEnabled()) {
 			log.debug(MessageFormat.format(Messages.getString("P2RepositoryLayoutFactory.creatingNew"), repository.getUrl())); //$NON-NLS-1$

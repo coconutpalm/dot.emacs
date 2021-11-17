@@ -54,17 +54,18 @@ import com.ibm.commons.util.StringUtil;
 
 public class P2RepositoryConnector implements RepositoryConnector {
 	private final Logger log;
-	
+
 	private final RemoteRepository repository;
 	private final P2RepositoryLayout layout;
 	// Use a single thread for now to avoid observed inconsistent behavior
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	private boolean closed;
-	
+
 	public P2RepositoryConnector(RepositorySystemSession session, RemoteRepository repository, Logger logger) {
 		this.repository = repository;
 		this.log = logger;
 		try {
+          log.debug("P2RepositoryConnector constructor");
 			// TODO support auth
 			this.layout = new P2RepositoryLayout(repository.getId(), repository.getUrl(), log);
 		} catch (IOException e) {
@@ -75,15 +76,16 @@ public class P2RepositoryConnector implements RepositoryConnector {
 	@Override
 	public void get(Collection<? extends ArtifactDownload> artifactDownloads, Collection<? extends MetadataDownload> metadataDownloads) {
 		checkClosed();
-		
+      log.debug("P2RepositoryConnector get");
+
 		if(log.isDebugEnabled()) {
 			log.debug(MessageFormat.format(Messages.getString("P2RepositoryConnector.getCommand"), this.repository)); //$NON-NLS-1$
 			log.debug(MessageFormat.format(Messages.getString("P2RepositoryConnector.getCommandDownloads"), artifactDownloads)); //$NON-NLS-1$
 			log.debug(MessageFormat.format(Messages.getString("P2RepositoryConnector.getCommandMetadata"), metadataDownloads)); //$NON-NLS-1$
 		}
-		
+
 		List<Callable<Void>> downloads = new ArrayList<>();
-		
+
 		if(artifactDownloads != null) {
 			artifactDownloads.stream()
 				.map(download -> (Callable<Void>)() -> {
@@ -94,12 +96,12 @@ public class P2RepositoryConnector implements RepositoryConnector {
 					}
 					try {
 						download(sourceUri, dest);
-						
+
 						for(Checksum checksum : layout.getChecksums(download.getArtifact(), false, sourceUri)) {
 							String ext = checksum.getAlgorithm().replace("-", ""); //$NON-NLS-1$ //$NON-NLS-2$
 							Path checksumPath = dest.getParent().resolve(dest.getFileName().toString()+"."+ext); //$NON-NLS-1$
 							download(sourceUri.resolve(checksum.getLocation()), checksumPath);
-							
+
 							verifyChecksum(dest, checksumPath, checksum.getAlgorithm());
 						}
 					} catch(FileNotFoundException e) {
@@ -112,7 +114,7 @@ public class P2RepositoryConnector implements RepositoryConnector {
 				.filter(Objects::nonNull)
 				.forEach(downloads::add);
 		}
-		
+
 		if(metadataDownloads != null) {
 			metadataDownloads.stream()
 				.map(download -> (Callable<Void>)() -> {
@@ -129,7 +131,7 @@ public class P2RepositoryConnector implements RepositoryConnector {
 				})
 				.forEach(downloads::add);
 		}
-		
+
 		try {
 			executor.invokeAll(downloads);
 		} catch (InterruptedException e) {
@@ -143,7 +145,7 @@ public class P2RepositoryConnector implements RepositoryConnector {
 	public void put(Collection<? extends ArtifactUpload> artifactUploads,
 			Collection<? extends MetadataUpload> metadataUploads) {
 		checkClosed();
-		
+
 		// Not supported
 	}
 
@@ -163,7 +165,7 @@ public class P2RepositoryConnector implements RepositoryConnector {
 		}
 		this.closed = true;
 	}
-	
+
 	// *******************************************************************************
 	// * Internal implementation methods
 	// *******************************************************************************
@@ -173,14 +175,15 @@ public class P2RepositoryConnector implements RepositoryConnector {
 			throw new IllegalStateException(Messages.getString("P2RepositoryConnector.connectorIsClosed")); //$NON-NLS-1$
 		}
 	}
-	
+
 	private void download(URI source, Path dest) throws FileNotFoundException, IOException {
+       log.debug("P2RepositoryConnector download");
 		try(InputStream is = source.toURL().openStream()) {
 			Files.createDirectories(dest.getParent());
 			Files.copy(is, dest, StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
-	
+
 	private void verifyChecksum(Path artifactPath, Path checksumPath, String algorithm) throws ChecksumFailureException {
 		try {
 			String checksum = new String(Files.readAllBytes(checksumPath));

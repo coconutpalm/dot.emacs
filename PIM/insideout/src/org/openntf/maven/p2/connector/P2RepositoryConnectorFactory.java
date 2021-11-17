@@ -26,17 +26,20 @@ import org.eclipse.aether.spi.log.Logger;
 import org.eclipse.aether.spi.log.LoggerFactory;
 import org.eclipse.aether.spi.log.NullLoggerFactory;
 import org.eclipse.aether.transfer.NoRepositoryConnectorException;
+import org.openntf.maven.p2.util.StdoutLogger;
 
 @Named("p2repo")
 public class P2RepositoryConnectorFactory implements RepositoryConnectorFactory {
 
-    private Logger logger = NullLoggerFactory.LOGGER;
-    
-	
+    // private Logger logger = NullLoggerFactory.LOGGER;
+    private Logger logger = StdoutLogger.log;
+
+
+
 	public P2RepositoryConnectorFactory() {
-		
+      logger.debug("P2RepositoryConnectorFactory Constructor");
 	}
-	
+
 	@Inject
 	public P2RepositoryConnectorFactory(LoggerFactory loggerFactory) {
 		this.logger = loggerFactory.getLogger(getClass().getPackage().getName());
@@ -48,6 +51,7 @@ public class P2RepositoryConnectorFactory implements RepositoryConnectorFactory 
 		if(!"p2".equals(repository.getContentType())) { //$NON-NLS-1$
 			throw new NoRepositoryConnectorException(repository);
 		}
+      logger.debug("P2RepositoryConnectorFactory newInstance");
 		return new P2RepositoryConnector(session, repository, logger);
 	}
 

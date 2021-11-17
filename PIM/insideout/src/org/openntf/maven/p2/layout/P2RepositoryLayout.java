@@ -73,6 +73,7 @@ public class P2RepositoryLayout implements RepositoryLayout, Closeable {
 	public P2RepositoryLayout(String id, String url, Logger log) throws IOException {
 		this.id = id;
 		this.log = log;
+	      log.debug("P2RepositoryLayout Constructor");
 		P2Repository repo;
 		try {
 			repo = P2Repository.getInstance(URI.create(url));
@@ -89,6 +90,7 @@ public class P2RepositoryLayout implements RepositoryLayout, Closeable {
 
 	@Override
 	public URI getLocation(Artifact artifact, boolean upload) {
+	      log.debug("P2RepositoryLayout getLocation");
 		if(log.isDebugEnabled()) {
 			log.debug(MessageFormat.format(Messages.getString("P2RepositoryLayout.getLocationArtifact"), artifact)); //$NON-NLS-1$
 		}
@@ -146,6 +148,7 @@ public class P2RepositoryLayout implements RepositoryLayout, Closeable {
 
 	@Override
 	public URI getLocation(Metadata metadata, boolean upload) {
+	      log.debug("P2RepositoryLayout getLocation");
 		if(log.isDebugEnabled()) {
 			log.debug(MessageFormat.format(Messages.getString("P2RepositoryLayout.getLocationMetadata"), metadata)); //$NON-NLS-1$
 		}
@@ -158,6 +161,7 @@ public class P2RepositoryLayout implements RepositoryLayout, Closeable {
 
 	@Override
 	public List<Checksum> getChecksums(Artifact artifact, boolean upload, URI location) {
+	      log.debug("P2RepositoryLayout getChecksums");
 		if(this.p2Repo == null) {
 			return null;
 		}
@@ -189,6 +193,7 @@ public class P2RepositoryLayout implements RepositoryLayout, Closeable {
 
 	@Override
 	public List<Checksum> getChecksums(Metadata metadata, boolean upload, URI location) {
+	      log.debug("P2RepositoryLayout getChecksums");
 		return Collections.emptyList();
 	}
 
