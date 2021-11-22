@@ -69,6 +69,7 @@ pulseaudio-utils
 pv
 pwgen
 runit
+rust-fd-find
 silversearcher-ag
 software-properties-common
 sshfs

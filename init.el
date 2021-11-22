@@ -2292,8 +2292,6 @@ assuming it is in a maven-style project."
 
 ;;(use-package paredit)
 
-(global-set-key (kbd "C-}") 'lispy-forward-slurp-sexp)
-(global-set-key (kbd "C-{") 'lispy-forward-barf-sexp)
 (global-set-key (kbd "M-q") 'cider-format-defun)
 
 
@@ -2392,6 +2390,10 @@ assuming it is in a maven-style project."
   :defer t
   :init
   (setq lispy-compat '(cider)))
+
+
+(global-set-key (kbd "C-}") 'lispy-forward-slurp-sexp)
+(global-set-key (kbd "C-{") 'lispy-forward-barf-sexp)
 
 
 (defun lispy-mode-key-unbindings ()
@@ -2495,9 +2497,13 @@ assuming it is in a maven-style project."
   "Turn lispy mode on."
   (lispy-mode 1))
 
+(defun lispy-mode-off ()
+  "Turn lispy mode on."
+  (lispy-mode nil))
+
 
 ;; Turn it on by default; toggle via M-x lispy-mode
-(add-hook 'clojure-mode-hook 'lispy-mode-on)
+(add-hook 'clojure-mode-hook 'lispy-mode-off)
 (add-hook 'lispy-mode-hook 'lispy-mode-key-unbindings)
 
 ;; Use Lispy mode with Emacs Lisp
@@ -2505,6 +2511,19 @@ assuming it is in a maven-style project."
           (lambda ()
             (outline-minor-mode 1)
             (lispy-mode 1)))
+
+
+(defun my-cider-eval-db ()
+  "Re-evaluate crawlingchaos.db.core file."
+  (interactive)
+  (save-buffer)
+  (let* ((proot (projectile-project-root)) ; "/home/mde/work/cc/"
+     (dbpath (concat proot "/cc-base/src/main/clojure/crawlingchaos/db/core.clj")))
+    (cider-map-repls :auto
+      (lambda (repl)
+        (cider-request:load-file (cider--file-string dbpath) dbpath "core.db" repl nil)))))
+
+(add-hook 'sql-mode (lambda () (local-set-key (kbd "C-c C-k") 'my-cider-eval-db)))
 
 
 (use-package cider
