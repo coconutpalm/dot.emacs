@@ -88,21 +88,25 @@
 ;; Exceptions and stack traces ----------------------------------------------------------
 
 (def ^:dynamic ^{:doc "The barf stream.  Defaults to *out*"}
-  *barf-log* *out*)
+  *barf-stream* *out*)
 
 (defmacro maybe-barf
-  "Executes `forms` inside a try/catch.
+  "A guard for code that has to keep executing / stay alive, even if an exception was
+  `throw`n up the stack.  Why barf?  Because `slurp` and `spit` were feeling lonely.
+
+  Pass any `context` you want captured in the barf stream.
+
+  Executes `forms` inside a try/catch.
 
   If an exception occurs, creates an `ex-info` containing `context` and wrapping the exception.  Then
-  barfs the full `ex-info` stack trace to `*barf-log*` (which is bound to `*out*` by default),
-  Then returns nil.
+  barfs the full `ex-info` stack trace to `*barf-stream*` (which is bound to `*out*` by default),
 
-  (Why `maybe-barf`?  Because `slurp` and `spit` were feeling lonely.)"
+  Then returns nil."
   [context & forms]
   `(try
      ~@forms
      (catch Throwable t#
-       (prettyexception/write-exception *barf-log* (ex-info "Unexpected error: Barfing!" {:context ~context} t#))
+       (prettyexception/write-exception *barf-stream* (ex-info "Unexpected error: Barfing!" {:context ~context} t#))
        nil)))
 
 

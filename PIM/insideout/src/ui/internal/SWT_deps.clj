@@ -30,7 +30,7 @@
               :type "p2"}})
 
 (def cef-chromium-repo
-  {"chromium" {:id   "com.make"
+  {"chromium" {:id   "chromium.repo"
                :url  "https://dl.maketechnology.io/chromium-cef/rls/repository/"
                :type "p2"}})
 
@@ -40,8 +40,7 @@
 (def ^:dynamic *swt-version* "3.117.0")
 (def swt-lib [(->platform-lib 'org.eclipse.platform/org.eclipse.swt) *swt-version*])
 
-;; (def chromium [(->platform-lib 'com.make/com.make.chromium.cef) "0.4.0.202005172227"])
-(def chromium '[com.make/com.make.chromium.cef.feature "0.4.0.202005172227"])
+(def chromium [(->platform-lib 'chromium.repo/com.make.chromium.cef) "0.4.0.202005172227"])
 (def reflections-lib '[org.reflections/reflections "0.9.12"])
 
 (defonce lib-resolutions
