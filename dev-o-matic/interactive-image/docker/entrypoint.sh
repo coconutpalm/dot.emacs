@@ -7,6 +7,7 @@ export USER_NAME="$3"
 export USER_EMAIL="$4"
 
 cd /home/$USER_LOGINNAME
+chown -RL $USER_LOGINNAME:$USER_LOGINNAME .
 
 # Allow plenty of open files
 bin/maximize-open-files

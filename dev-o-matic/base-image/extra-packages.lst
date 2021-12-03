@@ -44,7 +44,6 @@ make
 man
 manpages
 metacity-themes
-microsoft-edge-dev
 mlterm
 mplayer
 nano
@@ -69,7 +68,6 @@ pulseaudio-utils
 pv
 pwgen
 runit
-rust-fd-find
 silversearcher-ag
 software-properties-common
 sshfs

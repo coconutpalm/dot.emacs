@@ -1,19 +1,17 @@
 #!/usr/bin/env -S bash -x
+source "${DOCKER_DEV_SCRIPTS}/environment"
+source "${DOCKER_DEV_SCRIPTS}/devenv-utils"
 
-MYDIR=$(dirname $0)
-source "${MYDIR}/../scripts/environment"
-source "${MYDIR}/../scripts/devenv-utils"
-
-docker container ls --all | \
+$PODMAN container ls --all | \
     grep "docker-devenv:latest" | \
     grep Exited | \
     awk '{ print $1}' | \
     xargs docker container rm
 
-docker image ls -a | \
+$PODMAN image ls -a | \
     grep ${IMAGENAME} | \
     sort | \
     awk '{ print $3 }' | \
     xargs docker rmi
 
-make -C "${MYDIR}/.." clean
+make -C "${DOCKER_DEV_SCRIPTS}/.." clean

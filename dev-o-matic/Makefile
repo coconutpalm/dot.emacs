@@ -1,6 +1,6 @@
 #!/usr/bin/env make
+SHELL := /bin/bash
 
-include scripts/environment
 export $(shell sed 's/=.*//' scripts/environment)
 
 export DOCKER_BUILDKIT=0
