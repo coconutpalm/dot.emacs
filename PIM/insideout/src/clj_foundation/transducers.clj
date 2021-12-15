@@ -9,8 +9,9 @@
 
   Also includes xreduce, a version of reduce that returns a transducer function
   (this function is seemingly missing from the standard library)."
-  (:require [clj-foundation.patterns :refer [arity nothing]]
-            [clj-foundation.errors :refer [must-be]])
+  (:require [clj-foundation.patterns :refer [nothing]]
+            [clj-foundation.interop  :refer [arity]]
+            [clj-foundation.errors   :refer [must-be]])
   (:gen-class))
 
 
@@ -22,7 +23,7 @@
   * If (f x) is nil, patterns/nothing is returned.
   * Otherwise, the result is wrapped in a vector and returned."
   [f]
-  ;; Note that calling mapcat without an input collection returns a trunsducer
+  ;; Note that calling mapcat without an input collection returns a transducer
   (mapcat (fn [x]
             (let [r (f x)]
               (cond
