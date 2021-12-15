@@ -37,20 +37,19 @@ public class P2RepositoryLayoutFactory implements RepositoryLayoutFactory {
 
 	public P2RepositoryLayoutFactory(Logger log) {
 		this.log = log;
-      log.debug("P2RepositoryLayoutFactory Constructor");
+		log.debug("P2RepositoryLayoutFactory Constructor");
 	}
 
 	@Inject
 	public P2RepositoryLayoutFactory(LoggerFactory loggerFactory) {
 		this.log = loggerFactory.getLogger(getClass().getPackage().getName());
-      log.debug("P2RepositoryLayoutFactory Constructor");
+		log.debug("P2RepositoryLayoutFactory Constructor");
 	}
 
 	public P2RepositoryLayoutFactory() {
-       this.log = StdoutLogger.log;
-      log.debug("P2RepositoryLayoutFactory Constructor");
+		this.log = StdoutLogger.log;
+		log.debug("P2RepositoryLayoutFactory Constructor");
 	}
-
 
 	@Override
 	public RepositoryLayout newInstance(RepositorySystemSession session, RemoteRepository repository)
@@ -58,10 +57,11 @@ public class P2RepositoryLayoutFactory implements RepositoryLayoutFactory {
 		if (!"p2".equals(repository.getContentType())) { //$NON-NLS-1$
 			throw new NoRepositoryLayoutException(repository);
 		}
-      log.debug("P2RepositoryLayoutFactory newInstance");
+		log.debug("P2RepositoryLayoutFactory newInstance");
 
-		if(log.isDebugEnabled()) {
-			log.debug(MessageFormat.format(Messages.getString("P2RepositoryLayoutFactory.creatingNew"), repository.getUrl())); //$NON-NLS-1$
+		if (log.isDebugEnabled()) {
+			log.debug(MessageFormat.format(Messages.getString("P2RepositoryLayoutFactory.creatingNew"), //$NON-NLS-1$
+					repository.getUrl()));
 		}
 
 		try {

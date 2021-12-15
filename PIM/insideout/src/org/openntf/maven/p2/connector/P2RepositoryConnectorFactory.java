@@ -31,13 +31,11 @@ import org.openntf.maven.p2.util.StdoutLogger;
 @Named("p2repo")
 public class P2RepositoryConnectorFactory implements RepositoryConnectorFactory {
 
-    // private Logger logger = NullLoggerFactory.LOGGER;
-    private Logger logger = StdoutLogger.log;
-
-
+	// private Logger logger = NullLoggerFactory.LOGGER;
+	private Logger logger = StdoutLogger.log;
 
 	public P2RepositoryConnectorFactory() {
-      logger.debug("P2RepositoryConnectorFactory Constructor");
+		logger.debug("P2RepositoryConnectorFactory Constructor");
 	}
 
 	@Inject
@@ -48,10 +46,10 @@ public class P2RepositoryConnectorFactory implements RepositoryConnectorFactory 
 	@Override
 	public RepositoryConnector newInstance(RepositorySystemSession session, RemoteRepository repository)
 			throws NoRepositoryConnectorException {
-		if(!"p2".equals(repository.getContentType())) { //$NON-NLS-1$
+		if (!"p2".equals(repository.getContentType())) { //$NON-NLS-1$
 			throw new NoRepositoryConnectorException(repository);
 		}
-      logger.debug("P2RepositoryConnectorFactory newInstance");
+		logger.debug("P2RepositoryConnectorFactory newInstance");
 		return new P2RepositoryConnector(session, repository, logger);
 	}
 

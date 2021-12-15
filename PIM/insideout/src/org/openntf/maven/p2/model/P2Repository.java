@@ -55,28 +55,29 @@ public class P2Repository {
 
 	private P2Repository(URI uri) {
 		String baseUri = uri.toString();
-		this.uri = URI.create(baseUri.endsWith("/") ? baseUri : (baseUri+"/")); //$NON-NLS-1$ //$NON-NLS-2$
+		this.uri = URI.create(baseUri.endsWith("/") ? baseUri : (baseUri + "/")); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
-	 * Retrieves a list of bundles in this repository. Specifically, this includes artifacts designated
-	 * as "osgi.bundle" in the repository's artifacts.xml manifest.
+	 * Retrieves a list of bundles in this repository. Specifically, this includes
+	 * artifacts designated as "osgi.bundle" in the repository's artifacts.xml
+	 * manifest.
 	 *
 	 * @return a {@link List} of {@link P2Bundle}s. Never null
-	 * @throws RuntimeException if there is a problem finding the repository or parsing its artifact manifest
+	 * @throws RuntimeException if there is a problem finding the repository or
+	 *                          parsing its artifact manifest
 	 */
 	public synchronized List<P2Bundle> getBundles() {
-		if(this.bundles == null) {
+		if (this.bundles == null) {
 			this.bundles = new ArrayList<>();
 
 			try {
 				// Check if this is a composite repository
 				InputStream compositeArtifacts = findXml(this.uri, "compositeArtifacts"); //$NON-NLS-1$
-				if(compositeArtifacts != null) {
+				if (compositeArtifacts != null) {
 					try {
-						resolveCompositeChildren(compositeArtifacts, this.uri).stream()
-							.map(P2Repository::getBundles)
-							.forEach(this.bundles::addAll);
+						resolveCompositeChildren(compositeArtifacts, this.uri).stream().map(P2Repository::getBundles)
+								.forEach(this.bundles::addAll);
 					} finally {
 						StreamUtil.close(compositeArtifacts);
 					}
@@ -84,14 +85,14 @@ public class P2Repository {
 
 				// Check if this is a single repository
 				InputStream artifactsXml = findXml(this.uri, "artifacts"); //$NON-NLS-1$
-				if(artifactsXml != null) {
+				if (artifactsXml != null) {
 					try {
 						collectBundles(artifactsXml, this.bundles, this.uri);
 					} finally {
 						StreamUtil.close(artifactsXml);
 					}
 				}
-			} catch(Throwable e) {
+			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -105,19 +106,20 @@ public class P2Repository {
 	private static InputStream findXml(URI baseUri, String baseName) throws IOException, CompressorException {
 		URI xml = URI.create(PathUtil.concat(baseUri.toString(), baseName + ".xml", '/')); //$NON-NLS-1$
 		try {
-          InputStream result = xml.toURL().openStream();
-          System.out.println("Found " + baseName + ".xml");
-          return result;
-		} catch(FileNotFoundException e) {
+			InputStream result = xml.toURL().openStream();
+			System.out.println("Found " + baseName + ".xml");
+			return result;
+		} catch (FileNotFoundException e) {
 			// Plain XML not present
 		}
 
 		URI xz = URI.create(PathUtil.concat(baseUri.toString(), baseName + ".xml.xz", '/')); //$NON-NLS-1$
 		try {
 			InputStream is = xz.toURL().openStream();
-          System.out.println("Found " + baseName + ".xml.xz");
-			return CompressorStreamFactory.getSingleton().createCompressorInputStream(CompressorStreamFactory.getXz(), is);
-		} catch(FileNotFoundException e) {
+			System.out.println("Found " + baseName + ".xml.xz");
+			return CompressorStreamFactory.getSingleton().createCompressorInputStream(CompressorStreamFactory.getXz(),
+					is);
+		} catch (FileNotFoundException e) {
 			// XZ-compressed XML not present
 		}
 
@@ -126,34 +128,32 @@ public class P2Repository {
 			InputStream is = jar.toURL().openStream();
 			JarInputStream jis = new JarInputStream(is);
 			jis.getNextEntry();
-         System.out.println("Found " + baseName + ".jar");
+			System.out.println("Found " + baseName + ".jar");
 			return jis;
-		} catch(FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			// Jar-compressed XML not present
 		}
 
 		return null;
 	}
 
-	private static void collectBundles(InputStream is, List<P2Bundle> bundles, URI base) throws SAXException, IOException, ParserConfigurationException {
+	private static void collectBundles(InputStream is, List<P2Bundle> bundles, URI base)
+			throws SAXException, IOException, ParserConfigurationException {
 		XMLDocument artifactsXml = new XMLDocument();
 		artifactsXml.loadInputStream(is);
 		artifactsXml.selectNodes("/repository/artifacts/artifact[@classifier=\"osgi.bundle\"]") //$NON-NLS-1$
-			.filter(el -> {
-				return el.getElementsByTagName("processing").isEmpty(); //$NON-NLS-1$
-			})
-			.map(el -> new P2Bundle(base, el))
-			.forEach(bundles::add);
+				.filter(el -> {
+					return el.getElementsByTagName("processing").isEmpty(); //$NON-NLS-1$
+				}).map(el -> new P2Bundle(base, el)).forEach(bundles::add);
 	}
 
-	private static List<P2Repository> resolveCompositeChildren(InputStream is, URI baseUri) throws SAXException, IOException, ParserConfigurationException {
+	private static List<P2Repository> resolveCompositeChildren(InputStream is, URI baseUri)
+			throws SAXException, IOException, ParserConfigurationException {
 		XMLDocument compositeArtifacts = new XMLDocument();
 		compositeArtifacts.loadInputStream(is);
 		return compositeArtifacts.selectNodes("/repository/children/child") //$NON-NLS-1$
-			.map(el -> el.getAttribute("location")) //$NON-NLS-1$
-			.map(location -> baseUri.resolve(location))
-			.map(P2Repository::getInstance)
-			.collect(Collectors.toList());
+				.map(el -> el.getAttribute("location")) //$NON-NLS-1$
+				.map(location -> baseUri.resolve(location)).map(P2Repository::getInstance).collect(Collectors.toList());
 	}
 
 }
