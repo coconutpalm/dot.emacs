@@ -65,3 +65,8 @@ var
 *.build-step
 *.ssh
 *.local-env-ok
+
+.settings
+.classpath
+.project
+.clj-kondo
