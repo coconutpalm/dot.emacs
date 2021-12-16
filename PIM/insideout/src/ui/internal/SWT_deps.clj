@@ -3,6 +3,7 @@
 (ns ui.internal.SWT-deps
   "Dynamically resolve/load SWT subsystem dependencies when this namespace is required"
   (:require
+   [clojure.java.io :as io]
    [insideout.dynamo :as dynamo]))
 
 
@@ -20,36 +21,32 @@
   [ga-symbol]
   (symbol (namespace ga-symbol) (str (name ga-symbol) "." platform-lib-suffix)))
 
-
-;; P2 repositories -----------------------------------------------------------------
-
-(defn eclipse-repo
-  [& YYYY-MM]
-  {"eclipse" {:id   "org.eclipse.p2.repo"
-              :url  (str "https://download.eclipse.org/releases/" (or (first YYYY-MM) "2021-09") "/")
-              :type "p2"}})
-
-(def cef-chromium-repo
-  {"chromium" {:id   "chromium.repo"
-               :url  "https://dl.maketechnology.io/chromium-cef/rls/repository/"
-               :type "p2"}})
+(defn ->platform-resource-jar
+  "Returns the full library dependency given a qualified group/archive symbol"
+  [ga-symbol version]
+  (io/resource
+    (str (namespace ga-symbol) "/" (str (name ga-symbol) "." platform-lib-suffix "_" version ".jar"))))
 
 
 ;; SWT and dependencies ------------------------------------------------------------
 
 (def ^:dynamic *swt-version* "3.117.0")
-(def swt-lib [(->platform-lib 'org.eclipse.platform/org.eclipse.swt) *swt-version*])
 
-(def chromium [(->platform-lib 'chromium.repo/com.make.chromium.cef) "0.4.0.202005172227"])
+(def swt-lib [(->platform-lib 'org.eclipse.platform/org.eclipse.swt) *swt-version*])
 (def reflections-lib '[org.reflections/reflections "0.9.12"])
 
+(def chromium-jar (->platform-resource-jar 'chromium/com.make.chromium.cef "0.4.0.202005172227"))
+
 (defonce lib-resolutions
-  (binding [dynamo/*extra-repositories* [cef-chromium-repo]]
-    (dynamo/resolve-libs [swt-lib chromium reflections-lib])))
+  (do
+    (dynamo/resolve-libs [swt-lib reflections-lib])
+    (when chromium-jar
+      (dynamo/add-urls-to-classpath [chromium-jar]))))
 
 
 ;; org.eclipse.swt.browser.chromium.
-
+;; Original jar locations
+;;
 ;; http://dl.maketechnology.io/chromium-cef/rls/repository/plugins/com.make.chromium.cef.gtk.linux.x86_64_0.4.0.202005172227.jar
 ;; http://dl.maketechnology.io/chromium-cef/rls/repository/plugins/com.make.chromium.cef.cocoa.macosx.x86_64_0.4.0.202005172227.jar
 ;; http://dl.maketechnology.io/chromium-cef/rls/repository/plugins/com.make.chromium.cef.win32.win32.x86_64_0.4.0.202005172227.jar
