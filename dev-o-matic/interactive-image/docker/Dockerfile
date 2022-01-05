@@ -14,10 +14,10 @@ ARG ADDUSER_GROUPS
 ARG TZ
 
 # Set up /etc/alternatives for Python
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python2 2 && \
-  update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+#RUN update-alternatives --install /usr/bin/python python /usr/bin/python2 2 && \
+#  update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
-# We control login so stop systemd/dbus from squaking about it
+# We control login so stop systemd/dbus from squalking about it
 RUN apt remove -y blueman
 
 # Install packages

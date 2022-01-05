@@ -1,6 +1,5 @@
 apg
 apt-transport-https
-aws-okta
 build-essential
 calibre
 containerd.io
@@ -9,7 +8,6 @@ deepin-icon-theme
 docker-ce
 docker-ce-cli
 elinks
-emacs27
 ffmpeg
 file
 geany

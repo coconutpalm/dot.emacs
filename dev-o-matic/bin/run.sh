@@ -129,7 +129,6 @@ $PODMAN run -it \
      $MOUNTS $LINKS \
      -p 8900-8909:8900-8909 \
      -p 3449-3559:3449-3559 \
-     -p 4713:4713 \
      -p 2222:22 \
      $IMAGENAME:latest
 
