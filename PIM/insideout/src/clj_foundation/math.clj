@@ -15,7 +15,7 @@
   "Round a decimal `d` to the specified precision `p` (number of significant digits)"
   [p d]
   (let [factor (Math/pow 10 p)]
-    (/ (Math/round (* d factor) factor))))
+    (/ (Math/round (* d factor)) factor)))
 
 
 (defprotocol INumberParts

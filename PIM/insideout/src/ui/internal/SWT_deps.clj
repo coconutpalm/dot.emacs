@@ -30,16 +30,20 @@
 
 ;; SWT and dependencies ------------------------------------------------------------
 
-(def ^:dynamic *swt-version* "3.117.0")
+(def ^:dynamic *swt-version* "3.116.0")
 
-(def swt-lib [(->platform-lib 'org.eclipse.platform/org.eclipse.swt) *swt-version*])
+(def swt-lib      [(->platform-lib 'org.eclipse.platform/org.eclipse.swt)
+                   *swt-version*])
+(def swt-chromium [(->platform-lib 'org.eclipse.platform/org.eclipse.swt.browser.chromium)
+                   *swt-version*])
+(def chromium-jar (->platform-resource-jar 'chromium/com.make.chromium.cef "0.4.0.202005172227"))
+
 (def reflections-lib '[org.reflections/reflections "0.9.12"])
 
-(def chromium-jar (->platform-resource-jar 'chromium/com.make.chromium.cef "0.4.0.202005172227"))
 
 (defonce lib-resolutions
   (do
-    (dynamo/resolve-libs [swt-lib reflections-lib])
+    (dynamo/resolve-libs [swt-lib swt-chromium reflections-lib])
     (when chromium-jar
       (dynamo/add-urls-to-classpath [chromium-jar]))))
 
