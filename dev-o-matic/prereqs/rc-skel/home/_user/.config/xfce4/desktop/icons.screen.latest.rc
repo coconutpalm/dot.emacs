@@ -1,1 +1,15 @@
-icons.screen0-1884x1104.rc
+[xfdesktop-version-4.10.3+-rcfile_format]
+4.10.3+=true
+
+[Trash]
+row=0
+col=0
+
+[/]
+row=1
+col=0
+
+[/home/djo]
+row=2
+col=0
+
