@@ -1,6 +1,5 @@
 apg
 apt-transport-https
-aws-okta
 build-essential
 calibre
 containerd.io
@@ -9,7 +8,7 @@ deepin-icon-theme
 docker-ce
 docker-ce-cli
 elinks
-emacs27
+emacs
 ffmpeg
 file
 geany
@@ -44,7 +43,6 @@ make
 man
 manpages
 metacity-themes
-microsoft-edge-dev
 mlterm
 mplayer
 nano
@@ -69,7 +67,6 @@ pulseaudio-utils
 pv
 pwgen
 runit
-rust-fd-find
 silversearcher-ag
 software-properties-common
 sshfs

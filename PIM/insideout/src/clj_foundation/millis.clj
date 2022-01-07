@@ -89,5 +89,5 @@
   to complete a process beginning at `start-time` with a total `number-of-steps`
   that is about to process `current-step`."
   [start-time number-of-steps current-step]
-  (let-map [estimated-dhms (dhms (remaining-millis start-time number-of-steps current-step))
+  (let-map [estimated-dhms (->dhms (remaining-millis start-time number-of-steps current-step))
             complete%      (round 2 (* (/ (double current-step) (double number-of-steps))))]))

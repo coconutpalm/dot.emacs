@@ -11,3 +11,12 @@ export DOCKER_DEV_USERHOME="$DOCKER_DEV_USERSTATE/$USER"
 export IMAGENAME=docker-devenv
 export CONTAINERNAME=`whoami`
 export HOSTNAME=dev
+
+if command -v docker &>/dev/null; then
+    export PODMAN='docker'
+elif command -v podman &>/dev/null; then
+    export PODMAN='podman'
+else
+    echo "Docker or Podman must be installed"
+    exit 1
+fi

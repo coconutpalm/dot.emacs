@@ -1,5 +1,5 @@
 (ns insideout.dynamo
-  "A component/module system for InsideOut built on classlojure."
+  "A component/module system for InsideOut built on Pomegranite."
   (:require
    [from.cemerick.pomegranate        :as pom]
    [from.cemerick.pomegranate.aether :as a]

@@ -17,9 +17,12 @@
 
 ;; TODO
 ;;
-;; Event handlers - Instead of proxy nonsense:
-;;  (on-widget-selected [event] &forms)
+;; Host InsideOut in FuseCode
+;;
+;; Fix event handler bug
+;;  (on-widget-selected [props event] & forms)
 ;; Reflectively (.addSelectionListener (proxy [SelectionAdapter] [] (widgetSelected [event] ...
+;;  - Needs to disambiguate when the same event method name appears in multiple listener types
 ;;
 ;; Make id! hierarchical.  An id! on a Text inside a Composite with an id winds
 ;;  up as {:composite-id {:text-id the-text}}
@@ -102,6 +105,12 @@
   [kw]
   (fn [props parent]
     (swap! props assoc kw parent)))
+
+(defn prop!
+  "Assigns v to the k entry in the props atom/map."
+  [k v]
+  (fn [props _]
+    (swap! props assoc k v)))
 
 
 ;; =====================================================================================

@@ -29,8 +29,8 @@
            (org.eclipse.aether.impl DefaultServiceLocator$ErrorHandler)
            [org.eclipse.aether.spi.connector.layout  RepositoryLayoutFactory]
            (org.apache.maven.repository.internal MavenRepositorySystemUtils)
-           [org.openntf.maven.p2.connector P2RepositoryConnectorFactory]
-           [org.openntf.maven.p2.layout P2RepositoryLayoutFactory]))
+           #_[org.openntf.maven.p2.connector P2RepositoryConnectorFactory]
+           #_[org.openntf.maven.p2.layout P2RepositoryLayoutFactory]))
 
 (def ^{:private true} default-local-repo
   (io/file (System/getProperty "user.home") ".m2" "repository"))
@@ -122,8 +122,8 @@
        (.setService TransporterFactory WagonTransporterFactory)
        (.setService WagonProvider PomegranateWagonProvider)
        (.addService RepositoryConnectorFactory BasicRepositoryConnectorFactory)
-       (.addService RepositoryConnectorFactory P2RepositoryConnectorFactory)
-       (.addService RepositoryLayoutFactory P2RepositoryLayoutFactory)
+       #_(.addService RepositoryConnectorFactory P2RepositoryConnectorFactory)
+       #_(.addService RepositoryLayoutFactory P2RepositoryLayoutFactory)
        (.addService TransporterFactory FileTransporterFactory)
        (.setErrorHandler error-handler))
      RepositorySystem)))

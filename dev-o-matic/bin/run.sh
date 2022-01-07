@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+source "${DOCKER_DEV_SCRIPTS}/environment"
 source ~/bin/devenv-utils
 
 
@@ -34,8 +35,8 @@ ensure_symlink() {
 
 
 cleanup_container() {
-    if [ ! -z "$(docker container ls | grep $CONTAINERNAME)" ]; then
-        docker rm $CONTAINERNAME
+    if [ ! -z "$($PODMAN container ls | grep $CONTAINERNAME)" ]; then
+        $PODMAN rm $CONTAINERNAME
     fi
 }
 
@@ -99,6 +100,9 @@ ensure_dir "${DOCKER_DEV_USERHOME}/.devrc"
 ensure_symlink "/tmp/devrc.rc" "${DOCKER_DEV_USERHOME}/.devrc/conf"
 ensure_symlink "/tmp/devrc.docs" "${DOCKER_DEV_USERHOME}/.devrc/docs"
 
+# If Docker is running, mount its socket
+[ -e /var/run/docker.sock ] && \
+     MAYBE_MOUNT_DOCKER='--mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,consistency=delegated'
 
 # start a new container
 # --priviliged is for Chrome
@@ -110,25 +114,21 @@ ensure_symlink "/tmp/devrc.docs" "${DOCKER_DEV_USERHOME}/.devrc/docs"
 # 4713: PulseAudio
 # 59xx: VNC
 # 22: SSH
-docker run -it \
+
+#--cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse:mrw \
+$PODMAN run -it \
      --privileged \
-     --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse:mrw \
      --ulimit nofile=99000:99000 \
      --shm-size=1g \
      --name $CONTAINERNAME \
      --hostname dev \
-     --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,consistency=delegated \
+     $MAYBE_MOUNT_DOCKER \
      --mount type=bind,source="$DOCKER_DEV_USERSTATE",target=/home,consistency=delegated \
      --mount type=bind,source="$DOCKER_DEV_CONFDIR",target=/tmp/devrc.rc,consistency=delegated \
      --mount type=bind,source="$DOCKER_DEV_USERDOCS",target=/tmp/devrc.docs,consistency=delegated \
      $MOUNTS $LINKS \
      -p 8900-8909:8900-8909 \
      -p 3449-3559:3449-3559 \
-     -p 4713:4713 \
-     -p 5901:5901 \
-     -p 5902:5902 \
-     -p 5903:5903 \
-     -p 5904:5904 \
      -p 2222:22 \
      $IMAGENAME:latest
 
@@ -136,4 +136,5 @@ docker run -it \
 echo Bye
 
 sleep 1
-sudo chgrp $USER /var/run/docker.sock
+[ -e /var/run/docker.sock ] && \
+     sudo chgrp $USER /var/run/docker.sock

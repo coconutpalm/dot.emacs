@@ -10,7 +10,8 @@ deref() {
 }
 
 # Make sure we can access the Docker daemon
-sudo chgrp $USER /var/run/docker.sock
+[ -e /var/run/docker.sock ] && \
+    sudo chgrp $USER /var/run/docker.sock
 
 # ...so scripts don't have to hard-code paths
 export DOCKER_BUILDKIT=0

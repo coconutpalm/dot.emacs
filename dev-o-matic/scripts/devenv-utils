@@ -4,6 +4,14 @@
 ## Some useful (mainly Docker-related) functions for script and interactive use
 ##
 
+if command -v docker &>/dev/null; then
+    export PODMAN='docker'
+elif command -v podman &>/dev/null; then
+    export PODMAN='podman'
+else
+    echo "Docker or Podman must be installed"
+    exit 1
+fi
 
 # Print the IP address of the running container given by <name-or-tag>
 #   Prints:
@@ -12,20 +20,20 @@
 #     The IP if the container is running
 containerIP() {
     [ -z $1 ] && echo "Usage: containerIP <name-or-tag>" && return 1
-    echo $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $1 2>&1 | \
+    echo $($PODMAN inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $1 2>&1 | \
                sed '/^\s*$'/d)                  # Strip empty lines from output
     return 0
 }
 
 
-# docker: log into an already-running container
+# log into an already-running container
 dlogin() {
     if [ $# -ne 1 ]; then
         echo "Usage: $FUNCNAME <name-or-tag>"
         return 1
     fi
 
-    docker exec -it $1 '/bin/bash -l'
+    $PODMAN exec -it $1 '/bin/bash -l'
 }
 
 
@@ -46,17 +54,17 @@ dclogin() {
 # and https://kenanbek.medium.com/docker-cleanup-build-and-force-to-rebuild-images-containers-volumes-and-networks-dc70fd4ccec0
 dgc() {
     echo "Removing exited containers"
-    docker rm $(docker ps -q -f 'status=exited')
+    $PODMAN rm $($PODMAN ps -q -f 'status=exited')
 
     echo "Removing stale images"
-    docker images --filter "dangling=true" -q --no-trunc | xargs docker rmi
+    $PODMAN images --filter "dangling=true" -q --no-trunc | xargs $PODMAN rmi
 }
 
 
 # Prune all the currently-unused things.  (DANGER)
 dprune() {
     echo "Pruning..."
-    docker system prune -a
+    $PODMAN system prune -a
 }
 
 
@@ -83,8 +91,8 @@ dstatus() {
         return 1
     fi
 
-    [ -z "$1" ]   && local listing=$(docker ps -l)
-    [ ! -z "$1" ] && local header=$(docker ps -a | head -1) && local listing="$header\n$(docker ps -a | grep "$1")"
+    [ -z "$1" ]   && local listing=$($PODMAN ps -l)
+    [ ! -z "$1" ] && local header=$($PODMAN ps -a | head -1) && local listing="$header\n$($PODMAN ps -a | grep "$1")"
 
     echo "$listing" | \
         awk '{
@@ -106,5 +114,5 @@ dcontinue() {
         return 1
     fi
 
-    docker start -ia "$(docker ps -lq)"
+    $PODMAN start -ia "$($PODMAN ps -lq)"
 }

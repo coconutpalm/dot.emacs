@@ -6,7 +6,6 @@ import java.util.ArrayList;
 public class Main {
     public static void main(String[] args) {
         Thread currentThread = Thread.currentThread();
-         //new AddableClassLoader(currentThread.getContextClassLoader());
         ClassLoader acl = new clojure.lang.DynamicClassLoader(currentThread.getContextClassLoader());
         currentThread.setContextClassLoader(acl);
 
