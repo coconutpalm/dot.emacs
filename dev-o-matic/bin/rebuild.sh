@@ -6,6 +6,7 @@ cd $DOCKER_DEV
 pwd
 
 # Clean up exited containers
+$PODMAN rm /$USER
 $PODMAN container ls --all | \
     grep "docker-devenv:latest" | \
     grep Exited | \

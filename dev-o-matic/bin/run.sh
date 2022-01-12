@@ -104,6 +104,8 @@ ensure_symlink "/tmp/devrc.docs" "${DOCKER_DEV_USERHOME}/.devrc/docs"
 [ -e /var/run/docker.sock ] && \
      MAYBE_MOUNT_DOCKER='--mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,consistency=delegated'
 
+$PODMAN rm /$USER
+
 # start a new container
 # --priviliged is for Chrome
 # --[blah... fuse] stuff is to run AppImages without extracting them; SYS_ADMIN is redundent but there for documentation purposes
@@ -117,9 +119,10 @@ ensure_symlink "/tmp/devrc.docs" "${DOCKER_DEV_USERHOME}/.devrc/docs"
 
 #--cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse:mrw \
 $PODMAN run -it \
+     --cap-add MKNOD --device /dev/fuse:mrw \
      --privileged \
      --ulimit nofile=99000:99000 \
-     --shm-size=1g \
+     --shm-size=2g \
      --name $CONTAINERNAME \
      --hostname dev \
      $MAYBE_MOUNT_DOCKER \
