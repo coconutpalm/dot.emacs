@@ -2,6 +2,7 @@ apg
 apt-transport-https
 build-essential
 calibre
+cmake
 containerd.io
 curl
 deepin-icon-theme
