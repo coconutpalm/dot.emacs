@@ -12,5 +12,5 @@ echo "Installing fonts into $FONT_DIR"
 mkdir -p $FONT_DIR
 mkdir f
 cd f && unzip -o '../*.zip' && cd ..
-find . | grep .ttf$ | xargs ./install_ttf
+find . | grep .ttf$ | tr '\n' '\0' | xargs -0 -L 1 ./install_ttf
 rm -fr f
