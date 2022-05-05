@@ -104,7 +104,7 @@ ensure_symlink "/tmp/devrc.docs" "${DOCKER_DEV_USERHOME}/.devrc/docs"
 [ -e /var/run/docker.sock ] && \
      MAYBE_MOUNT_DOCKER='--mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,consistency=delegated'
 
-$PODMAN rm /$USER
+$PODMAN rm -f /$CONTAINERNAME
 
 # start a new container
 # --priviliged is for Chrome
@@ -133,6 +133,7 @@ $PODMAN run -it \
      -p 8900-8909:8900-8909 \
      -p 3449-3559:3449-3559 \
      -p 9800-9805:9800-9805 \
+     -p 5900-5903:5900-5903 \
      -p 2222:22 \
      $IMAGENAME:latest
 

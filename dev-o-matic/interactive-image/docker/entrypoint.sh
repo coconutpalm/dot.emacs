@@ -1,8 +1,8 @@
 #!/usr/bin/env -S bash -x
 
 # Info about the user we're logging in
-USER_LOGINNAME="$1"
-USER_UID="$(su -c 'id -u' $USER_LOGINNAME)"
+export USER_LOGINNAME="$1"
+export USER_UID="$2"
 export USER_NAME="$3"
 export USER_EMAIL="$4"
 
