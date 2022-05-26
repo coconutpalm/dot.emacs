@@ -1,5 +1,6 @@
 apg
 apt-transport-https
+bash-completion
 build-essential
 calibre
 cmake
