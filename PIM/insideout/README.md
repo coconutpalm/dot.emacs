@@ -21,7 +21,7 @@ Put differently, it's Emacs for your app.  Just as Emacs is written in itself an
 
 This is the minimal launcher.  To support modern software development, these initial (additional) components will be delivered:
 
-*  nRepl so you can still edit code using your favorite editor and troubleshoot using your favorite workflow.  (Optional?  Dynamically resolve/load?)
+*  nRepl so you can still edit code using your favorite editor and troubleshoot using your favorite workflow.
 *  Automatic code reloading as you work.
 
 And since sometimes you need to deliver a user interface for your app:
@@ -32,6 +32,10 @@ And since sometimes you need to deliver a user interface for your app:
 
 *  Because I want something as fast and low-ceremony to use as Babashka, that scales up and out like an application server, that weighs just a few megs as a self-executing uberjar.
 *  Because I believe our development and deployment pipelines have become too heavyweight.  With dynamic dependency resolution and an embedded nRepl, build tools become obsolete and all we need then is an editor.
+
+## Status
+
+Everything above except for the Component-like microcontainer module has been delivered and works.  I am looking for ways to refactor the code and move more modules out of the core.  I would also like to move to `tools.deps` for dependency resolution.
 
 ## And the big question...
 
