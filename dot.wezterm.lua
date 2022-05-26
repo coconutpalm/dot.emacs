@@ -1,8 +1,13 @@
 local wezterm = require 'wezterm';
 
 return {
+   --default_prog = {"c:\\Windows\\system32\\bash.exe", "-l"},
    font = wezterm.font("Noto Mono"),
-   color_scheme = "N0tch2k",
+   color_scheme = "Spacedust",
+   --color_scheme = "SeaShells",
+   --color_scheme = "Peppermint",
+   --color_scheme = "Neutron",
+   font = wezterm.font("Noto Mono"),
    hide_tab_bar_if_only_one_tab = true,
 
    inactive_pane_hsb = {
