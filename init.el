@@ -33,7 +33,8 @@
 (add-hook 'prog-mode-hook
           (lambda ()
             (display-line-numbers-mode 1)
-            (flyspell-mode-off)))
+            ; (flyspell-mode-off)
+            ))
 
 ;; Configure straight.el and use-package
 ;;
@@ -430,12 +431,6 @@ With ARG, do this that many times."
 ;; Icons in content help menus
 (use-package company-box
   :hook (company-mode . company-box-mode))
-
-;; company-flyspell lives in site elisp directory
-(require 'company-flyspell)
-
-;; Company-flyspell should have lowest priority
-(setq company-backends (append company-backends (list 'company-flyspell)))
 
 
 ;; Resolve conflicts with indenting, completion, and yasnippets
@@ -1655,12 +1650,12 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
             (variable-pitch-mode 1)
             (olivetti-mode 1)
             (olivetti-set-width 81)
-            (flyspell-mode 1)
+            ;; (flyspell-mode 1)
             (markdown-pretty-symbols)
             (setq flyspell-generic-check-word-predicate 'markdown-flyspell-check-word-p)))
 
 
-(require 'flyspell)
+;; (require 'flyspell)
 
 
 ;; Hanging indents for bullets in visual-line-mode paragraphs.  Not perfect with variable pitch.

@@ -118,6 +118,11 @@ $PODMAN rm -f /$CONTAINERNAME
 # 22: SSH
 
 #--cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse:mrw \
+
+     # -p 8900-8909:8900-8909 \
+     # -p 3449-3559:3449-3559 \
+     # -p 9800-9805:9800-9805 \
+
 $PODMAN run -it \
      --cap-add MKNOD --device /dev/fuse:mrw \
      --privileged \
