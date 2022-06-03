@@ -63,7 +63,6 @@ openssh-client
 openssh-server
 pandoc
 peek
-postgresql
 pulseaudio
 pulseaudio-utils
 pv
