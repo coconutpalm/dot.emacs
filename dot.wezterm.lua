@@ -9,6 +9,7 @@ return {
    --color_scheme = "Neutron",
    font = wezterm.font("Noto Mono"),
    hide_tab_bar_if_only_one_tab = true,
+   pane_focus_follows_mouse = true,
 
    inactive_pane_hsb = {
       saturation = 0.9,
