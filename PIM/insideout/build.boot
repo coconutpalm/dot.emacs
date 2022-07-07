@@ -40,7 +40,7 @@
 
                  ;; P2 repo utilities
                  ;; OSGi processing
-                 [com.ibm.sbt/com.ibm.commons "9.0.0"]
+                 ;[com.ibm.sbt/com.ibm.commons "9.0.0"]
                  [org.eclipse.platform/org.eclipse.osgi "3.15.100"]
 
                  ;; Checksums
