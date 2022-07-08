@@ -442,7 +442,7 @@ With ARG, do this that many times."
   ;; dabbrev is too slow
   (add-to-list 'debug-ignored-errors "^Cannot complete at point$")
   (delete 'company-dabbrev company-backends)
-  (when WSL                             ; company-capf is slooow in WSL.  Why?  Dunnooooo...
+  (when WSL                             ; SLOOOW under WSL :(
     (delete 'company-capf company-backends)))
 
 (use-package company-shell
