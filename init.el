@@ -1034,47 +1034,62 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;  Still need to bind arrow keys, backspace, delete
 ;;
 (use-package eterm-256color :ensure t)
-(use-package vterm
-  :ensure t
 
-  :config
-  (setq vterm-term-environment-variable "xterm-256color")
-  (setq vterm-buffer-name-string "* vterm %s *")
-  (setq vterm-max-scrollback 10000)
+(unless WSL
+  (use-package vterm
+    :ensure t
 
-  :hook
-  (vterm-mode
-   .
-   (lambda ()
-     ;; Close buffer and window when shell exits
-     (let* ((buff (current-buffer))
-            (proc (get-buffer-process buff)))
-       (set-process-sentinel
-        proc
-        `(lambda (process event)
-           (if (or (string= event "finished\n")
-                   (starts-with? event "exited"))
-               (progn
-                 (kill-buffer ,buff)
-                 (delete-window)
-                 (previous-window))
-             (message event))))))))
+    :config
+    (setq vterm-term-environment-variable "xterm-256color")
+    (setq vterm-buffer-name-string "* vterm %s *")
+    (setq vterm-max-scrollback 10000)
+
+    :hook
+    (vterm-mode
+     .
+     (lambda ()
+       ;; Close buffer and window when shell exits
+       (let* ((buff (current-buffer))
+              (proc (get-buffer-process buff)))
+         (set-process-sentinel
+          proc
+          `(lambda (process event)
+             (if (or (string= event "finished\n")
+                     (starts-with? event "exited"))
+                 (progn
+                   (kill-buffer ,buff)
+                   (delete-window)
+                   (previous-window))
+               (message event)))))))))
 
 
 ;; handy code recipe
 ;; (term-send-string (get-buffer-process "*ansi-term*") "source /etc/profile\n")
 
-(defun terminal ()
-  "Switch to terminal.  Launch if nonexistent."
-  (interactive)
-  (split-window)
-  (other-window 1 nil)
+(if WSL
+    (defun terminal ()
+      "Switch to terminal.  Launch if nonexistent."
+      (interactive)
+      (split-window)
+      (other-window 1 nil)
 
-  (if (get-buffer "*vterm*")
-      (switch-to-buffer "*vterm*")
-    (vterm))
+      (if (get-buffer "*vterm*")
+          (switch-to-buffer "*vterm*")
+        (vterm))
 
-  (get-buffer-process "*vterm*"))
+      (get-buffer-process "*vterm*"))
+
+  (defun terminal ()
+    "Switch to terminal.  Launch if nonexistent."
+    (interactive)
+    (split-window)
+    (other-window 1 nil)
+
+    (if (get-buffer "*ansi-term*")
+        (switch-to-buffer "*ansi-term*")
+      (ansi-term))
+
+    (get-buffer-process "*ansi-term*")))
 
 (global-set-key "\C-t" 'terminal)
 
