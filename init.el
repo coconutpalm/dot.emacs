@@ -25,6 +25,21 @@
   (interactive)
   (find-file (concat (expand-file-name "~/.emacs.d") "/init.el" )))
 
+(defun bashrc-visit ()
+  "Load the user .bashrc file."
+  (interactive)
+  (find-file (concat (expand-file-name "~/") ".bashrc" )))
+
+(defun bash_profile-visit ()
+  "Load the user .bash_profile file."
+  (interactive)
+  (find-file (concat (expand-file-name "~/") ".bash_profile" )))
+
+(defun profile-visit ()
+  "Load the user .profile file."
+  (interactive)
+  (find-file (concat (expand-file-name "~/") ".profile" )))
+
 
 ;; Immediately tidy the frame
 (unless (eq system-type 'darwin)
