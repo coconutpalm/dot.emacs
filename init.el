@@ -426,7 +426,14 @@ With ARG, do this that many times."
   :config
   ;; dabbrev is too slow
   (add-to-list 'debug-ignored-errors "^Cannot complete at point$")
-  (delete 'company-dabbrev company-backends))
+  (delete 'company-dabbrev company-backends)
+  (when WSL                             ; company-capf is slooow in WSL.  Why?  Dunnooooo...
+    (delete 'company-capf company-backends)))
+
+(use-package company-shell
+  :config
+  :after company
+  (add-to-list 'company-backends '(company-shell company-shell-env company-fish-shell)))
 
 (use-package company-quickhelp
   :init
