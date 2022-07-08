@@ -14,6 +14,10 @@
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file 'noerror)
 
+;; Detect if we're running inside Windows Subsystem for Linux (WSL)
+(when (and (eq system-type 'gnu/linux)
+           (getenv "WSLENV"))
+  (setq WSL 't))
 
 ;; Make it easy to visit the init.el file
 (defun init-visit ()
