@@ -1330,13 +1330,16 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; Tree-sitter supplies AST-based syntax highlighting
 ;; https://github.com/emacs-typescript/typescript.el/issues/4#issuecomment-849355222
-(use-package tree-sitter
-  :config
-  (setf (alist-get 'typescript-tsx-mode tree-sitter-major-mode-language-alist) 'tsx)
+;;
+;; ***Requires dynamic modules
+;;
+;; (use-package tree-sitter
+;;   :config
+;;   (setf (alist-get 'typescript-tsx-mode tree-sitter-major-mode-language-alist) 'tsx)
 
-  :hook
-  (typescript-mode . tree-sitter-hl-mode))
-(use-package tree-sitter-langs)
+;;   :hook
+;;   (typescript-mode . tree-sitter-hl-mode))
+;; (use-package tree-sitter-langs)
 
 
 (use-package typescript-mode
