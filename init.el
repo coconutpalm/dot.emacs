@@ -2121,7 +2121,14 @@ assuming it is in a maven-style project."
   ([f3] . 'lsp-find-definition))
 
 ;; Scala
-(use-package lsp-metals)
+(use-package lsp-metals
+  :ensure t
+  :custom
+  ;; Metals claims to support range formatting by default but it supports range
+  ;; formatting of multiline strings only. You might want to disable it so that
+  ;; emacs can use indentation provided by scala-mode.
+  (lsp-metals-server-args '("-J-Dmetals.allow-multiline-string-formatting=off"))
+  :hook (scala-mode . lsp))
 
 (use-package lsp-java
   :config
@@ -2162,11 +2169,13 @@ assuming it is in a maven-style project."
   :hook
   (lsp-mode . dap-mode)
   (lsp-mode . dap-ui-mode)
+  (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
 
   ;; :custom
   ;; (lsp-enable-dap-auto-configure nil)
 
   :config
+  (dap-auto-configure-mode 1)
   (nvm-use "12")
   (dap-ui-mode 1)
   (dap-tooltip-mode 1)
