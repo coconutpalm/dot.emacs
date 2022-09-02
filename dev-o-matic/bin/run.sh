@@ -10,9 +10,9 @@ HOST_PRESTART= "$DOCKER_DEV_CONFDIR"/pre-interactive-onhost
 
 
 # allow X UI access from localhost
-echo "Enabling xhost access from localhost;"
-echo "If the script hangs here it's because we can't reach an X server."
-xhost + 127.0.0.1
+#echo "Enabling xhost access from localhost;"
+#echo "If the script hangs here it's because we can't reach an X server."
+#xhost + 127.0.0.1
 
 
 

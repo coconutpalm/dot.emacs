@@ -76,7 +76,7 @@ wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-
 add-apt-repository ppa:alessandro-strada/ppa
 
 # Inkscape
-add-apt-repository ppa:inkscape.dev/stable-1.1
+add-apt-repository ppa:inkscape.dev/stable-1.2
 
 # Chrome
 wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
