@@ -15,9 +15,14 @@
 (load custom-file 'noerror)
 
 ;; Detect if we're running inside Windows Subsystem for Linux (WSL)
-(when (and (eq system-type 'gnu/linux)
+(if (and (eq system-type 'gnu/linux)
            (getenv "WSLENV"))
-  (setq WSL 't))
+    (setq WSL 't)
+  (setq WSL nil))
+
+(if (string= system-name "steamdeck")
+    (setq STEAM-DECK 't)
+  (setq STEAM-DECK nil))
 
 ;; Make it easy to visit the init.el file
 (defun init-visit ()
@@ -1050,8 +1055,22 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;
 (use-package eterm-256color :ensure t)
 
-(unless WSL
+(defun executables-found (binaries)
+  (seq-every-p #'executable-find binaries))
+
+(defun modules-enabled? () module-file-suffix)
+
+(defun vtermable? ()
+  (when (and window-system
+             (modules-enabled?)
+             (executables-found '("cmake" "libtool")))
+    (unless (or WSL STEAM-DECK)
+      't)))
+
+(when (vtermable?)
   (use-package vterm
+    :custom (vterm-install t)
+
     :ensure t
 
     :config

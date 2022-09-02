@@ -1,8 +1,7 @@
 local wezterm = require 'wezterm';
 
 return {
-   default_prog = {"c:\\Windows\\system32\\bash.exe", "-l"},
-   font = wezterm.font("Noto Mono"),
+   --default_prog = {"c:\\Windows\\system32\\bash.exe", "-l"},
    --color_scheme = "Spacedust",
    --color_scheme = "SeaShells",
    --color_scheme = "Peppermint",
