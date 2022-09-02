@@ -40,7 +40,7 @@
 
                  ;; P2 repo utilities
                  ;; OSGi processing
-                 [com.ibm.sbt/com.ibm.commons "9.0.0"]
+                 ;[com.ibm.sbt/com.ibm.commons "9.0.0"]
                  [org.eclipse.platform/org.eclipse.osgi "3.15.100"]
 
                  ;; Checksums
@@ -53,7 +53,7 @@
 
  :repositories #(conj %
                       '["artifactory.openntf.org" {:url "https://artifactory.openntf.org/openntf"}]
-                      '["eclipse.org.p2" {:url "http://download.eclipse.org/releases/2021-09"
+                      '["eclipse.org.p2" {:url "https://download.eclipse.org/releases/2021-09"
                                           :layout "p2"}])
 
  :source-paths #{"src" "test" "resources"}

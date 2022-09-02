@@ -170,8 +170,8 @@
   "Return the props atom associated with each open shell."
   []
   (->> (Display/getDefault)
-     (.getShells)
-     (map #(.getData %))))
+       (.getShells)
+       (map #(.getData %))))
 
 
 (defn defchildren
@@ -334,6 +334,7 @@
 (defn example-app []
   (ui-scale! 2)
 
+  #_{:clj-kondo/ignore [:unresolved-symbol]}
   (application
    (shell "Browser" (id! :ui/shell)
           :layout (FillLayout.)
@@ -372,6 +373,4 @@
 (comment
   (example-app)
   (:editor @state)
-  (ui (.dispose @display))
-
-  ,)
+  (ui (.dispose @display)))

@@ -14,12 +14,36 @@
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file 'noerror)
 
+;; Detect if we're running inside Windows Subsystem for Linux (WSL)
+(if (and (eq system-type 'gnu/linux)
+           (getenv "WSLENV"))
+    (setq WSL 't)
+  (setq WSL nil))
+
+(if (string= system-name "steamdeck")
+    (setq STEAM-DECK 't)
+  (setq STEAM-DECK nil))
 
 ;; Make it easy to visit the init.el file
 (defun init-visit ()
   "Load the user init.el file."
   (interactive)
   (find-file (concat (expand-file-name "~/.emacs.d") "/init.el" )))
+
+(defun bashrc-visit ()
+  "Load the user .bashrc file."
+  (interactive)
+  (find-file (concat (expand-file-name "~/") ".bashrc" )))
+
+(defun bash_profile-visit ()
+  "Load the user .bash_profile file."
+  (interactive)
+  (find-file (concat (expand-file-name "~/") ".bash_profile" )))
+
+(defun profile-visit ()
+  "Load the user .profile file."
+  (interactive)
+  (find-file (concat (expand-file-name "~/") ".profile" )))
 
 
 ;; Immediately tidy the frame
@@ -33,7 +57,8 @@
 (add-hook 'prog-mode-hook
           (lambda ()
             (display-line-numbers-mode 1)
-            (flyspell-mode-off)))
+            ; (flyspell-mode-off)
+            ))
 
 ;; Configure straight.el and use-package
 ;;
@@ -421,7 +446,14 @@ With ARG, do this that many times."
   :config
   ;; dabbrev is too slow
   (add-to-list 'debug-ignored-errors "^Cannot complete at point$")
-  (delete 'company-dabbrev company-backends))
+  (delete 'company-dabbrev company-backends)
+  (when WSL                             ; SLOOOW under WSL :(
+    (delete 'company-capf company-backends)))
+
+(use-package company-shell
+  :config
+  :after company
+  (add-to-list 'company-backends '(company-shell company-shell-env company-fish-shell)))
 
 (use-package company-quickhelp
   :init
@@ -430,12 +462,6 @@ With ARG, do this that many times."
 ;; Icons in content help menus
 (use-package company-box
   :hook (company-mode . company-box-mode))
-
-;; company-flyspell lives in site elisp directory
-(require 'company-flyspell)
-
-;; Company-flyspell should have lowest priority
-(setq company-backends (append company-backends (list 'company-flyspell)))
 
 
 ;; Resolve conflicts with indenting, completion, and yasnippets
@@ -1028,47 +1054,76 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;  Still need to bind arrow keys, backspace, delete
 ;;
 (use-package eterm-256color :ensure t)
-(use-package vterm
-  :ensure t
 
-  :config
-  (setq vterm-term-environment-variable "xterm-256color")
-  (setq vterm-buffer-name-string "* vterm %s *")
-  (setq vterm-max-scrollback 10000)
+(defun executables-found (binaries)
+  (seq-every-p #'executable-find binaries))
 
-  :hook
-  (vterm-mode
-   .
-   (lambda ()
-     ;; Close buffer and window when shell exits
-     (let* ((buff (current-buffer))
-            (proc (get-buffer-process buff)))
-       (set-process-sentinel
-        proc
-        `(lambda (process event)
-           (if (or (string= event "finished\n")
-                   (starts-with? event "exited"))
-               (progn
-                 (kill-buffer ,buff)
-                 (delete-window)
-                 (previous-window))
-             (message event))))))))
+(defun modules-enabled? () module-file-suffix)
+
+(defun vtermable? ()
+  (when (and window-system
+             (modules-enabled?)
+             (executables-found '("cmake" "libtool")))
+    (unless (or WSL STEAM-DECK)
+      't)))
+
+(when (vtermable?)
+  (use-package vterm
+    :custom (vterm-install t)
+
+    :ensure t
+
+    :config
+    (setq vterm-term-environment-variable "xterm-256color")
+    (setq vterm-buffer-name-string "* vterm %s *")
+    (setq vterm-max-scrollback 10000)
+
+    :hook
+    (vterm-mode
+     .
+     (lambda ()
+       ;; Close buffer and window when shell exits
+       (let* ((buff (current-buffer))
+              (proc (get-buffer-process buff)))
+         (set-process-sentinel
+          proc
+          `(lambda (process event)
+             (if (or (string= event "finished\n")
+                     (starts-with? event "exited"))
+                 (progn
+                   (kill-buffer ,buff)
+                   (delete-window)
+                   (previous-window))
+               (message event)))))))))
 
 
 ;; handy code recipe
 ;; (term-send-string (get-buffer-process "*ansi-term*") "source /etc/profile\n")
 
-(defun terminal ()
-  "Switch to terminal.  Launch if nonexistent."
-  (interactive)
-  (split-window)
-  (other-window 1 nil)
+(if WSL
+    (defun terminal ()
+      "Switch to terminal.  Launch if nonexistent."
+      (interactive)
+      (split-window)
+      (other-window 1 nil)
 
-  (if (get-buffer "*vterm*")
-      (switch-to-buffer "*vterm*")
-    (vterm))
+      (if (get-buffer "*vterm*")
+          (switch-to-buffer "*vterm*")
+        (vterm))
 
-  (get-buffer-process "*vterm*"))
+      (get-buffer-process "*vterm*"))
+
+  (defun terminal ()
+    "Switch to terminal.  Launch if nonexistent."
+    (interactive)
+    (split-window)
+    (other-window 1 nil)
+
+    (if (get-buffer "*ansi-term*")
+        (switch-to-buffer "*ansi-term*")
+      (ansi-term))
+
+    (get-buffer-process "*ansi-term*")))
 
 (global-set-key "\C-t" 'terminal)
 
@@ -1309,13 +1364,16 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
 ;; Tree-sitter supplies AST-based syntax highlighting
 ;; https://github.com/emacs-typescript/typescript.el/issues/4#issuecomment-849355222
-(use-package tree-sitter
-  :config
-  (setf (alist-get 'typescript-tsx-mode tree-sitter-major-mode-language-alist) 'tsx)
+;;
+;; ***Requires dynamic modules
+;;
+;; (use-package tree-sitter
+;;   :config
+;;   (setf (alist-get 'typescript-tsx-mode tree-sitter-major-mode-language-alist) 'tsx)
 
-  :hook
-  (typescript-mode . tree-sitter-hl-mode))
-(use-package tree-sitter-langs)
+;;   :hook
+;;   (typescript-mode . tree-sitter-hl-mode))
+;; (use-package tree-sitter-langs)
 
 
 (use-package typescript-mode
@@ -1655,12 +1713,12 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
             (variable-pitch-mode 1)
             (olivetti-mode 1)
             (olivetti-set-width 81)
-            (flyspell-mode 1)
+            ;; (flyspell-mode 1)
             (markdown-pretty-symbols)
             (setq flyspell-generic-check-word-predicate 'markdown-flyspell-check-word-p)))
 
 
-(require 'flyspell)
+;; (require 'flyspell)
 
 
 ;; Hanging indents for bullets in visual-line-mode paragraphs.  Not perfect with variable pitch.
@@ -2097,7 +2155,14 @@ assuming it is in a maven-style project."
   ([f3] . 'lsp-find-definition))
 
 ;; Scala
-(use-package lsp-metals)
+(use-package lsp-metals
+  :ensure t
+  :custom
+  ;; Metals claims to support range formatting by default but it supports range
+  ;; formatting of multiline strings only. You might want to disable it so that
+  ;; emacs can use indentation provided by scala-mode.
+  (lsp-metals-server-args '("-J-Dmetals.allow-multiline-string-formatting=off"))
+  :hook (scala-mode . lsp))
 
 (use-package lsp-java
   :config
@@ -2138,11 +2203,13 @@ assuming it is in a maven-style project."
   :hook
   (lsp-mode . dap-mode)
   (lsp-mode . dap-ui-mode)
+  (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
 
   ;; :custom
   ;; (lsp-enable-dap-auto-configure nil)
 
   :config
+  (dap-auto-configure-mode 1)
   (nvm-use "12")
   (dap-ui-mode 1)
   (dap-tooltip-mode 1)

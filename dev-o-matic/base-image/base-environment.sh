@@ -97,9 +97,11 @@ add-apt-repository ppa:peek-developers/stable
 #
 apt-get update
 apt-get install -y $(cat extra-packages.lst)
+
 #
+# Ensure Docker's group ID is 2001.  (/etc/group is backed up to '/etc/group.backup' during this operation)
 #
-#
+sed -i.backup 's/\(^docker:x:\)[0-9]\+/\12001/g' /etc/group
 
 # Manual installs now that dependencies are installed
 

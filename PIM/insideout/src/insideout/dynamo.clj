@@ -1,6 +1,7 @@
 (ns insideout.dynamo
   "A component/module system for InsideOut built on Pomegranite."
   (:require
+   [clojure.set                      :as s]
    [from.cemerick.pomegranate        :as pom]
    [from.cemerick.pomegranate.aether :as a]
    [ns-tracker.core                  :as nt])
@@ -40,6 +41,30 @@
    (let [t (Thread. runnable)]
      (.setContextClassloader t (dyn-classloader))
      t)))
+
+
+(defn resolver
+  [dependency]
+  (let [[[group-archive version]
+         specs] [(take 2 dependency)
+                 (apply into {} (drop 2 dependency))]]
+    ))
+
+
+(comment
+
+  (nth [1 2] 2)
+  (count [1 2])
+  (take 2 (range 1))
+
+  [clojure/spec.alpha "1.1" layout/maven]  ; maven is the default layout
+  [clojure/spec.alpha "1.1" repo/github proto/https layout/git]
+  [clojure/spec.alpha "1.1" repo/gitlab proto/git]
+  [clojure/spec.alpha "1.1" repo/gitlab]  ; implies proto/git
+  [clojure/spec.alpha "1.1" proto/git (repo "coconut-palm-software.com/repo/root")]
+  [clojure/spec.alpha "1.1" repo/https "coconut-palm-software.com/repo/root"]
+
+  "")
 
 
 (defn resolve-libs
@@ -110,14 +135,17 @@
       (.addURL cl u))))
 
 
-(defn find-src+test+res []
-  (let [conv-over-config [["src/main/clojure" "src/clojure" "src/main" "src"]
-                          ["src/main/resources" "src/resources" "resources"]
-                          ["src/test/clojure" "test/clojure" "src/test" "test"]]]
-    (mapcat
-     (fn [paths]
-       (take 1 (filter #(->> (File. %) (.exists)) paths)))
-     conv-over-config)))
+(defn find-src+test+res
+  ([]
+   (find-src+test+res (File. ".")))
+  ([root-path]
+   (let [conv-over-config [["src/main/clojure" "src/clojure" "src/main" "src"]
+                           ["src/main/resources" "src/resources" "resources"]
+                           ["src/test/clojure" "test/clojure" "src/test" "test"]]]
+     (mapcat
+       (fn [paths]
+         (take 1 (filter #(->> (File. root-path %) (.exists)) paths)))
+       conv-over-config))))
 
 (def ^:dynamic *classpath-dirs*
   (map (fn [rel-path] (-> rel-path File. .toURL))

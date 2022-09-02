@@ -1,3 +1,70 @@
 #!/usr/bin/env bash
 
-cat <(echo ".TH $1 7 `date --iso-8601` Dr.Markdown\n") <(pandoc -t man $1) | groff -rLL=$(tput cols)n -rcR=1 -K utf8 -t -T utf8 -man 2>/dev/null
+set -e -o pipefail
+
+
+# Format Markdown for display or fall back to dumb mode if either pandoc or groff aren't available
+declare -i COLS
+COLS=`tput cols`-3
+
+# Typeset Markdown using groff if possible
+function md() {
+    cat <(echo ".TH $(basename $1) 7 run.sh `date --iso-8601` Tutorial\n") <(pandoc -t man $1) | \
+        groff -rLL=${COLS}n -rcR=1 -K utf8 -t -T utf8 -man 2>/dev/null | \
+        tail -n +2 | head -n -1  # trim first line | trim last line
+}
+
+# Simply strip the YAML header
+function md_alt() {
+    script=$(cat <<'EOF'
+$linum=0;
+$yaml=0;
+while (<>) {
+      chomp $_;
+      $trimmed=$_;
+
+      ++$linum;
+
+      if ($linum==1 && $trimmed=='---') {
+         ++$yaml;
+      }
+
+      if ($linum>1 && $yaml && $trimmed=='---') {
+         ++$yaml;
+      }
+
+      if ($yaml<1 || $yaml>=2) {
+         print "$trimmed\n";
+      }
+}
+EOF
+          )
+    perl -e "$script" < $1
+}
+
+MD=md
+NOTFOUND=''
+
+if [ -z "$(which pandoc)" ]; then
+    MD=md_alt
+    NOTFOUND=pandoc
+fi
+
+if [ -z "$(which groff)" ]; then
+    MD=md_alt
+    NOTFOUND="$NOTFOUND groff"
+fi
+
+if [ ! -z "$NOTFOUND" ]; then
+    echo "*** The [${NOTFOUND}] commands were not found;"
+    echo '    using `cat` equivalent to display Markdown slides.'
+    echo
+    echo 'hint: `sudo apt install pandoc groff` or'
+    echo '      `sudo dnf install pandoc groff'
+    echo
+    echo "Pausing a few seconds..."
+    tput bel
+    sleep 10
+fi
+
+"$MD" $1

@@ -92,7 +92,7 @@
     (letfn [(watchinfo [path] {:path path
                                :event-types [:create :modify :delete]
                                ;; :bootstrap init-project
-                               :callback filesystem-change
+                               :callback (bound-fn [e f] (filesystem-change e f))
                                :options {:recursive true}})]
       (let [watch-config (map watchinfo *classpath-dirs*)]
         (watch watch-config)))))

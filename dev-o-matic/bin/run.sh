@@ -101,8 +101,20 @@ ensure_symlink "/tmp/devrc.rc" "${DOCKER_DEV_USERHOME}/.devrc/conf"
 ensure_symlink "/tmp/devrc.docs" "${DOCKER_DEV_USERHOME}/.devrc/docs"
 
 # If Docker is running, mount its socket
-[ -e /var/run/docker.sock ] && \
-     MAYBE_MOUNT_DOCKER='--mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,consistency=delegated'
+if [ -e /var/run/docker.sock ]; then
+    MAYBE_MOUNT_DOCKER='--mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,consistency=delegated'
+
+    if [ -z "$(grep docker.*2001 /etc/group)" ]; then
+        echo "Error: Docker must run as group ID 2001.  e.g., from the CLI::"
+	echo sudo systemctl stop docker
+        echo sudo sed -i.backup 's/\(^docker:x:\)[0-9]\+/\12001/g' /etc/group
+	echo sudo systemctl start docker
+	exit 1
+    fi
+fi
+
+#[ -e /var/run/docker.sock ] && \
+#     MAYBE_MOUNT_DOCKER='--mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock,consistency=delegated'
 
 $PODMAN rm -f /$CONTAINERNAME
 
@@ -118,6 +130,11 @@ $PODMAN rm -f /$CONTAINERNAME
 # 22: SSH
 
 #--cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse:mrw \
+
+     # -p 8900-8909:8900-8909 \
+     # -p 3449-3559:3449-3559 \
+     # -p 9800-9805:9800-9805 \
+
 $PODMAN run -it \
      --cap-add MKNOD --device /dev/fuse:mrw \
      --privileged \
@@ -130,7 +147,7 @@ $PODMAN run -it \
      --mount type=bind,source="$DOCKER_DEV_CONFDIR",target=/tmp/devrc.rc,consistency=delegated \
      --mount type=bind,source="$DOCKER_DEV_USERDOCS",target=/tmp/devrc.docs,consistency=delegated \
      $MOUNTS $LINKS \
-     -p 8900-8909:8900-8909 \
+     --network maanaq \
      -p 3449-3559:3449-3559 \
      -p 9800-9805:9800-9805 \
      -p 2222:22 \
@@ -140,5 +157,4 @@ $PODMAN run -it \
 echo Bye
 
 sleep 1
-[ -e /var/run/docker.sock ] && \
-     sudo chgrp $USER /var/run/docker.sock
+
