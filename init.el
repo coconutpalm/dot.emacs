@@ -2733,15 +2733,6 @@ buffer's."
 ;; (use-package doom-snippets
 ;;   :straight (:type git :host github :repo "hlissner/doom-snippets"))
 
-;; Modeline things
-;; (use-package nyan-mode :ensure t)   ; Cat in modeline!
-(use-package smart-mode-line-powerline-theme :ensure t)
-(use-package smart-mode-line :ensure t)
-;; (setq sml/theme 'powerline)
-(setq sml/theme 'dark)
-(sml/setup)
-
-
 (use-package tree-mode)
 
 
@@ -3216,12 +3207,25 @@ buffer's."
   (global-set-key (kbd "C-S-z") 'undo-fu-only-redo))
 
 
+;; Modeline things
+;; (use-package nyan-mode :ensure t)   ; Cat in modeline!
+;; (use-package smart-mode-line-powerline-theme :ensure t)
+(use-package smart-mode-line :ensure t)
+(setq sml/theme 'respectful)
+;; (setq sml/theme 'powerline)
+;; (setq sml/theme 'light)
+(sml/setup)
+
 (defun set-local-fonts ()
   "Override fonts."
   ;; default Latin font (e.g. Consolas)
   (set-face-font 'default (format "Noto Mono:size=%d" (normalize-pts 10)))
   (set-face-font 'variable-pitch (format "Noto Sans:size=%d" (normalize-pts 10)))
-  (set-face-font 'mode-line (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 12)))
+  (set-face-font 'mode-line (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 10)))
+  (set-face-font 'mode-line-inactive (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 10)))
+  (set-face-font 'sml/global (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 10)))
+
+
 
   ;; Modern color UTF-8 glyphs/emoji
   (set-fontset-font t 'symbol "Noto Color Emoji")
@@ -3254,7 +3258,6 @@ buffer's."
   (dimmer-configure-magit)
   (dimmer-configure-which-key))
 (dimmer-mode 1)
-
 
 
 (pomidor)  ; Start the pomidor timer; [F12] to interact
