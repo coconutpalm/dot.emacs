@@ -71,5 +71,7 @@ var
 .clj-kondo
 
 dev-o-matic/interactive-image/docker/build/_user
+
 PIM/insideout/bin
+PIM/insideout/lib*
 
