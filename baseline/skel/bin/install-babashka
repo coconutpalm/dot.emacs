@@ -1,0 +1,26 @@
+#!/usr/bin/env -S bash
+
+set -eo pipefail
+
+if [ -z "$(which bb)" ]; then
+    echo "Installing Babashka from"
+
+    REPO="https://github.com/babashka/babashka"
+    VERSION="$(latest-release $REPO)"
+    VERSIONID="${VERSION:1}"
+
+    BASE_URL="$REPO/releases/download/${VERSION}"
+    FILENAME="babashka-${VERSIONID}-linux-amd64-static.tar.gz"
+    DL_URL="$BASE_URL/$FILENAME"
+
+    echo $DL_URL
+    echo
+    echo "Fetching..."
+
+    pushd . > /dev/null
+    cd ~/bin
+    wget -qO - "$DL_URL" | tar -xzvf -
+    popd > /dev/null
+else
+    echo "Babashka already installed"
+fi
