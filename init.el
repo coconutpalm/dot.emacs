@@ -20,9 +20,24 @@
     (setq WSL 't)
   (setq WSL nil))
 
-(if (string= system-name "steamdeck")
+(if (string= (system-name) "sesame")
     (setq STEAM-DECK 't)
   (setq STEAM-DECK nil))
+
+;; This really needs done any time we're running inside a Flatpak
+;; but that's just Steam Deck for now.
+(when STEAM-DECK
+  (setq exec-path
+        (let ((usr-paths
+               (mapcar (lambda (f) (expand-file-name f))
+                       '("~/bin" "~/bin/clojure"))))
+          (append usr-paths exec-path)))
+  (setenv "PATH"
+          (concat
+           (expand-file-name "~/bin") path-separator
+           (expand-file-name "~/bin/clojure") path-separator
+           (expand-file-name "~/.cache/coursier/arc/https/github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11%252B28/OpenJDK11-jdk_x64_linux_hotspot_11_28.tar.gz/jdk-11+28/bin") path-separator
+           (getenv "PATH"))))
 
 ;; Make it easy to visit the init.el file
 (defun init-visit ()
@@ -212,7 +227,7 @@ With ARG, do this that many times."
   "Normalize BASE-PTS based on pixels/inch of current display."
   (let ((pt-zoom-factor (/ (my-dpi) 72)))
     (message (format "Font scale factor: %f" pt-zoom-factor))
-    (round (* base-pts pt-zoom-factor))))
+    (round (* base-pts (/ pt-zoom-factor 2.0)))))
 
 
 (defun zoom-by (delta-points)
@@ -1063,9 +1078,10 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 (defun vtermable? ()
   (when (and window-system
              (modules-enabled?)
-             (executables-found '("cmake" "libtool")))
-    (unless (or WSL STEAM-DECK)
-      't)))
+             (executables-found '("cmake" "libtool"))
+             (not WSL)
+             (not STEAM-DECK))
+    't))
 
 (when (vtermable?)
   (use-package vterm
