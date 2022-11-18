@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+HERE=`pwd`
+set -exuo pipefail    # Print trace and do not keep running if something fails!
+
+mkdir -p ~/bin
+export PATH="$HOME/bin:$PATH"
+
+
+# Install fonts
+cd baseline/fonts && ./install
+
+# Install Java and standard Scala tools using Coursier
+cs setup
+
+# Emacs configuration boilerplate
+mkdir -p ~/.localhistory-emacs
+cd ~/.localhistory-emacs && git init
+mkdir -p ~/.snippets
+cp $HERE/TIME.org ~
+
+# Set up minimal ~/bin
+cp -R $HERE/baseline/skel/bin ~
+PATH="$HOME/bin:$PATH"
+
+# ...and ~/$(dotfiles)
+ln -s ~/.emacs.d/dot.sbt ~/.sbt
+cp $HERE/baseline/skel/dot.lessfilter ~/.lessfilter
+
+# Ammonite config
+ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
+
+
+# Scala/Mill
+MILL_REPO=https://github.com/lihaoyi/mill
+MILL_VERSION=`latest-release $MILL_REPO`
+curl -L $MILL_REPO/releases/download/$MILL_VERSION/$MILL_VERSION > ~/bin/mill
+chmod +x ~/bin/mill
+
+# Scala/Bloop
+BLOOP_REPO=https://github.com/scalacenter/bloop
+BLOOP_LATEST=`latest-release $BLOOP_REPO`
+curl -L $BLOOP_REPO/releases/download/$BLOOP_LATEST/install.py | python
+
+
+# Clojure boot/lein
+curl -fsSLo ~/bin/boot https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
+chmod 755 ~/bin/boot
+
+curl -fsSLo ~/bin/lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+chmod 755 ~/bin/lein
+
+# Note: no 'latest' link on Maven's dl page; have to upgrade this manually
+cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+cd ~/bin && tar -xzvf maven-latest.tgz
+cd ~/bin && ln -s apache-maven* maven
+cd ~/bin && cat > ~/bin/mvn <<EOF
+#!/bin/bash
+export MAVEN_HOME=`pwd`/maven
+export M2_HOME=`pwd`/maven
+`pwd`/maven/bin/mvn $@
+EOF
+chmod 755 ~/bin/mvn
+
+# Put all the bloopy things on the path
+cat >> ~/.bashrc <<EOF
+
+export PATH="$PATH:~/bin:~/.bloop"
+
+. $HOME/.bloop/bash/bloop
+EOF
+
+
+
+echo "See the 'baseline' folder for common apps"
