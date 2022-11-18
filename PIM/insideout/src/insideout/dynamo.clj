@@ -18,11 +18,10 @@
 
 (def ^:private dynamo-loader (atom nil))
 
-(defn ^DynamicClassLoader
-  dyn-classloader
+(defn dyn-classloader
   "Return the dynamic classloader for the thread's context classloader.  If a dynamic
   classloader hasn't been added to the current thread, one is registered."
-  []
+  ^DynamicClassLoader []
   (let [cl (-> (Thread/currentThread) .getContextClassLoader)]
     (if (instance? DynamicClassLoader cl)
       (reset! dynamo-loader cl)
@@ -31,13 +30,13 @@
         (reset! dynamo-loader dcl)))))
 
 
-(defn ^Thread new-thread
+(defn new-thread
   "Return a new thread preconfigured with the dynamo classloader.  Doesn't call `start`."
-  ([]
+  (^Thread []
    (let [t (Thread.)]
      (.setContextClassloader t (dyn-classloader))
      t))
-  ([runnable]
+  (^Thread [runnable]
    (let [t (Thread. runnable)]
      (.setContextClassloader t (dyn-classloader))
      t)))
