@@ -225,9 +225,11 @@ With ARG, do this that many times."
 
 (defun normalize-pts (base-pts)
   "Normalize BASE-PTS based on pixels/inch of current display."
-  (let ((pt-zoom-factor (/ (my-dpi) 72)))
-    (message (format "Font scale factor: %f" pt-zoom-factor))
-    (round (* base-pts (/ pt-zoom-factor 2.0)))))
+  (if WSL
+      base-pts
+    (let ((pt-zoom-factor (/ (my-dpi) 72)))
+      (message (format "Font scale factor: %f" pt-zoom-factor))
+      (round (* base-pts (/ pt-zoom-factor 2.0))))))
 
 
 (defun zoom-by (delta-points)
