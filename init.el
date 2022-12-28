@@ -3038,7 +3038,7 @@ buffer's."
 
 (use-package helm
   :config
-  (require 'helm-config)
+  ;; (require 'helm-config)
 
   (setq
    helm-boring-buffer-regexp-list
