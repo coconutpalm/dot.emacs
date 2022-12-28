@@ -3259,7 +3259,7 @@ buffer's."
 ;; (use-package nyan-mode :ensure t)   ; Cat in modeline!
 ;; (use-package smart-mode-line-powerline-theme :ensure t)
 (use-package smart-mode-line :ensure t)
-(setq sml/theme 'respectful)
+;; (setq sml/theme 'respectful)
 ;; (setq sml/theme 'powerline)
 ;; (setq sml/theme 'light)
 (sml/setup)
