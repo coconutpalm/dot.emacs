@@ -240,11 +240,19 @@ With ARG, do this that many times."
                          delta-points))
   (set-face-attribute 'variable-pitch nil
                       :height
-                      (+ (face-attribute 'default :height)
+                      (+ (face-attribute 'variable-pitch :height)
                          delta-points))
   (set-face-attribute 'mode-line nil
                       :height
                       (+ (face-attribute 'mode-line :height)
+                         delta-points))
+  (set-face-attribute 'mode-line-inactive nil
+                      :height
+                      (+ (face-attribute 'mode-line-inactive :height)
+                         delta-points))
+  (set-face-attribute 'sml/global nil
+                      :height
+                      (+ (face-attribute 'sml/global :height)
                          delta-points)))
 
 (defun get-buffers-matching-mode (mode)
