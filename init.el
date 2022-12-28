@@ -1081,7 +1081,6 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   (when (and window-system
              (modules-enabled?)
              (executables-found '("cmake" "libtool"))
-             (not WSL)
              (not STEAM-DECK))
     't))
 
