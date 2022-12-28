@@ -1201,7 +1201,11 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
   :commands (alert)
   :config
   (setq alert-default-style 'notifier))
-(use-package emojify)
+
+(use-package emojify
+  :init
+  (global-emojify-mode))
+
 (use-package oauth2)
 (use-package request)
 (use-package websocket)
