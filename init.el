@@ -3269,14 +3269,12 @@ buffer's."
   ;; default Latin font (e.g. Consolas)
   (set-face-font 'default (format "Noto Mono:size=%d" (normalize-pts 10)))
   (set-face-font 'variable-pitch (format "Noto Sans:size=%d" (normalize-pts 10)))
-  (set-face-font 'mode-line (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 10)))
-  (set-face-font 'mode-line-inactive (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 10)))
-  (set-face-font 'sml/global (format "Noto Sans:weight=ultra-light:size=%d" (normalize-pts 10)))
-
-
+  (set-face-font 'mode-line (format "Noto Sans:weight=light:size=%d" (normalize-pts 10)))
+  (set-face-font 'mode-line-inactive (format "Noto Sans:weight=light:size=%d" (normalize-pts 10)))
+  (set-face-font 'sml/global (format "Noto Sans:weight=light:size=%d" (normalize-pts 10)))
 
   ;; Modern color UTF-8 glyphs/emoji
-  (set-fontset-font t 'symbol "Noto Color Emoji")
+  (set-fontset-font t 'symbol "NotoEmoji")
   (set-fontset-font t 'symbol "Symbola" nil 'append))
 
 (when window-system
