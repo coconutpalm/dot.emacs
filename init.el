@@ -585,6 +585,7 @@ With ARG, do this that many times."
             treemacs-file-event-delay              5000
             treemacs-file-follow-delay             0.2
             treemacs-follow-after-init             t
+            treemacs-litter-directories            '("/node_modules" "/.venv" "/.cask")
             treemacs-git-command-pipe              ""
             treemacs-goto-tag-strategy             'refetch-index
             treemacs-indentation                   2
