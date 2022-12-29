@@ -674,6 +674,10 @@ With ARG, do this that many times."
 
 ;; Multiple cursors
 (use-package multiple-cursors)
+(defvar mc/cmds-to-run-for-all)
+(defvar mc/cmds-to-run-once)
+(defvar mc--default-cmds-to-run-for-all)
+(defvar mc--default-cmds-to-run-once)
 
 (global-set-key (kbd "C-S-l C-S-l") 'mc/edit-lines)
 
