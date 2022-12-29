@@ -15,11 +15,13 @@
 (load custom-file 'noerror)
 
 ;; Detect if we're running inside Windows Subsystem for Linux (WSL)
+(defvar WSL)
 (if (and (eq system-type 'gnu/linux)
-           (getenv "WSLENV"))
+         (getenv "WSLENV"))
     (setq WSL 't)
   (setq WSL nil))
 
+(defvar STEAM-DECK)
 (if (string= (system-name) "sesame")
     (setq STEAM-DECK 't)
   (setq STEAM-DECK nil))
