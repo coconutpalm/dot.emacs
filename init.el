@@ -7,7 +7,7 @@
 ;;;    https://github.com/angrybacon/dotemacs/blob/master/dotemacs.org
 ;;;
 ;;; Code:
-
+;; Auth secrets are in a a .netrc-style file under ~/.ssh
 (setq auth-sources '("~/.ssh/.authinfo"))
 
 ;;; Tell custom to put its stuff somewhere else, but load it early
@@ -62,7 +62,6 @@
   (interactive)
   (find-file (concat (expand-file-name "~/") ".profile" )))
 
-
 ;; Immediately tidy the frame
 (unless (eq system-type 'darwin)
   (menu-bar-mode -1))     ;Macs keep the menu bar visible so might as well have it populated
@@ -99,11 +98,45 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+(straight-use-package 'org)
 (straight-use-package 'use-package)
 
 ;;   (package-install 'gnu-elpa-keyring-update)
 
 (use-package spinner)
+
+;; error/warning-checking package
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+
+(use-package flycheck-color-mode-line)
+(use-package flycheck-pos-tip
+  :ensure t :after flycheck)
+(use-package flycheck-status-emoji)
+
+(use-package flycheck-cask              ;ELisp support
+  :commands flycheck-cask-setup
+  :config (add-hook 'emacs-lisp-mode-hook (flycheck-cask-setup)))
+
+;; (use-package flycheck-inline
+;;   :straight (:type git :host github :repo "flycheck/flycheck-inline")
+;;   :ensure t :after flycheck
+;;   :hook (flycheck-mode . #'flycheck-inline-mode))
+
+
+;; Multiple cursors
+(use-package multiple-cursors
+  :ensure t)
+
+(global-set-key (kbd "C-S-l C-S-l") 'mc/edit-lines)
+
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-s->") 'mc/skip-to-next-like-this)
+(global-set-key (kbd "C-s-<") 'mc/skip-to-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Color theme
@@ -672,22 +705,6 @@ With ARG, do this that many times."
   (which-key-mode t))
 
 
-;; Multiple cursors
-(use-package multiple-cursors)
-(defvar mc/cmds-to-run-for-all)
-(defvar mc/cmds-to-run-once)
-(defvar mc--default-cmds-to-run-for-all)
-(defvar mc--default-cmds-to-run-once)
-
-(global-set-key (kbd "C-S-l C-S-l") 'mc/edit-lines)
-
-(global-set-key (kbd "C->") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-s->") 'mc/skip-to-next-like-this)
-(global-set-key (kbd "C-s-<") 'mc/skip-to-previous-like-this)
-(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-
-
 ;; Keep a list of recent files
 (use-package recentf
   :init
@@ -975,25 +992,6 @@ Approximates the rules of `clean-buffer-list'."
 ;;             (when (string-match-p "\\.tsx?" buffer-file-name)
 ;;               (mmm-reapply))))
 
-
-;; error/warning-checking package
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
-
-(use-package flycheck-color-mode-line)
-(use-package flycheck-pos-tip
-  :ensure t :after flycheck)
-(use-package flycheck-status-emoji)
-
-(use-package flycheck-cask              ;ELisp support
-  :commands flycheck-cask-setup
-  :config (add-hook 'emacs-lisp-mode-hook (flycheck-cask-setup)))
-
-;; (use-package flycheck-inline
-;;   :straight (:type git :host github :repo "flycheck/flycheck-inline")
-;;   :ensure t :after flycheck
-;;   :hook (flycheck-mode . #'flycheck-inline-mode))
 
 ;; ansi-term
 (defcustom term-unbind-key-list
@@ -1348,6 +1346,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;;
 ;; https://github.com/abrochard/walkman/blob/master/sample.org
 (use-package walkman
+  :after org
   :ensure t
   :defer t
   :config
@@ -1360,7 +1359,9 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; An alternative to "walkman"
 ;;
 ;; Keymap is added below in org-mode package
-(use-package verb :ensure t)
+(use-package verb
+  :after org
+  :ensure t)
 
 
 ;; Org mode
@@ -2141,8 +2142,17 @@ assuming it is in a maven-style project."
   (setq-local buffer-save-without-query t))
 
 
+;; .NET / C#
+(use-package dotnet)
+(use-package csharp-mode
+  :hook
+  (csharp-mode . 'dotnet))
+(use-package csproj-mode
+  :straight (:type git :host github :repo "omajid/csproj-mode"))
+
+
 ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-(setq lsp-keymap-prefix "S-C-l")
+(setq lsp-keymap-prefix "C-c l")
 
 (use-package lsp-mode
   :hook
@@ -2155,6 +2165,7 @@ assuming it is in a maven-style project."
   (clojure-mode . lsp)                  ; Need to figure out how to use this with Boot
   (clojurec-mode . lsp)
   (clojurescript-mode . lsp)
+  (csharp-mode . lsp)
   (javascript-mode . lsp)
   (js2-mode . lsp)
   (typescript-mode . lsp)
