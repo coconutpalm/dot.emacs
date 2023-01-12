@@ -398,8 +398,8 @@ With ARG, do this that many times."
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (if (boundp 'buffer-file-coding-system)
-    (setq-default buffer-file-coding-system 'utf-8)
-  (setq default-buffer-file-coding-system 'utf-8))
+    (setq-default buffer-file-coding-system 'unix)
+  (setq default-buffer-file-coding-system 'unix))
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
 (setq gc-cons-threshold (* 100 1024 1024)
