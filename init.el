@@ -2142,13 +2142,15 @@ assuming it is in a maven-style project."
   (setq-local buffer-save-without-query t))
 
 
-;; .NET / C#
+;; Windows-specific tooling
 (use-package dotnet)
 (use-package csharp-mode
   :hook
   (csharp-mode . 'dotnet))
 (use-package csproj-mode
   :straight (:type git :host github :repo "omajid/csproj-mode"))
+(use-package powershell)
+
 
 
 ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
@@ -2165,7 +2167,6 @@ assuming it is in a maven-style project."
   (clojure-mode . lsp)                  ; Need to figure out how to use this with Boot
   (clojurec-mode . lsp)
   (clojurescript-mode . lsp)
-  (csharp-mode . lsp)
   (javascript-mode . lsp)
   (js2-mode . lsp)
   (typescript-mode . lsp)
@@ -2174,6 +2175,9 @@ assuming it is in a maven-style project."
   (css-mode . lsp)
 
   (dockerfile-mode . lsp)
+
+  (powershell-mode . lsp)
+  (csharp-mode . lsp)
 
   :init
   (setq lsp-keymap-prefix "C-c l")
@@ -2257,7 +2261,7 @@ assuming it is in a maven-style project."
 
   :config
   (dap-auto-configure-mode 1)
-  (nvm-use "12")
+  ;; (nvm-use "12")
   (dap-ui-mode 1)
   (dap-tooltip-mode 1)
   (tooltip-mode 1)
