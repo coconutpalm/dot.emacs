@@ -14,7 +14,7 @@
                  [juji/editscript "0.5.4"]
 
                  ;; Server-side dependencies
-                 [org.clojure/clojure "1.10.3"]
+                 [org.clojure/clojure "1.11.1"]
                  [ns-tracker "0.4.0"]
                  [potemkin "0.4.3"]
 
@@ -40,7 +40,7 @@
 
                  ;; P2 repo utilities
                  ;; OSGi processing
-                 ;[com.ibm.sbt/com.ibm.commons "9.0.0"]
+                                        ;[com.ibm.sbt/com.ibm.commons "9.0.0"]
                  [org.eclipse.platform/org.eclipse.osgi "3.15.100"]
 
                  ;; Checksums
