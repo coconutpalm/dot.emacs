@@ -654,6 +654,7 @@ With ARG, do this that many times."
   (treemacs-follow-mode t)
   (treemacs-filewatch-mode t)
   (treemacs-fringe-indicator-mode t)
+  (treemacs-git-commit-diff-mode t)
   (pcase (cons (not (null (executable-find "git")))
                (not (null treemacs-python-executable)))
     (`(t . t)
@@ -685,18 +686,18 @@ With ARG, do this that many times."
 ;;   :ensure t)
 
 (use-package treemacs-projectile
-  :after treemacs projectile
+  :after (treemacs projectile)
   :ensure t)
 
 (use-package treemacs-icons-dired
   :after treemacs dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once)
   :ensure t
   :config (treemacs-icons-dired-mode))
 
-
-;;(use-package treemacs-magit
-;;  :after treemacs magit
-;;  :ensure t)
+(use-package treemacs-magit
+  :after (treemacs magit)
+ :ensure t)
 
 
 (use-package which-key
