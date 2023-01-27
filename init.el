@@ -26,6 +26,11 @@
     (setq STEAM-DECK 't)
   (setq STEAM-DECK nil))
 
+(defvar MSYS)
+(if (string-equal (getenv "OSTYPE") "msys")
+    (setq MSYS 't)
+  (setq MSYS nil))
+
 ;; This really needs done any time we're running inside a Flatpak
 ;; but that's just Steam Deck for now.
 (when STEAM-DECK
@@ -260,7 +265,7 @@ With ARG, do this that many times."
 
 (defun normalize-pts (base-pts)
   "Normalize BASE-PTS based on pixels/inch of current display."
-  (if WSL
+  (if (or MSYS WSL)
       base-pts
     (let ((pt-zoom-factor (/ (my-dpi) 72)))
       (message (format "Font scale factor: %f" pt-zoom-factor))
