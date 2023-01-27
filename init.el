@@ -2178,7 +2178,7 @@ assuming it is in a maven-style project."
   (dockerfile-mode . lsp)
 
   (powershell-mode . lsp)
-  (csharp-mode . lsp)
+  (csharp-mode . lsp)                   ; *** See https://grtcdr.tn/posts/2023-01-24.html
 
   :init
   (setq lsp-keymap-prefix "C-c l")
