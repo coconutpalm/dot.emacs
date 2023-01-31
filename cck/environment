@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+#-----------------------------------------------------------------------
+# Add environment variables and functions that all subcommands need here
+#-----------------------------------------------------------------------
+
+_subcommands() {
+    ls -F1 "$1" | \
+        rev | cut -c 2- | rev | \
+        awk -F '.' '{ print $1 }'
+}

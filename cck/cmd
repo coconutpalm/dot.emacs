@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+_ME=`basename "$0"`
+_MY_DIR_VAR="${_ME}_CMD_DIR"
+_SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+source "${_SCRIPT_DIR}/environment"
+
+eval "export ${_MY_DIR_VAR}='${_SCRIPT_DIR}'"
