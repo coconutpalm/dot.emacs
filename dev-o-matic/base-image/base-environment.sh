@@ -89,8 +89,14 @@ sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge sta
 rm /tmp/microsoft.gpg
 
 # Peek screen recorder
-add-apt-repository ppa:peek-developers/stable
+#
+# Broken as of 2/6/2023
+#
+#add-apt-repository ppa:peek-developers/stable
 
+# Syncthing
+sudo curl -o /usr/share/keyrings/syncthing-archive-keyring.gpg https://syncthing.net/release-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable" | sudo tee /etc/apt/sources.list.d/syncthing.list
 
 #
 # Now update and install all the extra-packages

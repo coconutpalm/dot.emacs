@@ -29,6 +29,9 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
     # use brew too
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    echo '# Set PATH, MANPATH, etc., for Homebrew.' >> ~/.profile
+    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.profile
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
     brew update
     brew tap homebrew/cask
     #brew cask install visual-studio-code
@@ -159,6 +162,10 @@ cd baseline/fonts && ./install
 # Install Java and standard Scala tools using Coursier
 cs setup
 
+# Git configuration boilerplate
+git config --global init.defaultBranch main
+git config --global user.name "David Orme"
+
 # Emacs configuration boilerplate
 mkdir -p ~/.localhistory-emacs
 cd ~/.localhistory-emacs && git init
@@ -174,6 +181,7 @@ ln -s ~/.emacs.d/dot.sbt ~/.sbt
 cp $HERE/baseline/skel/dot.lessfilter ~/.lessfilter
 
 # Ammonite config
+mkdir -p ~/.ammonite
 ln -s ~/.emacs.d/predef.scala ~/.ammonite/predef.scala
 
 
@@ -198,7 +206,7 @@ curl -fsSLo ~/bin/lein https://raw.githubusercontent.com/technomancy/leiningen/s
 chmod 755 ~/bin/lein
 
 # Note: no 'latest' link on Maven's dl page; have to upgrade this manually
-cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+cd ~/bin && curl -fsSLo maven-latest.tgz http://apache.claz.org/maven/maven-3/3.9.0/binaries/apache-maven-3.9.0-bin.tar.gz
 cd ~/bin && tar -xzvf maven-latest.tgz
 cd ~/bin && ln -s apache-maven* maven
 cd ~/bin && cat > ~/bin/mvn <<EOF
@@ -208,13 +216,6 @@ export M2_HOME=`pwd`/maven
 `pwd`/maven/bin/mvn $@
 EOF
 chmod 755 ~/bin/mvn
-
-# Ammonite Scala shell
-AMMONITE_REPO=https://github.com/lihaoyi/Ammonite
-AMMONITE_VER=`latest-release $MILL_REPO`
-curl -L -o ~/bin/amm $AMMONITE_REPO/releases/download/$AMMONITE_VER/2.13-$AMMONITE_VER
-chmod +x ~/bin/amm
-
 
 # Put all the bloopy things on the path
 cat >> ~/.bashrc <<EOF
