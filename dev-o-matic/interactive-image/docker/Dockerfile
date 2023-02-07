@@ -41,12 +41,12 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ENV PATH=${PATH}:/usr/games:/usr/local/games
 
 # Setup D-Bus
-RUN mkdir /run/dbus/ && chown messagebus:messagebus /run/dbus/
+RUN mkdir -p /run/dbus/ && chown messagebus:messagebus /run/dbus/
 RUN dbus-uuidgen > /etc/machine-id
 RUN ln -sf /etc/machine-id /var/lib/dbus/machine-id
 
 # Create socket directory for X server
-RUN mkdir /tmp/.X11-unix/ && chmod 1777 /tmp/.X11-unix/
+RUN mkdir -p /tmp/.X11-unix/ && chmod 1777 /tmp/.X11-unix/
 
 # Copy and enable services
 COPY service/ /etc/sv/
@@ -77,8 +77,8 @@ RUN mkdir -p /run/user/"${UID:?}"/dbus-1/ && \
    chown -R "${USER:?}:" /run/user/"${UID:?}"/
 
 # Configure SSHd
-RUN mkdir /run/sshd
-RUN mkdir /home/${USER}/.ssh; echo "Ensure ~/.ssh"
+RUN mkdir -p /run/sshd
+RUN mkdir -p /home/${USER}/.ssh; echo "Ensure ~/.ssh"
 COPY /build/.ssh/ /home/${USER}/.ssh
 RUN chown -R ${USER}:${USER} /home/${USER}/.ssh && chmod 700 /home/${USER}/.ssh
 
@@ -101,7 +101,7 @@ USER 0
 
 # Move user's skeleton home directory out of the way
 RUN mv /home/${USER} /home/${USER}-skel && \
-    mkdir /home/${USER} && \
+    mkdir -p /home/${USER} && \
     chown ${USER}:${USER} /home/${USER}
 
 # Dump environment variables
