@@ -147,7 +147,6 @@ $PODMAN run -it \
      --mount type=bind,source="$DOCKER_DEV_CONFDIR",target=/tmp/devrc.rc,consistency=delegated \
      --mount type=bind,source="$DOCKER_DEV_USERDOCS",target=/tmp/devrc.docs,consistency=delegated \
      $MOUNTS $LINKS \
-     --network maanaq \
      -p 3449-3559:3449-3559 \
      -p 9800-9805:9800-9805 \
      -p 2222:22 \
