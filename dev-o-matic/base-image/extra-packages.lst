@@ -80,6 +80,8 @@ software-properties-common
 sshfs
 sshuttle
 synaptic
+syncthing
+syncthing-gtk
 tigervnc-standalone-server
 tigervnc-viewer
 tini
