@@ -56,7 +56,7 @@ mlterm
 mplayer
 nano
 net-tools
-netcat
+netcat-openbsd
 nmap
 nodejs
 nodejs-doc
