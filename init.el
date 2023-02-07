@@ -263,13 +263,21 @@ With ARG, do this that many times."
            (mm-d (pyth mm-w mm-h)))
       (/ pix-d (mm2in mm-d)))))
 
+;; (defun normalize-pts (base-pts)
+;;   "Normalize BASE-PTS based on pixels/inch of current display."
+;;   (if (or MSYS WSL)
+;;       base-pts
+;;     (let ((pt-zoom-factor (/ (my-dpi) 72)))
+;;       (message (format "Font scale factor: %f" pt-zoom-factor))
+;;       (round (* base-pts (/ pt-zoom-factor 2.0))))))
+
 (defun normalize-pts (base-pts)
-  "Normalize BASE-PTS based on pixels/inch of current display."
-  (if (or MSYS WSL)
-      base-pts
-    (let ((pt-zoom-factor (/ (my-dpi) 72)))
-      (message (format "Font scale factor: %f" pt-zoom-factor))
-      (round (* base-pts (/ pt-zoom-factor 2.0))))))
+  "Normalize BASE-PTS based on pixels/inch of current display.
+
+Stubbed out right now because I can't find a way to make this
+reliable across platforms."
+
+  base-pts)
 
 
 (defun zoom-by (delta-points)
