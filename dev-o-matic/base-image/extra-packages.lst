@@ -23,6 +23,8 @@ git
 google-chrome-stable
 google-drive-ocamlfuse
 groff
+gstreamer1.0-pipewire
+gstreamer1.0-plugins-ugly
 gtk-theme-switch
 gtk2-engines-pixbuf
 imagemagick
@@ -35,7 +37,12 @@ keepassxc
 kitty
 krita
 less
+libfdk-aac2
+libldacbt-abr2
+libldacbt-enc2
 libnss3-tools
+libopenaptx0
+libspa-0.2-jack
 libtool-bin
 libvte9
 libwebkit2gtk-4.0-37
@@ -62,10 +69,9 @@ openjdk-11-source
 openssh-client
 openssh-server
 pandoc
-peek
+pipewire
+pipewire-audio-client-libraries
 postgresql
-pulseaudio
-pulseaudio-utils
 pv
 pwgen
 runit
@@ -83,6 +89,7 @@ vacation
 vim
 vym
 wamerican
+wireplumber
 wget
 xsel
 zsh
