@@ -1727,7 +1727,7 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
   (setq markdown-fontify-code-blocks-natively t)
   (setq markdown-enable-wiki-links t)
   (setq markdown-wiki-link-search-subdirectories t)
-  ;;  (setq markdown-header-scaling t)      ;TODO: Investigate if I should use this over custom.el
+  ;; (setq markdown-header-scaling t)      ;TODO: Investigate if I should use this over custom.el
   )
 
 (defun markdown-flyspell-check-word-p ()
@@ -1954,7 +1954,9 @@ _q_uit _RET_: current
 (use-package goto-chg
   :commands goto-last-change
   :bind (("C-," . goto-last-change)
-         ("C-." . goto-last-change-reverse)))
+         ("C-." . goto-last-change-reverse)
+         ("M-<left>" . goto-last-change)
+         ("M-<right>" . goto-last-change-reverse)))
 
 
 ;; Like Eclipse's quick outline
