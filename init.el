@@ -1144,7 +1144,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 ;; handy code recipe
 ;; (term-send-string (get-buffer-process "*ansi-term*") "source /etc/profile\n")
 
-(if WSL
+(if (vtermable?)
     (defun terminal ()
       "Switch to terminal.  Launch if nonexistent."
       (interactive)
