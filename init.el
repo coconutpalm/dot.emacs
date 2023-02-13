@@ -1719,8 +1719,9 @@ XWIDGET instance, XWIDGET-EVENT-TYPE depends on the originating xwidget."
   (setq markdown-fontify-code-blocks-natively t)
   (setq markdown-enable-wiki-links t)
   (setq markdown-wiki-link-search-subdirectories t)
-  ;;  (setq markdown-header-scaling t)      ;TODO: Investigate if I should use this over custom.el
-  )
+  (setq markdown-header-scaling t)
+  (setq markdown-hide-urls t)
+  (setq markdown-gfm-use-electric-backquote nil))
 
 (defun markdown-flyspell-check-word-p ()
   "Return t if `flyspell' should check word just before point."
