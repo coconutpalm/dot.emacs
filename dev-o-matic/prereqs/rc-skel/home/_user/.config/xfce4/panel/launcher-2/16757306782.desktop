@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Wezterm
+Comment=
+Exec=wezterm
+Icon=mlterm-icon-gnome2
+Path=
+Terminal=false
+StartupNotify=false

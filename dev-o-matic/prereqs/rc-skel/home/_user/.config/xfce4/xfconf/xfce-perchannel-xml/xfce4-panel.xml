@@ -13,11 +13,11 @@
         <value type="int" value="12"/>
         <value type="int" value="24"/>
         <value type="int" value="10"/>
-        <value type="int" value="1"/>
-        <value type="int" value="4"/>
+        <value type="int" value="21"/>
         <value type="int" value="3"/>
-        <value type="int" value="5"/>
+        <value type="int" value="1"/>
         <value type="int" value="2"/>
+        <value type="int" value="4"/>
         <value type="int" value="9"/>
         <value type="int" value="6"/>
         <value type="int" value="13"/>
@@ -27,6 +27,7 @@
         <value type="int" value="17"/>
         <value type="int" value="15"/>
         <value type="int" value="14"/>
+        <value type="int" value="5"/>
         <value type="int" value="19"/>
         <value type="int" value="11"/>
         <value type="int" value="23"/>
@@ -54,14 +55,52 @@
       <property name="workspace-scrolling" type="bool" value="false"/>
     </property>
     <property name="plugin-17" type="string" value="netload"/>
-    <property name="plugin-19" type="string" value="weather"/>
+    <property name="plugin-19" type="string" value="weather">
+      <property name="msl" type="int" value="229"/>
+      <property name="timezone" type="string" value="America/Chicago"/>
+      <property name="offset" type="string" value="-06:00"/>
+      <property name="cache-max-age" type="int" value="172800"/>
+      <property name="power-saving" type="bool" value="true"/>
+      <property name="units" type="empty">
+        <property name="temperature" type="int" value="1"/>
+        <property name="pressure" type="int" value="1"/>
+        <property name="windspeed" type="int" value="1"/>
+        <property name="precipitation" type="int" value="1"/>
+        <property name="altitude" type="int" value="1"/>
+        <property name="apparent-temperature" type="int" value="0"/>
+      </property>
+      <property name="round" type="bool" value="true"/>
+      <property name="single-row" type="bool" value="false"/>
+      <property name="tooltip-style" type="int" value="1"/>
+      <property name="forecast" type="empty">
+        <property name="layout" type="int" value="1"/>
+        <property name="days" type="int" value="5"/>
+      </property>
+      <property name="theme-dir" type="string" value="/usr/share/xfce4/weather/icons/liquid"/>
+      <property name="scrollbox" type="empty">
+        <property name="show" type="bool" value="true"/>
+        <property name="animate" type="bool" value="true"/>
+        <property name="lines" type="int" value="1"/>
+        <property name="color" type="string" value="rgba(0,0,0,0)"/>
+        <property name="use-color" type="bool" value="false"/>
+        <property name="font" type="string" value="Noto Sans Display 10"/>
+      </property>
+      <property name="location" type="empty">
+        <property name="name" type="string" value="Wheaton, Illinois"/>
+        <property name="latitude" type="string" value="41.837900"/>
+        <property name="longitude" type="string" value="-88.084200"/>
+      </property>
+      <property name="labels" type="empty">
+        <property name="label0" type="int" value="3"/>
+      </property>
+    </property>
     <property name="plugin-20" type="string" value="tasklist"/>
     <property name="plugin-22" type="string" value="separator">
       <property name="style" type="uint" value="1"/>
     </property>
     <property name="plugin-23" type="string" value="clock">
       <property name="mode" type="uint" value="2"/>
-      <property name="digital-format" type="string" value="%r"/>
+      <property name="digital-format" type="string" value="%I:%M %p"/>
       <property name="timezone" type="string" value="CST6CDT"/>
     </property>
     <property name="plugin-24" type="string" value="separator">
@@ -77,11 +116,6 @@
     <property name="plugin-9" type="string" value="separator">
       <property name="style" type="uint" value="0"/>
     </property>
-    <property name="plugin-1" type="string" value="launcher">
-      <property name="items" type="array">
-        <value type="string" value="15851520691.desktop"/>
-      </property>
-    </property>
     <property name="plugin-6" type="string" value="separator">
       <property name="style" type="uint" value="1"/>
     </property>
@@ -95,29 +129,45 @@
       <property name="style" type="uint" value="1"/>
     </property>
     <property name="plugin-15" type="string" value="cpugraph"/>
+    <property name="plugin-10" type="string" value="launcher">
+      <property name="items" type="array">
+        <value type="string" value="16262847602.desktop"/>
+      </property>
+    </property>
     <property name="plugin-2" type="string" value="launcher">
       <property name="items" type="array">
-        <value type="string" value="15946163211.desktop"/>
+        <value type="string" value="16757306782.desktop"/>
       </property>
     </property>
     <property name="plugin-3" type="string" value="launcher">
       <property name="items" type="array">
-        <value type="string" value="15953590641.desktop"/>
+        <value type="string" value="16757984881.desktop"/>
       </property>
     </property>
     <property name="plugin-4" type="string" value="launcher">
       <property name="items" type="array">
-        <value type="string" value="15972529491.desktop"/>
+        <value type="string" value="16757985642.desktop"/>
       </property>
     </property>
-    <property name="plugin-5" type="string" value="launcher">
+    <property name="plugin-5" type="string" value="systray">
+      <property name="known-legacy-items" type="array">
+        <value type="string" value="xfce4-power-manager"/>
+        <value type="string" value="syncthing-gtk"/>
+        <value type="string" value="syncthing"/>
+      </property>
+      <property name="icon-size" type="int" value="0"/>
+      <property name="single-row" type="bool" value="true"/>
+      <property name="symbolic-icons" type="bool" value="false"/>
+      <property name="square-icons" type="bool" value="false"/>
+    </property>
+    <property name="plugin-21" type="string" value="launcher">
       <property name="items" type="array">
-        <value type="string" value="16262846801.desktop"/>
+        <value type="string" value="16758068033.desktop"/>
       </property>
     </property>
-    <property name="plugin-10" type="string" value="launcher">
+    <property name="plugin-1" type="string" value="launcher">
       <property name="items" type="array">
-        <value type="string" value="16262847602.desktop"/>
+        <value type="string" value="16763183921.desktop"/>
       </property>
     </property>
   </property>
