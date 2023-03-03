@@ -1,5 +1,8 @@
 ;;; chatgpt.el --- Simple ChatGPT frontend for Emacs  -*- lexical-binding: t -*-
 
+;; Source website:
+;; https://gist.github.com/Gavinok/a18e0b2dac74e4ae67df35e45a170f7f
+
 ;; Copyright (C) Gavin Jaeger-Freeborn
 
 ;; This package is free software; you can redistribute it and/or modify
