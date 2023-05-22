@@ -1,0 +1,22 @@
+{:aliases
+
+ {:nrepl
+  {:main-opts ["-m" "nrepl.cmdline"
+               "-b" "127.0.0.1"
+               "-p" "4397"
+               "--middleware" "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor]"]
+
+   :extra-deps
+   {nrepl/nrepl        {:mvn/version "0.8.3"}
+    cider/cider-nrepl  {:mvn/version "0.26.0-SNAPSHOT"}
+    refactor-nrepl     {:mvn/version "2.5.1"}}}}
+
+ {:database/crux
+  {:extra-deps
+   {juxt/crux-core        {:mvn/version "21.02-1.15.0-beta"}
+    juxt/crux-rocksdb     {:mvn/version "21.02-1.15.0-beta"}
+    juxt/crux-http-server {:mvn/version "21.02-1.15.0-alpha"}}}}
+
+ {:database/datahike
+  {:extra-deps
+   {io.replikativ/datahike {:mvn/version "0.3.3"}}}}}
