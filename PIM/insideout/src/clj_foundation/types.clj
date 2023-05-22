@@ -57,8 +57,9 @@
       (str (:msg this)))))
 
 
-(defn T->pred [predicate-or-type-ctor]
+(defn T->pred
   "Accepts either a predicate or a type-ctor function and returns a traditional predicate."
+  [predicate-or-type-ctor]
   (fn [x]
     (let [result (predicate-or-type-ctor x)]
       (if (instance? TypeCtorError result)
