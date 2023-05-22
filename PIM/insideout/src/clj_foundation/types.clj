@@ -257,7 +257,7 @@
       (fn* type)      (let [type-str (pr-str type)]
                         `(partial x-or-err ~type ~type-str))
 
-      :default        (throw (ex-info (trace "Unrecognized type constructor \"predicate\"") {:type type})))))
+      :else           (throw (ex-info (trace "Unrecognized type constructor \"predicate\"") {:type type})))))
 
 
 (defn- hash-list-fn? [x] (fn* x))
