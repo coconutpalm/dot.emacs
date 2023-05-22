@@ -126,7 +126,7 @@
     (typed-fn f parameter-specs return-spec more)))
 
 
-(defmacro =>
+(defmacro fspec
   "Like `tfn` but only annotates existing functions with type information/checking."
   [f parameter-specs return-spec]
 
