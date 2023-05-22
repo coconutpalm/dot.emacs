@@ -225,7 +225,7 @@
   This macro returns a type constructor function as defined above.
 
   If the value(s) passed to the type constructor conforms to `predicate`, the
-  type construct function returns the original value as if it were the identity function.
+  type constructor function returns the original value as if it were the identity function.
 
   Otherwise it returns a `TypeCtorError` with information on the failure.
 
