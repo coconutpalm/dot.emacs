@@ -1,0 +1,102 @@
+format="""${custom.toolbox}$all"""
+
+
+[character] 
+success_symbol = "[](fg:#86BBD8)"
+error_symbol = "[](red)"
+vicmd_symbol = "[❮](green)"
+
+[git_branch]
+symbol = " "
+format = "[$branch]($style)"
+style = "underline"
+
+[git_status]
+format = "[[([*](red) <$conflicted$untracked$modified$staged$renamed$deleted)>](green) ($ahead_behind$stashed)]($style) "
+style = "cyan"
+conflicted = "🤯"
+ahead = "🏎💨"
+behind = "😰"
+diverged = "😵"
+up_to_date = ""
+untracked = "🤷"
+stashed = "📦"
+modified = "📝"
+staged = '[++\($count\)](green)'
+renamed = "👅"
+deleted = "🧨"
+
+[git_state]
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
+style = "bright-black"
+
+[container]
+disabled=true
+
+[custom.toolbox]
+command = """ grep -Po 'name="\\K[^"]+' /run/.containerenv """
+when = "test -f /run/.containerenv"
+style = "bg:bright-blue black"
+format = "[ $output ]($style) "
+
+
+
+[aws]
+symbol = "  "
+
+[buf]
+symbol = " "
+
+[conda]
+symbol = " "
+
+[dart]
+symbol = " "
+
+[directory]
+read_only = " "
+
+[docker_context]
+symbol = " "
+
+[elixir]
+symbol = " "
+
+[elm]
+symbol = " "
+
+[golang]
+symbol = " "
+
+[haskell]
+symbol = " "
+
+[hg_branch]
+symbol = " "
+
+[java]
+symbol = " "
+
+[julia]
+symbol = " "
+
+[memory_usage]
+symbol = " "
+
+[nim]
+symbol = " "
+
+[nix_shell]
+symbol = " "
+
+[nodejs]
+symbol = " "
+
+[package]
+symbol = " "
+
+[rust]
+symbol = " "
+
+
+

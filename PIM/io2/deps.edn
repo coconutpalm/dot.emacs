@@ -1,0 +1,29 @@
+{:deps
+ {org.clojure/clojure {:mvn/version "1.12.0-alpha3"}}
+
+ :aliases
+ {:git {:extra-deps {omnyway-labs/vulcan {:git/url "https://github.com/omnyway-labs/vulcan.git",
+                                          :sha "31b449b979a4263c6ecbd1e1ec1b065391e3dc92"
+                                          :tag "master"}},
+        :main-opts ["-m" "vulcan.main"],
+        :jvm-opts ["-client"
+                   "-XX:+UseSerialGC"
+                   "-XX:CICompilerCount=1"
+                   "-XX:+TieredCompilation"
+                   "-Xshare:off"
+                   "-Xverify:none"
+                   "-XX:TieredStopAtLevel=1"]}
+
+  :nrepl {:extra-deps {nrepl/nrepl                   {:mvn/version "0.8.3"}
+                       cider/cider-nrepl             {:mvn/version "0.26.0-SNAPSHOT"}
+                       refactor-nrepl/refactor-nrepl {:mvn/version "2.5.1"}}
+          :main-opts ["-m" "nrepl.cmdline"
+                      "-b" "127.0.0.1"
+                      "-p" "4397"
+                      "--middleware" "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor]"]}
+
+  :database/crux {:extra-deps {juxt/crux-core        {:mvn/version "21.02-1.15.0-beta"}
+                               juxt/crux-rocksdb     {:mvn/version "21.02-1.15.0-beta"}
+                               juxt/crux-http-server {:mvn/version "21.02-1.15.0-alpha"}}}
+
+  :database/datahike {:extra-deps {io.replikativ/datahike {:mvn/version "0.3.3"}}}}}
