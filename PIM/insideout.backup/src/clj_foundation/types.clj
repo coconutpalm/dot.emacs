@@ -57,9 +57,8 @@
       (str (:msg this)))))
 
 
-(defn T->pred
+(defn T->pred [predicate-or-type-ctor]
   "Accepts either a predicate or a type-ctor function and returns a traditional predicate."
-  [predicate-or-type-ctor]
   (fn [x]
     (let [result (predicate-or-type-ctor x)]
       (if (instance? TypeCtorError result)
@@ -225,7 +224,7 @@
   This macro returns a type constructor function as defined above.
 
   If the value(s) passed to the type constructor conforms to `predicate`, the
-  type constructor function returns the original value as if it were the identity function.
+  type construct function returns the original value as if it were the identity function.
 
   Otherwise it returns a `TypeCtorError` with information on the failure.
 
@@ -257,7 +256,7 @@
       (fn* type)      (let [type-str (pr-str type)]
                         `(partial x-or-err ~type ~type-str))
 
-      :else           (throw (ex-info (trace "Unrecognized type constructor \"predicate\"") {:type type})))))
+      :default        (throw (ex-info (trace "Unrecognized type constructor \"predicate\"") {:type type})))))
 
 
 (defn- hash-list-fn? [x] (fn* x))
