@@ -135,6 +135,9 @@ $PODMAN rm -f /$CONTAINERNAME
      # -p 3449-3559:3449-3559 \
      # -p 9800-9805:9800-9805 \
 
+# To add host.docker.internal back, need to --add-host= in the below "run" line per
+# https://stackoverflow.com/questions/61869806/adding-extra-host-to-dockerfile
+
 $PODMAN run -it \
      --cap-add MKNOD --device /dev/fuse:mrw \
      --privileged \
