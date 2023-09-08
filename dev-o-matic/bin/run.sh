@@ -156,4 +156,3 @@ $PODMAN run -it \
 echo Bye
 
 sleep 1
-
