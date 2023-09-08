@@ -1165,7 +1165,7 @@ If you do not like default setup, modify it, with (KEY . COMMAND) format."
 
     (if (get-buffer "*ansi-term*")
         (switch-to-buffer "*ansi-term*")
-      (ansi-term))
+      (ansi-term "bash"))
 
     (get-buffer-process "*ansi-term*")))
 
