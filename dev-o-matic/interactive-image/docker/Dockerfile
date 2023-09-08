@@ -62,19 +62,25 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod ugo+x /usr/local/bin/entrypoint.sh
 
 
-# Set up a new Linux account matching user's Mac credentials
+# Set up a new Linux account matching user's credentials
 #   Macs assign users to a generic group like "staff"
 #   Linuxes create a custom group named after each user initially containing just that user
 # We add the user to both the Mac group name and Mac GID in addition to the typical Linux behavior
 
-RUN useradd --badnames -m -u "$UID" -U -G "$ADDUSER_GROUPS" -s /bin/bash "$USER" && \
+RUN useradd --badname -m -U -G "$ADDUSER_GROUPS" -s /bin/bash "$USER" && \
    echo "${USER} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
    ln -s /home/${USER} /home/ubuntu
 
+#RUN useradd --badname -m -u "$UID" -U -G "$ADDUSER_GROUPS" -s /bin/bash "$USER" && \
+#   echo "${USER} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+#   ln -s /home/${USER} /home/ubuntu
+
 # Create /run/user/${UNPRIVILEGED_USER_UID}/dbus-1/ directory
-RUN mkdir -p /run/user/"${UID:?}"/dbus-1/ && \
-   chmod -R 700 /run/user/"${UID:?}"/ && \
-   chown -R "${USER:?}:" /run/user/"${UID:?}"/
+RUN \
+   DOMUID=`grep $USER /etc/passwd | awk -F: '{ print $3 }'` && \
+   mkdir -p /run/user/"${DOMUID:?}"/dbus-1/ && \
+   chmod -R 700 /run/user/"${DOMUID:?}"/ && \
+   chown -R "${USER:?}:" /run/user/"${DOMUID:?}"/
 
 # Configure SSHd
 RUN mkdir -p /run/sshd
