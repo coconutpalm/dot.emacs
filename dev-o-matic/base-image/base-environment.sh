@@ -123,15 +123,12 @@ wget -O code.deb 'https://code.visualstudio.com/sha/download?build=stable&os=lin
 dpkg -i code.deb
 
 # clojure
-CLOJURE_VER=$(latest-version https://github.com/clojure/clojure.git)
-# Sadly, CLOJURE_VER includes alphas so hard-coding for now.
-curl -O https://download.clojure.org/install/linux-install-1.10.1.716.sh
-chmod +x linux-install-1.10.1.716.sh
-sudo ./linux-install-1.10.1.716.sh
-rm ./linux-install-1.10.1.716.sh
+curl -L -O https://github.com/clojure/brew-install/releases/latest/download/linux-install.sh
+chmod +x linux-install.sh
+sudo ./linux-install.sh
 
 # Slack - Version has to be manually updated
-SLACK_VER='4.17.0'
+SLACK_VER='4.34.116'
 wget https://downloads.slack-edge.com/linux_releases/slack-desktop-${SLACK_VER}-amd64.deb
 dpkg -i slack-desktop-${SLACK_VER}-amd64.deb
 
