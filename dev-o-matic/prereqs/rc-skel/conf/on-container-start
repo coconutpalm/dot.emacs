@@ -28,8 +28,8 @@ if [ ! -f ~/bin/cs ]; then
      curl -fLo ~/bin/cs https://git.io/coursier-cli-linux && chmod +x ~/bin/cs
      yes | ~/bin/cs setup
 
-     # Install openjdk 8.x; jdk11 comes pre-installed; cs can switch between them
-     ~/bin/cs java --jvm 8 --env >> ~/.bashrc
+     # Install openjdk 8.x; Latest JDK comes pre-installed; cs can switch between them
+     #~/bin/cs java --jvm 8 --env >> ~/.bashrc
 fi
 
 
