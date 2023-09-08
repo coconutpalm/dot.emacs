@@ -12,7 +12,7 @@ cd "$DOCKER_DEV"
 git pull origin master
 
 echo "Upgrading standard/stock scripts and configuration"
-rsync -raq --progress prereqs/rc-skel/. ${RCDIR}
+rsync -raq --progress --no-group prereqs/rc-skel/. ${RCDIR}
 
 
 # echo "Upgrading plugins"

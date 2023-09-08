@@ -36,7 +36,7 @@ check_docker() {
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     # Add code to install Linux host dependencies here
     echo "Updating ~/bin directory"
-    rsync -uav --ignore-existing rc-skel/home/_user/bin ~
+    rsync -uav --ignore-existing --no-group rc-skel/home/_user/bin ~
     export PATH="$PATH:$HOME/bin"
 
     echo

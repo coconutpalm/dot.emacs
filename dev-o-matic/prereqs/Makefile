@@ -36,10 +36,10 @@ ${RCDIR}:
 
 # Don't overwrite what's there but if new files are added during an upgrade, install them
 sync-config-contents:
-	rsync -raq --progress --ignore-existing rc-skel/home/_user/. ${USERSTATE}
-	rsync -raq --progress --ignore-existing rc-skel/docs/. ${USERDOCS}
-	rsync -raq --progress --ignore-existing rc-skel/conf/. ${USERCONF}
-	rsync -raq --progress ~/.ssh/. ${USERSTATE}/.ssh
+	rsync -raq --progress --ignore-existing --no-group --no-times rc-skel/home/_user/. ${USERSTATE}
+	rsync -raq --progress --ignore-existing --no-group --no-times rc-skel/docs/. ${USERDOCS}
+	rsync -raq --progress --ignore-existing --no-group --no-times rc-skel/conf/. ${USERCONF}
+	rsync -raq --progress --no-group --no-times ~/.ssh/. ${USERSTATE}/.ssh
 
 ${UBUNTU_SYMLINK}:
 	ln -s ${USER} ${UBUNTU_SYMLINK}
@@ -74,7 +74,7 @@ binaries: clean ~/bin ${BINARIES}
 
 clean:
 	rm -f ${BINARIES}
-	rm -f ${RCDIR}/docs/.welcomed
+	sudo rm -f ${RCDIR}/docs/.welcomed
 
 # This target can only be invoked manually from the prereqs project  Obviously, don't
 # use it unless you really need to start from scratch.  Also read the source of `devenv-utils`

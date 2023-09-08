@@ -95,7 +95,6 @@ USER ${USER}
 
 ENV HOME /home/${USER}
 ENV HOST_IP $HOST_IP
-ENV DISPLAY host.docker.internal:0
 
 # Inside the user's environment...
 WORKDIR ${HOME}
