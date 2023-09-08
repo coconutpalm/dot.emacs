@@ -31,7 +31,8 @@ apt-get install -y \
         gpg \
         locales \
         software-properties-common \
-        wget
+        wget \
+        git
 
 # Here we'll install a desktop environment, then add certificates and package repositories that
 # are prerequisites for `extra-packages` we'll add on top.
@@ -128,16 +129,12 @@ chmod +x linux-install.sh
 sudo ./linux-install.sh
 
 # Slack - Version has to be manually updated
-SLACK_VER='4.34.116'
-wget https://downloads.slack-edge.com/linux_releases/slack-desktop-${SLACK_VER}-amd64.deb
+SLACK_VER='4.33.90'  # slack-4.33.90-0.1.el8.x86_64
+wget https://downloads.slack-edge.com/releases/linux/${SLACK_VER}/prod/x64/slack-desktop-${SLACK_VER}-amd64.deb
 dpkg -i slack-desktop-${SLACK_VER}-amd64.deb
 
 
 # Gommit - Git pre-commit manager
-
-#GOMMIT_VER=$(latest-version https://github.com/antham/gommit)
-#GOMMIT_VER="v2.4.0"  # Because v2.5.0 didn't release artifacts
-#GOMMIT_URL="https://github.com/antham/gommit/releases/download/${GOMMIT_VER}/gommit_${GOMMIT_VER}_linux_amd64.tar.gz"
 
 # Because gommit doesn't follow URL conventions everyone else does
 GOMMIT_URL=https://github.com/antham/gommit/releases/download/v2.4.0/gommit_2.4.0_linux_amd64.tar.gz
