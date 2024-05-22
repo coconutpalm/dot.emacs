@@ -100,7 +100,7 @@
 ;; Map type constructors ==============================================================
 
 
-(defrecord Opt [key])
+(defrecord Opt [key] :load-ns true)
 
 (defn ^:public-for-testability map-err-T
   "Ensure `m` satisfies k/v predicates in `kv-types` map.  Returns `m` or a TypeCtorError."
@@ -112,10 +112,10 @@
                          (set))
         predicates    (into {}
                             (map (fn [[k v]]
-                              (if (instance? Opt k)
-                                [(:key k) v]
-                                [k v]))
-                            kv-types))]
+                                   (if (instance? Opt k)
+                                     [(:key k) v]
+                                     [k v]))
+                                 kv-types))]
 
     (fn [m]
       (let [missing-keys  (set/difference required-keys (set (keys m)))]
@@ -141,8 +141,8 @@
               (TypeCtorError. m
                               errors
                               (->> errors
-                                 (interpose ", ")
-                                 (apply str))
+                                   (interpose ", ")
+                                   (apply str))
                               '()))))))))
 
 

@@ -2450,8 +2450,11 @@ assuming it is in a maven-style project."
   (setq-local buffer-save-without-query t)
 
   (setq
+   ;; cider-clojure-cli-global-options "A:test"
+
    ;; Formatting and indentation - use Cider instead
    lsp-enable-on-type-formatting nil
+
    ;; Set to nil to use CIDER features instead of LSP UI
    lsp-enable-indentation nil
    lsp-enable-snippet t ;; to test again

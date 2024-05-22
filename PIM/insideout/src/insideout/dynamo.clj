@@ -77,7 +77,8 @@
    (pom/add-dependencies :classloader classloader
                          :coordinates coordinates
                          :repositories (apply merge from.cemerick.pomegranate.aether/maven-central
-                                              {"clojars" "https://clojars.org/repo"}
+                                              {"clojars" "https://clojars.org/repo"
+                                               "eclipse-swt" "https://maven-eclipse.github.io/maven"}
                                               *extra-repositories*)))
   ([coordinates]
    (resolve-libs (dyn-classloader) coordinates)))

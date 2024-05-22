@@ -31,6 +31,7 @@ workspace
 .metals
 .vscode
 *.nrepl-port
+.clj-kondo
 
 build.sbt
 idea.sbt
@@ -68,7 +69,6 @@ var
 .settings
 .classpath
 .project
-.clj-kondo
 
 dev-o-matic/interactive-image/docker/build/_user
 

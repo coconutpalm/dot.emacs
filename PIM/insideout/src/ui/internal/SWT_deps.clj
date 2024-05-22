@@ -30,6 +30,9 @@
 
 ;; SWT and dependencies ------------------------------------------------------------
 
+;; Migrate to Equodev Chromium
+;;  https://github.com/equodev/chromium
+
 (def ^:dynamic *swt-version* "3.116.0")
 
 (def swt-lib      [(->platform-lib 'org.eclipse.platform/org.eclipse.swt)

@@ -1,1 +1,14 @@
-{:deps {io.github.nextjournal/clerk {:mvn/version "0.12.707"}}}
+{:deps
+ {io.github.nextjournal/clerk {:mvn/version "0.14.919"}}
+
+ :aliases
+ {:nrepl
+  {:main-opts ["-m" "nrepl.cmdline"
+               "-b" "127.0.0.1"
+               "-p" "4397"
+               "--middleware" "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor]"]
+
+   :extra-deps
+   {nrepl/nrepl        {:mvn/version "0.8.3"}
+    cider/cider-nrepl  {:mvn/version "0.26.0-SNAPSHOT"}
+    refactor-nrepl     {:mvn/version "2.5.1"}}}}}
